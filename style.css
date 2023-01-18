@@ -1,0 +1,106 @@
+/* globals */
+
+body {
+	margin-left: 5%;
+	margin-right: 5%;
+	font-size: 90%;
+	line-height: 130%;
+	caret-color: #5AA7CE;
+}
+
+input {
+	outline: none;
+	border: none;
+
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+}
+
+/* scrollbars */
+:root
+{
+	scrollbar-width: thin;
+	scrollbar-color: RGBA(90, 167, 206, 0.5) lightgray;
+}
+
+body::-webkit-scrollbar {
+    height: 5px;
+    width: 5px;
+    background-color: lightgray;
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: RGBA(90, 167, 206, 0.5);
+    border-radius: 10px;
+}
+
+/* note page and editor */
+
+#notepage {
+	width: 100%;
+}
+
+#md {
+	outline: none;
+	border: none;
+	width: 100%;
+
+	resize: none;
+	
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	background-color: inherit;
+}
+
+/* top bar content */
+
+#topbar {
+	height: 50px;
+	width: 100%;
+}
+
+#topbar > span {
+	display: table-cell;
+}
+
+#titlecontainer {
+	width: 100%;
+}
+
+#title {
+	width: 100%;
+	padding-top: 10px;
+	font-size: 20px;
+	background-color: inherit;
+}
+
+/* search file dialog */
+
+.selected {
+	background-color: darkgray;
+}
+
+#filter {
+	width: 100%;
+
+	/* wm style
+	background-color: #f0f0f0;
+	*/
+}
+
+#searchdialog {
+	position: absolute;
+	top:  0;
+	background-color: lightgray;
+	opacity: 1;
+	width: 90%;
+}
+
+/* authent */
+
+#bigtitle {
+	font-size: 50px;
+	line-height: 100%;
+}

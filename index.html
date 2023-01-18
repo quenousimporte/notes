@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <link rel="stylesheet" type="text/css" href="style.css">
+	    <link rel="icon" type="image/x-icon" href="favicon.ico">
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<title>notes</title>
+		<link href="https://fonts.cdnfonts.com/css/inconsolata-2" rel="stylesheet">
+	</head>
+
+	<body onload="init()" onkeydown="mainkeydownhandler()" onresize="resize()">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="main.js"></script>
+
+		<div id="authentpage" hidden>
+			<div id="bigtitle">notes</div>
+			<div>
+				<input id="password" type="password" placeholder="pass phrase..." onkeydown="sendpassword()" onblur="sendpassword()" ></input>
+			</div>
+		</div>
+
+		<div id="searchdialog" oninput="applyfilter()" hidden>
+			<div>
+				<input id="filter" placeholder="search..." autocomplete="off"></input>
+			</div>
+			<div id="filteredlist" hidden></div>
+		</div>
+
+		<div id="notepage">
+			<div id="topbar" onclick="ontopbarclick()">
+				<span id="titlecontainer">
+					<input id="title" onchange="ontitlechange()" hidden/>
+				</span>
+				<span id="mark">&nbsp;</span>
+			</div>
+
+			<div id="notecontent">
+			    <textarea id="md" spellcheck="false" oninput="notecontentchanged()" onkeydown="editorkeydown()" ondblclick="checkfolding()"></textarea>
+			    <div hidden id="preview"></div>
+			</div>
+		</div>
+
+	</body>
+</html>

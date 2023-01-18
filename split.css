@@ -1,0 +1,21 @@
+body {
+	margin: 0;
+}
+
+div {
+	width: 100%;
+}
+
+iframe {
+	width: 50%;
+	height: 100%;
+	border: none;
+}
+
+#left {
+	float: left;	
+}
+
+#right {
+	float: right;	
+}

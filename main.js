@@ -1071,11 +1071,14 @@ function resize()
 {
 	if (md.clientHeight > md.scrollHeight) return;
 
-	md.rows = (md.value.match(/\n/g) || []).length + 1;
+	console.log("resize");
+	md.style.height = md.scrollHeight + 'px';
+
+	/*md.rows = (md.value.match(/\n/g) || []).length + 1;
 	while (md.scrollHeight > md.clientHeight)
 	{
 		md.rows *= 1.5;
-	}
+	}*/
 }
 
 function putontop()
@@ -1156,6 +1159,7 @@ function showhelp()
 
 	help.push("## Libs");
 	help.push("[Showdown](https://showdownjs.com/)");
+	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");
 
 	help.push("## Inspiration");
 	help.push("[rwtxt](https://rwtxt.com)");
@@ -1283,6 +1287,10 @@ function mainkeydownhandler()
 			event.preventDefault();
 			searchdialog.hidden = true;
 			md.focus();
+		}
+		else if (currentnote.title == "Help")
+		{
+			loadlast();
 		}
 		else if (preview.hidden == false)
 		{

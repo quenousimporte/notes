@@ -10,7 +10,7 @@ var defaultsettings =
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> "];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— "];
 var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 
@@ -224,6 +224,12 @@ var snippets = [
 	hint: "Standard answer (en)",
 	insert: "Hello ,\n\n\n\nKind regards,\nSimon",
 	cursor: -24
+},
+{
+	command: "/-",
+	hint: "Dialog mark",
+	insert: "— ",
+	cursor: 0
 }];
 
 function showinternallinks()
@@ -368,7 +374,7 @@ function share(html)
 	{
 		navigator.share(
 		{
-			text: html ? "<html>" + md2html(getnotecontent()) + "</html>": getnotecontent(),
+			text: html ? md2html(getnotecontent()) : getnotecontent(),
 			title: currentnote.title
 		});	
 	}	
@@ -494,14 +500,9 @@ function checksaved()
 	}	
 }
 
-function init()
+function initsnippets()
 {
-	loadsettings();
-
-	window.onbeforeunload = checksaved;
-	window.onclick = focuseditor;
-	window.onstorage = loadstorage;
-
+	// code languages
 	codelanguages.forEach(lang =>
 	{
 		if (!snippets.includes(s => s.command == "/" + lang))
@@ -515,6 +516,28 @@ function init()
 			});
 		}
 	});
+
+	// md headings
+	for (var i = 1; i <= 3; i++)
+	{
+		snippets.push(
+		{
+			command: "/" + i,
+			hint: "Heading " + i,
+			insert: "#".repeat(i) + " ",
+			cursor: 0
+		});
+	}
+}
+
+function init()
+{
+	loadsettings();
+
+	window.onbeforeunload = checksaved;
+	window.onclick = focuseditor;
+	
+	initsnippets();
 
 	if (settings.remote)
 	{
@@ -536,6 +559,7 @@ function init()
 
 	if (issplit())
 	{
+		window.onstorage = loadstorage;
 		if (settings.defaultpreviewinsplit && name == "right")
 		{
 			togglepreview();	

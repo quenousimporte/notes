@@ -1301,7 +1301,15 @@ function notecontentchanged()
 {
 	resize();
 	markunsaved("⇅");
-	delay().then(save);
+
+	if (isremote())
+	{
+		delay().then(save);
+	}
+	else
+	{
+		save();
+	}	
 }
 
 function loadtodo()

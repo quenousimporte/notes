@@ -3,8 +3,6 @@
 body {
 	margin-left: 5%;
 	margin-right: 5%;
-	font-size: 90%;
-	line-height: 130%;
 	caret-color: #5AA7CE;
 }
 
@@ -45,6 +43,7 @@ body::-webkit-scrollbar-thumb {
 	outline: none;
 	border: none;
 	width: 100%;
+	color: inherit;
 
 	resize: none;
 	

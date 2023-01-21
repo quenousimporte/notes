@@ -3,10 +3,13 @@ var defaultsettings =
 	savedelay: 1000,
 	bgcolor: "white",
 	fontfamily: "'Inconsolata', 'Consolas', monospace",
+	fontsize: "90%",
+	fontcolor: "black",
+	lineheight: "130%",
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
-	remote: false,
-	enablefolding: false
+	enablefolding: false,
+	tagautocomplete: false
 };
 
 //builtin
@@ -23,6 +26,9 @@ var backup = "";
 var localdata = null;
 var saved = true;
 var settings = null;
+var tags = null;
+var currentvault = "";
+var currenttag = "";
 
 var commands = [
 {
@@ -164,10 +170,10 @@ var commands = [
 	action: togglesplit
 },
 {
-	hint: "Open last modified note",
+	hint: "Load previous note",
 	savedonly: true,
-	action: loadlast,
-	shortcut: "ctrl+l"
+	action: loadprevious,
+	shortcut: "ctrl+b"
 },
 {
 	hint: "Sort text",
@@ -190,14 +196,25 @@ var commands = [
 	action: restoresettings	
 },
 {
-	hint: "Document outline",
+	hint: "Note outline",
 	savedonly: true,
-	action: showoutline		
+	action: showoutline,
+	shortcut: "ctrl+o"
 },
 {
 	hint: "Internal links",
 	savedonly: true,
 	action: showinternallinks		
+},
+{
+	hint: "Switch vault",
+	savedonly: true,
+	action: switchvault,
+	shortcut: "ctrl+shift+V"
+},
+{
+	hint: "Add tag filter",
+	action: addtagfilter	
 }];
 
 var snippets = [
@@ -232,13 +249,43 @@ var snippets = [
 	cursor: 0
 }];
 
+function addtagfilter()
+{
+	var command = commands.find(c => c.action == addtagfilter);
+	
+	if (!currenttag)
+	{
+		tagslist()
+		.then(t => 
+			{
+				currenttag = t;
+				command.hint = "Remove tag filter '" + currenttag + "'";
+			});		
+	}
+	else
+	{
+		currenttag = "";
+		command.hint = "Add tag filter";
+	}
+}
+
+function switchvault()
+{
+	var other = othervault();
+	if (confirm("Switch to " + other + "?"))
+	{
+		window.localStorage.setItem("vault", other);
+		init();
+	}	
+}
+
 function showinternallinks()
 {
 	searchinlist(
 		getnotecontent()
 		.match(/\[\[([^\]]*)\]\]/g || [])
 		.map(l => l.replace("[[", "").replace("]]", "")))
-	.then(loadfile);	
+	.then(loadnote);	
 }
 
 function showoutline()
@@ -262,6 +309,78 @@ function showoutline()
 		md.setSelectionRange(outline[line], outline[line]);
 		md.focus();
 	});
+}
+
+function linkatpos()
+{
+	var s = md.selectionStart;
+	while (s > 2 && md.value[s] != "\n")
+	{
+		if (md.value.substring(s - 2, s) == "[[")
+		{
+			var e = md.selectionStart;
+			while (e < md.value.length - 2 && md.value[e-2] != "\n")
+			{
+				if (md.value.substring(e, e + 2) == "]]")
+				{
+					return md.value.substring(s, e);
+				}
+				e++;
+			}
+		}
+		s--;
+	}
+	return "";
+}
+
+function tagatpos()
+{
+	if (md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+	{
+		var s = md.selectionStart;
+		while (s > 1 && md.value[s] != "\n")
+		{
+			var c = md.value[s-1];
+			if (c == " " || c == ",")
+			{
+				var e = md.selectionStart;
+				while (e < md.value.length - 1 && md.value[e-1] != "\n")
+				{
+					c = md.value[e];
+					if (c == " " || c == "," || c == "\n")
+					{
+						return md.value.substring(s, e);
+					}
+					e++;
+				}
+			}
+			s--;
+		}
+		return "";
+	}
+}
+
+function clickeditor()
+{
+	if (event.ctrlKey)
+	{
+		var link = linkatpos();
+		var tag = tagatpos();
+		if (link)
+		{
+			loadnote(link);
+		}
+		else if (tag)
+		{
+			tagslist();
+			searchinlist(tags[tag])
+			.then(loadnote);
+		}
+		else
+		{
+			checkfolding();
+		}
+	}
 }
 
 function restoresettings()
@@ -295,7 +414,7 @@ function showtemporaryinfo(str)
 
 function wordcount()
 {
-	showtemporaryinfo(getnotecontent().split(/\s+\b/).length);
+	showtemporaryinfo(getnotecontent().split(/\s+\b/).length + " words");
 }
 
 function issplit()
@@ -315,15 +434,23 @@ function togglesplit()
 	}
 }
 
-function logout()
+function isremote()
 {
-	window.localStorage.removeItem("password");
-	togglepassword();
+	return currentvault == "remote";
 }
 
-function searchtags()
+function logout()
 {
-	var tags = {};
+	if (isremote())
+	{
+		window.localStorage.removeItem("password");
+		togglepassword();	
+	}	
+}
+
+function tagslist()
+{
+	tags = {};
 
 	localdata
 	.filter(n => !n.title.startsWith("."))
@@ -337,9 +464,14 @@ function searchtags()
 		});
 	});
 
-	searchinlist(Object.keys(tags).sort())
+	return searchinlist(Object.keys(tags).sort());
+}
+
+function searchtags()
+{
+	tagslist()
 	.then(tag => searchinlist(tags[tag]))
-	.then(loadfile);
+	.then(loadnote);
 }
 
 function gettags(note)
@@ -410,7 +542,7 @@ function downloadnotes()
 
 function downloadlocal()
 {
-	download(timestamp() + " " + (window.location.hostname || "serverless") + " notes.json", JSON.stringify(localdata));
+	download(timestamp() + " " + currentvault + " notes.json", JSON.stringify(localdata));
 }
 
 function downloadnote()
@@ -422,14 +554,14 @@ function serialize()
 {
 	putontop();
 
-	window.localStorage.setItem("data", JSON.stringify(localdata));
+	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
 
 	if (currentnote.title == "settings.json")
 	{
 		window.localStorage.setItem("settings", getnotecontent());
 	}
 
-	if (settings.remote)
+	if (isremote())
 	{
 		clearTimeout(timeoutid);
 		timeoutid = setTimeout(push, settings.savedelay);		
@@ -452,7 +584,8 @@ function remotecallfailed(error)
 
 function loadstorage()
 {
-	var item = window.localStorage.getItem("data");
+	currentvault = window.localStorage.getItem("vault");
+	var item = window.localStorage.getItem(currentvault);
 	localdata = item ? JSON.parse(item) : [];
 
 	if (currentnote)
@@ -485,6 +618,9 @@ function loadsettings()
 
 	document.body.style.background = settings.bgcolor;
 	document.body.style.fontFamily = settings.fontfamily;
+	document.body.style.fontSize = settings.fontsize;
+	document.body.style.lineHeight = settings.lineheight;
+	document.body.style.color = settings.fontcolor;
 
 	if (!settings.enablefolding)
 	{
@@ -505,7 +641,7 @@ function initsnippets()
 	// code languages
 	codelanguages.forEach(lang =>
 	{
-		if (!snippets.includes(s => s.command == "/" + lang))
+		if (!snippets.find(s => s.command == "/" + lang))
 		{
 			snippets.push(
 			{
@@ -520,28 +656,44 @@ function initsnippets()
 	// md headings
 	for (var i = 1; i <= 3; i++)
 	{
-		snippets.push(
+		if (!snippets.find(s => s.command ==  "/" + i))
 		{
-			command: "/" + i,
-			hint: "Heading " + i,
-			insert: "#".repeat(i) + " ",
-			cursor: 0
-		});
+			snippets.push(
+			{
+				command: "/" + i,
+				hint: "Heading " + i,
+				insert: "#".repeat(i) + " ",
+				cursor: 0
+			});
+		}
 	}
+}
+
+function othervault()
+{
+	return isremote() ? "local" : "remote";
+}
+
+function initvault()
+{
+	currentvault = window.localStorage.getItem("vault") || "local";
 }
 
 function init()
 {
 	loadsettings();
+	initvault();
+
+	commands.find(c => c.action == switchvault).hint = "Switch to " + othervault() + " vault";
 
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
 	
 	initsnippets();
 
-	if (settings.remote)
+	if (isremote())
 	{
-		markunsaved();
+		markunsaved("*");
 		queryremote({action: "fetch"})
 		.then(data =>
 		{
@@ -553,7 +705,6 @@ function init()
 	}
 	else
 	{
-		delete commands.find(c => c.action == push).action;
 		loadstorage();
 	}
 
@@ -582,6 +733,12 @@ function togglepassword()
 
 function push()
 {
+	if (!isremote())
+	{
+		console.log("local vault, no push");
+		return;
+	}
+
 	if (localdata)
 	{
 		clearTimeout(timeoutid);
@@ -595,7 +752,7 @@ function push()
 			}
 			else
 			{
-				console.warn("Content changed");
+				console.warn("Content changed in the meantime, mark as not saved");
 				timeoutid = setTimeout(push, settings.savedelay);
 			}
 		})
@@ -645,7 +802,7 @@ function queryremote(params)
 					{
 						if (data.error == "authent")
 						{
-							failed(null);
+							failed();
 							togglepassword();
 						}
 						else
@@ -826,6 +983,7 @@ function checkfolding()
 	}
 	else if (isfold(line))
 	{
+		event.preventDefault();
 		unfold();
 	}
 }
@@ -882,19 +1040,27 @@ function md2html(content)
 	var html = converter.makeHtml(content);
 
 	// internal links
-	html = html.replace(/\[\[([^\]]*)\]\]/g, "<a href='#' onclick='loadfile(\"$1\");'>$1</a>");
+	html = html.replace(/\[\[([^\]]*)\]\]/g, "<a href='#' onclick='loadnote(\"$1\");'>$1</a>");
 
 	return html;
 }
 
 function list()
 {
-	return localdata.map(n => n.title).filter(t => !t.startsWith("."));
+	return localdata
+	.filter(n => currenttag == "" || gettags(n).includes(currenttag))
+	.map(n => n.title)
+	.filter(t => !t.startsWith("."));
 }
 
 function loadlast()
 {
-	loadfile(list().shift() || timestamp());
+	loadnote(list().shift() || timestamp());
+}
+
+function loadprevious()
+{
+	loadnote(list()[1]);
 }
 
 function grep(needle)
@@ -1119,9 +1285,25 @@ function notecontentchanged()
 	markunsaved("*");
 
 	// check snippets and autocomplete
+	// should we move this on key down? to cancel when backspace?
 	if (before(2) == "[[")
 	{
 		searchautocomplete();
+	}
+	else if (settings.tagautocomplete && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+	{
+		// search in tags list
+		if (before(2) == ", ")
+		{
+			console.log(event.key);
+			tagslist()
+			.then(tag => 
+			{
+				insert(tag);
+				notecontentchanged();
+				md.focus();
+			})
+		}
 	}
 	else
 	{
@@ -1135,7 +1317,7 @@ function notecontentchanged()
 
 	// save
 	var content = getnotecontent();
-	if (content == "" || content == "null" || content == "undefined")
+	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		console.warn("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
 	}
@@ -1148,12 +1330,12 @@ function notecontentchanged()
 
 function loadtodo()
 {
-	loadfile("todo");
+	loadnote("todo");
 }
 
 function loadquicknote()
 {
-	loadfile("Quick note");
+	loadnote("Quick note");
 }
 
 function timestamp()
@@ -1163,7 +1345,7 @@ function timestamp()
 
 function startnewnote()
 {
-	loadfile(timestamp());
+	loadnote(timestamp());
 }
 
 function showhelp()
@@ -1229,7 +1411,7 @@ function searchautocomplete()
 
 function searchandloadnote()
 {
-	selectnote().then(loadfile);
+	selectnote().then(loadnote);
 }
 
 function rename(newname)
@@ -1251,6 +1433,7 @@ function rename(newname)
 
 	currentnote.title = newname;
 
+	markunsaved("*");
 	serialize();
 	return "";
 }
@@ -1259,7 +1442,7 @@ function deletenote()
 {
 	if (confirm('delete "' + currentnote.title + '"?'))
 	{
-		var error = rename(".deleted_" + currentnote.title)
+		var error = rename(".deleted_" + currentnote.title);
 		if (!error)
 		{
 			loadlast();
@@ -1389,12 +1572,12 @@ function editorkeydown()
 {
 	if (event.key == "Enter")
 	{
-		var currentline = md.value.substring(0, getpos()).split("\n").pop();
-		markerslist.filter(marker => currentline.startsWith(marker))
+		var line = md.value.substring(0, getpos()).split("\n").pop();
+		markerslist.filter(marker => line.startsWith(marker))
 		.forEach(marker =>
 		{
 			event.preventDefault();
-			if (currentline != marker)
+			if (line != marker)
 			{
 				insert("\n" + marker);
 			}
@@ -1473,7 +1656,7 @@ function bindfile(note)
 	}
 }
 
-function loadfile(name)
+function loadnote(name)
 {
 	var note = localdata.find(n => n.title == name);
 	if (!note)
@@ -1488,6 +1671,7 @@ function loadfile(name)
 	}
 
 	bindfile(note);
+	putontop();
 }
 
 function sendpassword()

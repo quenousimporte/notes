@@ -150,8 +150,8 @@ var commands = [
 	action: downloadnotes
 }*/,
 {
-	hint: "Force push",
-	action: pushtoremote,
+	hint: "Force save",
+	action: save,
 	shortcut: "ctrl+s"
 },
 {

@@ -9,7 +9,8 @@ var defaultsettings =
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
 	enablefolding: false,
-	tagautocomplete: false
+	tagautocomplete: false,
+	light: false
 };
 
 //builtin
@@ -76,7 +77,7 @@ var commands = [
 	action: loadquicknote
 },
 {
-	shortcut: "ctrl+shift+F",
+	shortcut: "ctrl+g",
 	hint: "Find in notes",
 	savedonly: true,
 	action: showgrep
@@ -150,7 +151,7 @@ var commands = [
 }*/,
 {
 	hint: "Force push",
-	action: push,
+	action: pushtoremote,
 	shortcut: "ctrl+s"
 },
 {
@@ -214,7 +215,9 @@ var commands = [
 },
 {
 	hint: "Add tag filter",
-	action: addtagfilter	
+	action: addtagfilter,
+	shortcut: "ctrl+shift+F",
+	savedonly: true
 }];
 
 var snippets = [
@@ -260,12 +263,14 @@ function addtagfilter()
 			{
 				currenttag = t;
 				command.hint = "Remove tag filter '" + currenttag + "'";
-			});		
+				setwindowtitle();
+			});	
 	}
 	else
 	{
 		currenttag = "";
 		command.hint = "Add tag filter";
+		setwindowtitle();
 	}
 }
 
@@ -403,12 +408,6 @@ function editsettings()
 
 function showtemporaryinfo(str)
 {
-	/*var prev = mark.textContent;
-	mark.textContent = str;
-	setTimeout(function()
-	{
-		mark.textContent = prev;
-	}, 5000);*/
 	alert(str);
 }
 
@@ -550,26 +549,44 @@ function downloadnote()
 	download(currentnote.title + ".md", getnotecontent());
 }
 
-function serialize()
+function delay()
 {
-	putontop();
-
-	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
-
-	if (currentnote.title == "settings.json")
-	{
-		window.localStorage.setItem("settings", getnotecontent());
-	}
-
-	if (isremote())
+	return new Promise(function(apply)
 	{
 		clearTimeout(timeoutid);
-		timeoutid = setTimeout(push, settings.savedelay);		
+		timeoutid = setTimeout(apply, settings.savedelay);
+	});
+}
+
+function save()
+{
+	var content = getnotecontent();
+	
+	if ((content == "" && backup != "") || content == "null" || content == "undefined")
+	{
+		console.warn("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
 	}
 	else
 	{
-		marksaved();
+		currentnote.content = content;
+		window.localStorage.setItem(currentvault, JSON.stringify(localdata));
+
+		if (currentnote.title == "settings.json")
+		{
+			window.localStorage.setItem("settings", content);
+		}
+		console.log("data serialized in local storage")
+
+		if (isremote())
+		{
+			pushtoremote();
+		}
+		else
+		{
+			marksaved();
+		}
 	}
+
 }
 
 function remotecallfailed(error)
@@ -693,7 +710,6 @@ function init()
 
 	if (isremote())
 	{
-		markunsaved("*");
 		queryremote({action: "fetch"})
 		.then(data =>
 		{
@@ -731,13 +747,14 @@ function togglepassword()
 	password.focus();
 }
 
-function push()
+function pushtoremote()
 {
 	if (!isremote())
 	{
 		console.log("local vault, no push");
 		return;
 	}
+	console.log("sending data to php server");
 
 	if (localdata)
 	{
@@ -745,15 +762,15 @@ function push()
 		var content = getnotecontent();
 		queryremote({action: "push", data: JSON.stringify(localdata)})
 		.then(() => {
-			console.log("Data sent to server");
+			console.log("data saved on server");
 			if (getnotecontent() == content)
 			{
 				marksaved();
 			}
 			else
 			{
-				console.warn("Content changed in the meantime, mark as not saved");
-				timeoutid = setTimeout(push, settings.savedelay);
+				console.warn("Content changed in the meantime, keep as unsaved");
+				save();
 			}
 		})
 		.catch(remotecallfailed);
@@ -1193,7 +1210,6 @@ function searchinlist(list)
 
 		filteredlist.innerHTML = "";
 		filter.value = "";
-		filter.focus();
 
 		list.forEach(item =>
 		{
@@ -1220,6 +1236,8 @@ function searchinlist(list)
 				selectitem(selected ? selected.textContent : filter.value);
 			}
 		}
+
+		filter.focus();
 	});
 }
 
@@ -1282,50 +1300,42 @@ function putontop()
 
 function notecontentchanged()
 {
-	markunsaved("*");
-
-	// check snippets and autocomplete
-	// should we move this on key down? to cancel when backspace?
-	if (before(2) == "[[")
+	if (!settings.light)
 	{
-		searchautocomplete();
-	}
-	else if (settings.tagautocomplete && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
-	{
-		// search in tags list
-		if (before(2) == ", ")
+		// check snippets and autocomplete
+		// should we move this on key down? to cancel when backspace?
+		if (before(2) == "[[")
 		{
-			console.log(event.key);
-			tagslist()
-			.then(tag => 
+			searchautocomplete();
+		}
+		else if (settings.tagautocomplete && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+		{
+			// search in tags list
+			if (before(2) == ", ")
 			{
-				insert(tag);
-				notecontentchanged();
-				md.focus();
-			})
+				console.log(event.key);
+				tagslist()
+				.then(tag => 
+				{
+					insert(tag);
+					notecontentchanged();
+					md.focus();
+				})
+			}
 		}
-	}
-	else
-	{
-		var snippet = snippets.find(s => before(s.command.length) == s.command);
-		if (snippet)
+		else
 		{
-			insert(snippet.insert, snippet.cursor, snippet.command.length);
+			var snippet = snippets.find(s => before(s.command.length) == s.command);
+			if (snippet)
+			{
+				insert(snippet.insert, snippet.cursor, snippet.command.length);
+			}
 		}
 	}
-	resize();
 
-	// save
-	var content = getnotecontent();
-	if ((content == "" && backup != "") || content == "null" || content == "undefined")
-	{
-		console.warn("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
-	}
-	else
-	{
-		currentnote.content = content;
-		serialize();
-	}
+	resize();
+	markunsaved("*");
+	delay().then(save);
 }
 
 function loadtodo()
@@ -1434,7 +1444,7 @@ function rename(newname)
 	currentnote.title = newname;
 
 	markunsaved("*");
-	serialize();
+	save();
 	return "";
 }
 
@@ -1533,6 +1543,15 @@ function mainkeydownhandler()
 	});
 }
 
+function setwindowtitle()
+{
+	document.title = title.value;
+	if (currenttag)
+	{
+		document.title = "tag:" + currenttag + " - " + document.title;
+	}
+}
+
 function ontitlechange()
 {
 	var oldname = currentnote.title;
@@ -1541,7 +1560,7 @@ function ontitlechange()
 	if (!error)
 	{
 		console.log("'" + oldname + "' renamed to '" + currentnote.title + "'");
-		document.title = title.value;
+		setwindowtitle();
 	}
 	else
 	{
@@ -1640,7 +1659,7 @@ function bindfile(note)
 	backup = note.content;
 	currentnote = note;
 	title.value = note.title;
-	document.title = note.title;
+	setwindowtitle();
 
 	setnotecontent(note.content || "");
 	preview.innerHTML = md2html(getnotecontent());

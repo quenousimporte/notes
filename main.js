@@ -1181,7 +1181,6 @@ function commandpalette()
 			if (snippet)
 			{
 				insert(snippet.insert, snippet.cursor);
-				notecontentchanged();
 				md.focus();
 			}
 		}
@@ -1197,7 +1196,7 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 	+ text
 	+ content.substring(pos);
 	setpos(pos - nbtodelete + text.length + cursoroffset);
-	resize();
+	notecontentchanged();
 }
 
 function searchinlist(list)
@@ -1300,39 +1299,6 @@ function putontop()
 
 function notecontentchanged()
 {
-	if (!settings.light)
-	{
-		// check snippets and autocomplete
-		// should we move this on key down? to cancel when backspace?
-		if (before(2) == "[[")
-		{
-			searchautocomplete();
-		}
-		else if (settings.tagautocomplete && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
-		{
-			// search in tags list
-			if (before(2) == ", ")
-			{
-				console.log(event.key);
-				tagslist()
-				.then(tag => 
-				{
-					insert(tag);
-					notecontentchanged();
-					md.focus();
-				})
-			}
-		}
-		else
-		{
-			var snippet = snippets.find(s => before(s.command.length) == s.command);
-			if (snippet)
-			{
-				insert(snippet.insert, snippet.cursor, snippet.command.length);
-			}
-		}
-	}
-
 	resize();
 	markunsaved("*");
 	delay().then(save);
@@ -1585,6 +1551,7 @@ function backspace(nb)
 	var c = md.value;
 	md.value = c.substring(0, pos - nb) + c.substring(pos);
 	setpos(pos - nb);
+	notecontentchanged();
 }
 
 function editorkeydown()
@@ -1604,7 +1571,6 @@ function editorkeydown()
 			{
 				backspace(marker.length);
 			}
-			notecontentchanged();
 		});
 	}
 	else if (event.key === "Tab")
@@ -1622,13 +1588,39 @@ function editorkeydown()
 			insert("    ");
 		}*/
 	}
+	else if (event.key === "[" && before(1) == "[")
+	{
+		event.preventDefault();
+		insert("[");
+		searchautocomplete();
+	}
+	else if (settings.tagautocomplete && event.key == " " && before(1) == "," && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+	{
+		event.preventDefault();
+		// search in tags list
+		console.log(event.key);
+		tagslist()
+		.then(tag => 
+		{
+			insert(" " + tag);
+			md.focus();
+		})
+	}
+	else if (!settings.light)
+	{
+		var snippet = snippets.find(s => before(s.command.length - 1) + event.key == s.command);
+		if (snippet)
+		{
+			event.preventDefault();
+			insert(snippet.insert, snippet.cursor, snippet.command.length - 1);
+		}
+	}
 }
 
 function insertautocomplete(selectednote)
 {
 	md.focus();
 	insert(selectednote + "]] ");
-	notecontentchanged();
 }
 
 function togglepreview()

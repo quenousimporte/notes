@@ -1300,7 +1300,7 @@ function putontop()
 function notecontentchanged()
 {
 	resize();
-	markunsaved("*");
+	markunsaved("⇅");
 	delay().then(save);
 }
 
@@ -1409,7 +1409,7 @@ function rename(newname)
 
 	currentnote.title = newname;
 
-	markunsaved("*");
+	markunsaved("⇅");
 	save();
 	return "";
 }

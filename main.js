@@ -279,6 +279,7 @@ function switchvault()
 	var other = othervault();
 	if (confirm("Switch to " + other + "?"))
 	{
+		clearInterval(workerid);
 		window.localStorage.setItem("vault", other);
 		init();
 	}	
@@ -743,6 +744,7 @@ function init()
 
 function togglepassword()
 {
+	clearInterval(workerid);
 	password.value = "";
 	authentpage.hidden = false;
 	notepage.style.display = "none";

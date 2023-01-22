@@ -1464,6 +1464,11 @@ function splitshortcut(s)
 
 function mainkeydownhandler()
 {
+	if (settings.light)
+	{
+		return;
+	}
+
 	if (event.key == "Escape")
 	{
 		if (!searchdialog.hidden)
@@ -1595,7 +1600,7 @@ function editorkeydown()
 		insert("[");
 		searchautocomplete();
 	}
-	else if (settings.tagautocomplete && event.key == " " && before(1) == "," && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+	else if (!settings.light && settings.tagautocomplete && event.key == " " && before(1) == "," && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
 	{
 		event.preventDefault();
 		// search in tags list

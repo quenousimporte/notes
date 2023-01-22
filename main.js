@@ -619,9 +619,12 @@ function loadsettings()
 	if (item)
 	{
 		item = JSON.parse(item);
-		for (var key in item)
+		for (var key in settings)
 		{
-			settings[key] = item[key];
+			if (item[key])
+			{
+				settings[key] = item[key];	
+			}
 		}
 	}
 

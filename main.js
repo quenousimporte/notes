@@ -1,6 +1,6 @@
 var defaultsettings = 
 {
-	savedelay: 1000,
+	savedelay: 5000,
 	bgcolor: "white",
 	fontfamily: "'Inconsolata', 'Consolas', monospace",
 	fontsize: "90%",
@@ -21,7 +21,7 @@ var codelanguages = ["xml", "js", "sql"];
 // globals
 var currentnote = null;
 var fileindex = 0;
-var timeoutid = null;
+var workerid = null;
 var folds = [];
 var backup = "";
 var localdata = null;
@@ -549,15 +549,6 @@ function downloadnote()
 	download(currentnote.title + ".md", getnotecontent());
 }
 
-function delay()
-{
-	return new Promise(function(apply)
-	{
-		clearTimeout(timeoutid);
-		timeoutid = setTimeout(apply, settings.savedelay);
-	});
-}
-
 function save()
 {
 	var content = getnotecontent();
@@ -696,6 +687,17 @@ function initvault()
 	currentvault = window.localStorage.getItem("vault") || "local";
 }
 
+function startworker()
+{
+	workerid = setInterval(function()
+	{
+		if (!saved)
+		{
+			save();	
+		}
+	}, settings.savedelay);
+}
+
 function init()
 {
 	loadsettings();
@@ -713,15 +715,16 @@ function init()
 		queryremote({action: "fetch"})
 		.then(data =>
 		{
-			marksaved();
 			localdata = data;
 			loadlast();
+			startworker();
 		})
 		.catch(remotecallfailed);
 	}
 	else
 	{
 		loadstorage();
+		startworker();
 	}
 
 	if (issplit())
@@ -749,16 +752,11 @@ function togglepassword()
 
 function pushtoremote()
 {
-	if (!isremote())
-	{
-		console.log("local vault, no push");
-		return;
-	}
 	console.log("sending data to php server");
+	markunsaved("⇅");
 
 	if (localdata)
 	{
-		clearTimeout(timeoutid);
 		var content = getnotecontent();
 		queryremote({action: "push", data: JSON.stringify(localdata)})
 		.then(() => {
@@ -770,7 +768,7 @@ function pushtoremote()
 			else
 			{
 				console.warn("Content changed in the meantime, keep as unsaved");
-				save();
+				markunsaved("*");
 			}
 		})
 		.catch(remotecallfailed);
@@ -1278,7 +1276,7 @@ function resize()
 {
 	if (md.clientHeight > md.scrollHeight) return;
 
-	console.log("resize");
+	//console.log("resize");
 	md.style.height = md.scrollHeight + 'px';
 
 	/*md.rows = (md.value.match(/\n/g) || []).length + 1;
@@ -1300,16 +1298,7 @@ function putontop()
 function notecontentchanged()
 {
 	resize();
-	markunsaved("⇅");
-
-	if (isremote())
-	{
-		delay().then(save);
-	}
-	else
-	{
-		save();
-	}	
+	markunsaved("*");
 }
 
 function loadtodo()
@@ -1417,8 +1406,7 @@ function rename(newname)
 
 	currentnote.title = newname;
 
-	markunsaved("⇅");
-	save();
+	markunsaved("*");
 	return "";
 }
 

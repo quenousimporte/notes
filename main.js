@@ -1,11 +1,12 @@
 var defaultsettings = 
 {
-	savedelay: 5000,
 	bgcolor: "white",
 	fontfamily: "'Inconsolata', 'Consolas', monospace",
 	fontsize: "90%",
 	fontcolor: "black",
 	lineheight: "130%",
+
+	savedelay: 5000,
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
 	enablefolding: false,
@@ -30,6 +31,34 @@ var settings = null;
 var tags = null;
 var currentvault = "";
 var currenttag = "";
+
+var themes = 
+{
+	Default:
+	{
+		bgcolor: "white",
+		fontfamily: "'Inconsolata', 'Consolas', monospace",
+		fontsize: "90%",
+		fontcolor: "black",
+		lineheight: "130%"
+	},
+	Notion:
+	{
+		bgcolor: "white",
+	    fontfamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
+	    fontsize: "16px",
+	    fontcolor: "rgb(55,53,47)",
+	    lineheight: "24px"
+	},
+	Monkey:
+	{
+		bgcolor: "rgb(227,227,227)",
+		fontfamily: "'Hack', 'Consolas', monospace",
+		fontsize: "14px",
+		fontcolor: "rgb(55,55,55)",
+		lineheight: "26px"
+	}
+};
 
 var commands = [
 {
@@ -218,6 +247,11 @@ var commands = [
 	action: addtagfilter,
 	shortcut: "ctrl+shift+F",
 	savedonly: true
+},
+{
+	hint: "Select theme",
+	savedonly: true,
+	action: selecttheme
 }];
 
 var snippets = [
@@ -251,6 +285,20 @@ var snippets = [
 	insert: "— ",
 	cursor: 0
 }];
+
+function selecttheme()
+{
+	searchinlist(Object.keys(themes))
+	.then(theme => {
+		for (var i in themes[theme])
+		{
+			settings[i] = themes[theme][i];
+		}
+		applystyle();
+		resize();
+		window.localStorage.setItem("settings", JSON.stringify(settings));
+	});
+}
 
 function addtagfilter()
 {
@@ -612,6 +660,15 @@ function loadstorage()
 	}
 }
 
+function applystyle()
+{
+	document.body.style.background = settings.bgcolor;
+	document.body.style.fontFamily = settings.fontfamily;
+	document.body.style.fontSize = settings.fontsize;
+	document.body.style.lineHeight = settings.lineheight;
+	document.body.style.color = settings.fontcolor;	
+}
+
 function loadsettings()
 {
 	settings = {...defaultsettings};
@@ -628,11 +685,7 @@ function loadsettings()
 		}
 	}
 
-	document.body.style.background = settings.bgcolor;
-	document.body.style.fontFamily = settings.fontfamily;
-	document.body.style.fontSize = settings.fontsize;
-	document.body.style.lineHeight = settings.lineheight;
-	document.body.style.color = settings.fontcolor;
+	applystyle();
 
 	if (!settings.enablefolding)
 	{

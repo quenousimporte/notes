@@ -1,8 +1,8 @@
 /* globals */
 
 body {
-	margin-left: 5%;
-	margin-right: 5%;
+	margin-left: 7%;
+	margin-right: 7%;
 	caret-color: #5AA7CE;
 }
 
@@ -13,6 +13,7 @@ input {
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
+	color: inherit;
 }
 
 /* scrollbars */

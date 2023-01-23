@@ -434,7 +434,7 @@ function clickeditor()
 		else if (tag)
 		{
 			tagslist();
-			searchinlist(tags[tag])
+			searchinlist(tags[tag.toLowerCase()])
 			.then(loadnote);
 		}
 		else
@@ -616,6 +616,7 @@ function save()
 	}
 	else
 	{
+		currentnote.pos = md.selectionStart;
 		currentnote.content = content;
 		window.localStorage.setItem(currentvault, JSON.stringify(localdata));
 
@@ -1732,7 +1733,7 @@ function bindfile(note)
 
 	resetfolds();
 	resize();
-	setpos(0);
+	setpos(note.pos || 0);
 
 	// to improve...
 	if (!issplit())

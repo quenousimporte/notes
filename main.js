@@ -57,6 +57,14 @@ var themes =
 		fontsize: "14px",
 		fontcolor: "rgb(55,55,55)",
 		lineheight: "26px"
+	},
+	Mariana:
+	{
+		bgcolor: "rgb(48,56,65)",
+		fontfamily: "'Consolas', monospace",
+		fontsize: "15px",
+		fontcolor: "rgb(216,222,233)",
+		lineheight: "100%"		
 	}
 };
 

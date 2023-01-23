@@ -286,18 +286,25 @@ var snippets = [
 	cursor: 0
 }];
 
+function loadtheme(theme)
+{
+	for (var i in themes[theme])
+	{
+		settings[i] = themes[theme][i];
+	}
+	applystyle();
+	resize();
+}
+
+function savesettings()
+{
+	window.localStorage.setItem("settings", JSON.stringify(settings));
+}
+
 function selecttheme()
 {
-	searchinlist(Object.keys(themes))
-	.then(theme => {
-		for (var i in themes[theme])
-		{
-			settings[i] = themes[theme][i];
-		}
-		applystyle();
-		resize();
-		window.localStorage.setItem("settings", JSON.stringify(settings));
-	});
+	searchinlist(Object.keys(themes), loadtheme)
+	.then(savesettings);
 }
 
 function addtagfilter()
@@ -441,7 +448,8 @@ function restoresettings()
 {
 	if (confirm("Restore default settings?"))
 	{
-		window.localStorage.setItem("settings", JSON.stringify(defaultsettings));
+		settings = defaultsettings;
+		savesettings();
 		loadsettings();
 	}
 }
@@ -613,7 +621,8 @@ function save()
 
 		if (currentnote.title == "settings.json")
 		{
-			window.localStorage.setItem("settings", content);
+			settings = JSON.parse(content);
+			savesettings();
 		}
 		console.log("data serialized in local storage")
 
@@ -1255,7 +1264,7 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 	notecontentchanged();
 }
 
-function searchinlist(list)
+function searchinlist(list, customevent)
 {
 	return new Promise(selectitem =>
 	{
@@ -1275,6 +1284,7 @@ function searchinlist(list)
 				searchdialog.hidden = true;
 				selectitem(item);
 			}
+			elt.customevent = customevent;
 			filteredlist.appendChild(elt);
 		});
 
@@ -1309,6 +1319,11 @@ function applyfileindex()
 				if (i++ == fileindex)
 				{
 					child.className = "selected";
+					if (child.customevent)
+					{
+						child.customevent(child.textContent);
+						filter.focus();
+					}
 				}
 			}
 		}
@@ -1432,7 +1447,7 @@ function toggletitle()
 
 function selectnote()
 {
-	return searchinlist(list());
+	return searchinlist(list()/*, loadnote*/);
 }
 
 function searchautocomplete()

@@ -5,17 +5,17 @@ var defaultsettings =
 	fontsize: "90%",
 	fontcolor: "black",
 	lineheight: "130%",
+	accentcolor: "#5AA7CE",
 
 	savedelay: 5000,
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
 	enablefolding: false,
-	tagautocomplete: false,
-	light: false
+	tagautocomplete: false
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— "];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] "];
 var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 
@@ -40,7 +40,8 @@ var themes =
 		fontfamily: "'Inconsolata', 'Consolas', monospace",
 		fontsize: "90%",
 		fontcolor: "black",
-		lineheight: "130%"
+		lineheight: "130%",
+	    accentcolor: "#5AA7CE"
 	},
 	Notion:
 	{
@@ -48,7 +49,8 @@ var themes =
 	    fontfamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
 	    fontsize: "16px",
 	    fontcolor: "rgb(55,53,47)",
-	    lineheight: "24px"
+	    lineheight: "24px",
+	    accentcolor: "rgb(55,53,47)"
 	},
 	Monkey:
 	{
@@ -56,7 +58,8 @@ var themes =
 		fontfamily: "'Hack', 'Consolas', monospace",
 		fontsize: "14px",
 		fontcolor: "rgb(55,55,55)",
-		lineheight: "26px"
+		lineheight: "24px",
+		accentcolor: "#5AA7CE"
 	},
 	Mariana:
 	{
@@ -64,7 +67,17 @@ var themes =
 		fontfamily: "'Consolas', monospace",
 		fontsize: "15px",
 		fontcolor: "rgb(216,222,233)",
-		lineheight: "100%"		
+		lineheight: "110%",
+		accentcolor: "rgb(249,174,88)"	
+	},
+	"Plus plus":
+	{
+		bgcolor: "white",
+		fontfamily: "'Courier New'",
+		fontsize: "15px",
+		fontcolor: "black",
+		lineheight: "110%",
+		accentcolor: "rgb(128,0,255)"	
 	}
 };
 
@@ -219,11 +232,6 @@ var commands = [
 	action: sortselection
 },
 {
-	hint: "Word count",
-	action: wordcount,
-	shortcut: "ctrl+w"
-},
-{
 	hint: "Settings",
 	savedonly: true,
 	action: editsettings	
@@ -260,7 +268,13 @@ var commands = [
 	hint: "Select theme",
 	savedonly: true,
 	action: selecttheme
-}];
+},
+{
+	hint: "Show note info",
+	action: showinfo,
+	shortcut: "ctrl+w"
+}
+];
 
 var snippets = [
 {
@@ -294,6 +308,19 @@ var snippets = [
 	cursor: 0
 }];
 
+function showinfo()
+{
+	var tags = gettags(currentnote);
+	var info = [ 
+		"title: " + currentnote.title + "\n",
+		"vault: " + currentvault + "\n",
+		(tags ? "tags: " + tags + "\n" : ""),
+		"state: " + (saved ? "saved\n" : "not saved\n"),
+		"word count: " + getwords()];
+
+	showtemporaryinfo(info);
+}
+
 function loadtheme(theme)
 {
 	for (var i in themes[theme])
@@ -312,7 +339,11 @@ function savesettings()
 function selecttheme()
 {
 	searchinlist(Object.keys(themes), loadtheme)
-	.then(savesettings);
+	.then(t => 
+		{
+			loadtheme(t);
+			savesettings();
+		});
 }
 
 function addtagfilter()
@@ -339,13 +370,9 @@ function addtagfilter()
 
 function switchvault()
 {
-	var other = othervault();
-	if (confirm("Switch to " + other + "?"))
-	{
-		clearInterval(workerid);
-		window.localStorage.setItem("vault", other);
-		init();
-	}	
+	clearInterval(workerid);
+	window.localStorage.setItem("vault", othervault());
+	init();
 }
 
 function showinternallinks()
@@ -471,14 +498,21 @@ function editsettings()
 	});
 }
 
-function showtemporaryinfo(str)
+function showtemporaryinfo(data)
 {
-	alert(str);
+	if (typeof data == "string")
+	{
+		data = new Array(data);
+	}
+
+	searchinlist(data)
+	.then();
+	md.focus();
 }
 
-function wordcount()
+function getwords()
 {
-	showtemporaryinfo(getnotecontent().split(/\s+\b/).length + " words");
+	return getnotecontent().split(/\s+\b/).length;
 }
 
 function issplit()
@@ -606,7 +640,12 @@ function downloadnotes()
 
 function downloadlocal()
 {
-	download(timestamp() + " " + currentvault + " notes.json", JSON.stringify(localdata));
+	var data = 
+	{
+		local : JSON.parse(window.localStorage.getItem("local")),
+		remote : JSON.parse(window.localStorage.getItem("remote"))
+	};
+	download(timestamp() + " notes.json", JSON.stringify(data));
 }
 
 function downloadnote()
@@ -684,7 +723,8 @@ function applystyle()
 	document.body.style.fontFamily = settings.fontfamily;
 	document.body.style.fontSize = settings.fontsize;
 	document.body.style.lineHeight = settings.lineheight;
-	document.body.style.color = settings.fontcolor;	
+	document.body.style.color = settings.fontcolor;
+	document.body.style.caretColor = settings.accentcolor;
 }
 
 function loadsettings()
@@ -784,6 +824,8 @@ function init()
 	window.onclick = focuseditor;
 	
 	initsnippets();
+
+	currenttag = "";
 
 	if (isremote())
 	{
@@ -1541,11 +1583,6 @@ function splitshortcut(s)
 
 function mainkeydownhandler()
 {
-	if (settings.light)
-	{
-		return;
-	}
-
 	if (event.key == "Escape")
 	{
 		if (!searchdialog.hidden)
@@ -1582,7 +1619,7 @@ function mainkeydownhandler()
 			event.preventDefault();
 			if (command.savedonly && !saved)
 			{
-				console.log("Data note saved, try again")
+				console.log("Cannot perform '" + command.hint + "' because current note is not saved.");
 			}
 			else if (command.action)
 			{
@@ -1594,11 +1631,12 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = title.value;
+	document.title = currentvault + " -";
 	if (currenttag)
 	{
-		document.title = "tag:" + currenttag + " - " + document.title;
+		document.title += " tag:" + currenttag + " -";
 	}
+	document.title += " " + currentnote.title;
 }
 
 function ontitlechange()
@@ -1677,7 +1715,7 @@ function editorkeydown()
 		insert("[");
 		searchautocomplete();
 	}
-	else if (!settings.light && settings.tagautocomplete && event.key == " " && before(1) == "," && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
+	else if (settings.tagautocomplete && event.key == " " && before(1) == "," && md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
 	{
 		event.preventDefault();
 		// search in tags list
@@ -1689,7 +1727,7 @@ function editorkeydown()
 			md.focus();
 		})
 	}
-	else if (!settings.light)
+	else
 	{
 		var snippet = snippets.find(s => before(s.command.length - 1) + event.key == s.command);
 		if (snippet)

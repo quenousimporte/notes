@@ -24,7 +24,7 @@ your password will be sent from browser to server through a POST http query with
 * notes list: ctrl+p
 * command palette: ctrl+shift+p
 
-## reclaim you data
+## reclaim your data
 
 download your notes in a single json file with ctrl+shift+s.
 

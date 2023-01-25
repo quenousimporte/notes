@@ -27,7 +27,8 @@ var workerid = null;
 var folds = [];
 var backup = "";
 var localdata = null;
-var savestate = "saved";
+var saved = true;
+var saveid = 0;
 var settings = null;
 var tags = null;
 var currentvault = "";
@@ -203,16 +204,6 @@ var commands = [
 	hint: "Download local data",
 	action: downloadlocal,
 	shortcut: "ctrl+shift+S"
-}/*,
-{
-	savedonly: true,
-	hint: "Download all notes",
-	action: downloadnotes
-}*/,
-{
-	hint: "Force save",
-	action: save,
-	shortcut: "ctrl+s"
 },
 {
 	hint: "Search tags",
@@ -325,7 +316,7 @@ function showinfo()
 		"title: " + currentnote.title + "\n",
 		"vault: " + currentvault + "\n",
 		(tags ? "tags: " + tags + "\n" : ""),
-		"state: " + savestate,
+		"saved: " + saved,
 		"word count: " + getwords()];
 
 	showtemporaryinfo(info);
@@ -380,7 +371,6 @@ function addtagfilter()
 
 function switchvault()
 {
-	clearInterval(workerid);
 	window.localStorage.setItem("vault", othervault());
 	init();
 }
@@ -593,27 +583,6 @@ function gettags(note)
 	return [];
 }
 
-function marksaved()
-{
-	savestate = "saved";
-	mark.textContent = "\xa0";
-}
-
-function markunsaved(text)
-{
-	savestate = "unsaved";
-	if (text)
-	{
-		mark.textContent = text;
-	}
-}
-
-function marksaving()
-{
-	savestate = "saving";
-	mark.textContent = "⇅";
-}
-
 function share(html)
 {
 	if (navigator.share)
@@ -669,51 +638,8 @@ function downloadnote()
 	download(currentnote.title + ".md", getnotecontent());
 }
 
-function save()
-{
-	var content = getnotecontent();
-	
-	if (savestate == "saved")
-	{
-		//console.warn("data is already saved.");
-	}
-	else if (savestate == "saving")
-	{
-		console.warn("data is already being saved.");
-	}
-	else if ((content == "" && backup != "") || content == "null" || content == "undefined")
-	{
-		console.warn("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
-	}
-	else
-	{
-		currentnote.pos = md.selectionStart;
-		currentnote.content = content;
-		window.localStorage.setItem(currentvault, JSON.stringify(localdata));
-
-		if (currentnote.title == "settings.json")
-		{
-			settings = JSON.parse(content);
-			savesettings();
-		}
-		console.log("data serialized in local storage")
-
-		if (isremote())
-		{
-			marksaving();
-			pushtoremote();
-		}
-		else
-		{
-			marksaved();
-		}
-	}
-
-}
-
 function remotecallfailed(error)
 {
-	markunsaved("!");
 	if (error)
 	{
 		console.warn(error);
@@ -782,7 +708,7 @@ function loadsettings()
 
 function checksaved()
 {
-	if (savestate != "saved")
+	if (!saved)
 	{
 		return "not saved";
 	}
@@ -831,11 +757,6 @@ function initvault()
 	currentvault = window.localStorage.getItem("vault") || "local";
 }
 
-function startworker()
-{
-	workerid = setInterval(save, settings.savedelay);
-}
-
 function init()
 {
 	loadsettings();
@@ -857,14 +778,12 @@ function init()
 		{
 			localdata = data;
 			loadlast();
-			startworker();
 		})
 		.catch(remotecallfailed);
 	}
 	else
 	{
 		loadstorage();
-		startworker();
 	}
 
 	if (issplit())
@@ -883,40 +802,11 @@ function init()
 
 function togglepassword()
 {
-	clearInterval(workerid);
 	password.value = "";
 	authentpage.hidden = false;
 	notepage.style.display = "none";
 	document.title = "notes";
 	password.focus();
-}
-
-function pushtoremote()
-{
-	console.log("sending data to php server");
-
-	if (localdata)
-	{
-		var content = getnotecontent();
-		queryremote({action: "push", data: JSON.stringify(localdata)})
-		.then(() => {
-			console.log("data saved on server");
-			if (getnotecontent() == content)
-			{
-				marksaved();
-			}
-			else
-			{
-				console.warn("Content changed in the meantime, keep as unsaved");
-				markunsaved("*");
-			}
-		})
-		.catch(remotecallfailed);
-	}
-	else
-	{
-		console.warn("Cannot push empty data");
-	}
 }
 
 function queryremote(params)
@@ -1017,7 +907,7 @@ function sortselection()
 	var selection = content.substring(range.start, range.end);
 	var sorted = selection.split("\n").sort().join("\n");
 	md.value = content.substring(0, range.start) + sorted + content.substring(range.end);
-	notecontentchanged();
+	datachanged();
 }
 
 function selectlines()
@@ -1334,7 +1224,7 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 	+ text
 	+ content.substring(pos);
 	setpos(pos - nbtodelete + text.length + cursoroffset);
-	notecontentchanged();
+	datachanged();
 }
 
 function searchinlist(list, customevent)
@@ -1441,13 +1331,73 @@ function putontop()
 	}
 }
 
-function notecontentchanged()
+function postpone()
+{
+	return new Promise(function(resolve)
+	{
+		clearTimeout(workerid);
+		workerid = setTimeout(resolve, settings.savedelay);
+	});
+}
+
+function datachanged()
 {
 	resize();
-	if (savestate != "saving")
+
+	saved = false;
+
+	postpone()
+	.then(() =>
 	{
-		markunsaved("*");
-	}	
+		var content = getnotecontent();
+
+		if ((content == "" && backup != "") || content == "null" || content == "undefined")
+		{
+			showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
+			return;
+		}
+			
+		currentnote.pos = md.selectionStart;
+		currentnote.content = content;
+
+		window.localStorage.setItem(currentvault, JSON.stringify(localdata));
+		if (currentnote.title == "settings.json")
+		{
+			settings = JSON.parse(content);
+			savesettings();
+		}
+		console.log("data serialized in local storage")
+
+		if (isremote())
+		{
+			console.log("sending data to php server...");
+
+			if (localdata)
+			{
+				queryremote({action: "push", data: JSON.stringify(localdata)})
+				.then(() => {
+
+					console.log("data saved on server.");
+					saved = true;
+
+					if (content != getnotecontent())
+					{
+						console.log("but data changed in the meantime: will try again after delay");
+						datachanged();
+					}
+				})
+				.catch(remotecallfailed);
+			}
+			else
+			{
+				showtemporaryinfo("Cannot push empty data");
+			}
+		}
+		else
+		{
+			saved = true;
+		}
+	});
 }
 
 function loadtodo()
@@ -1555,7 +1505,7 @@ function rename(newname)
 
 	currentnote.title = newname;
 
-	markunsaved("*");
+	datachanged();
 	return "";
 }
 
@@ -1580,7 +1530,7 @@ function restore()
 	if (confirm('restore "' + currentnote.title + '"?'))
 	{
 		setnotecontent(backup);
-		notecontentchanged();
+		datachanged();
 	}
 }
 
@@ -1608,7 +1558,12 @@ function splitshortcut(s)
 
 function mainkeydownhandler()
 {
-	if (event.key == "Escape")
+	if (event.key == "s" && event.ctrlKey)
+	{
+		event.preventDefault();
+		console.log("ctrl+s is useless!");
+	}
+	else if (event.key == "Escape")
 	{
 		if (!searchdialog.hidden)
 		{
@@ -1625,8 +1580,7 @@ function mainkeydownhandler()
 			togglepreview();
 		}
 	}
-
-	if (!searchdialog.hidden && (event.key == "Tab" || event.keyCode == "40" || event.keyCode == "38"))
+	else if (!searchdialog.hidden && (event.key == "Tab" || event.keyCode == "40" || event.keyCode == "38"))
 	{
 		event.preventDefault();
 		fileindex += (event.shiftKey || event.keyCode == "38") ? -1 : 1;
@@ -1634,24 +1588,26 @@ function mainkeydownhandler()
 		fileindex = Math.max(fileindex, 0);
 		applyfileindex();
 	}
-
-	commands.filter(c => c.shortcut)
-	.forEach(command =>
+	else
 	{
-		var s = splitshortcut(command.shortcut);
-		if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
+		commands.filter(c => c.shortcut)
+		.forEach(command =>
 		{
-			event.preventDefault();
-			if (command.savedonly && savestate != "saved")
+			var s = splitshortcut(command.shortcut);
+			if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
 			{
-				console.log("Cannot perform '" + command.hint + "' because current note is not saved.");
+				event.preventDefault();
+				if (command.savedonly && !saved)
+				{
+					console.log("Cannot perform '" + command.hint + "' because current note is not saved.");
+				}
+				else if (command.action)
+				{
+					command.action();
+				}			
 			}
-			else if (command.action)
-			{
-				command.action();
-			}			
-		}
-	});
+		});
+	}
 }
 
 function setwindowtitle()
@@ -1697,7 +1653,7 @@ function backspace(nb)
 	var c = md.value;
 	md.value = c.substring(0, pos - nb) + c.substring(pos);
 	setpos(pos - nb);
-	notecontentchanged();
+	datachanged();
 }
 
 function editorkeydown()

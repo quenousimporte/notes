@@ -7,7 +7,7 @@ var defaultsettings =
 	lineheight: "130%",
     accentcolor: "#5AA7CE",
 
-	savedelay: 1000,
+	savedelay: 2000,
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
 	enablefolding: false,
@@ -28,7 +28,7 @@ var folds = [];
 var backup = "";
 var localdata = null;
 var saved = true;
-var saveid = 0;
+var pending = false;
 var settings = null;
 var tags = null;
 var currentvault = "";
@@ -695,7 +695,7 @@ function loadsettings()
 		item = JSON.parse(item);
 		for (var key in settings)
 		{
-			if (item[key])
+			if (typeof item[key] !== "undefined")
 			{
 				settings[key] = item[key];	
 			}
@@ -1344,6 +1344,30 @@ function postpone()
 	});
 }
 
+function waitpending()
+{
+	return new Promise(function(resolve)
+	{
+		if (!pending)
+		{
+			resolve();
+		}
+		else
+		{
+			console.log("query already pending, waiting...");
+			var id = setInterval(() =>
+			{
+				if (!pending)
+				{
+					console.log("... clear.");
+					clearInterval(id);
+					resolve();
+				}
+			}, 100);
+		}
+	});	
+}
+
 function datachanged()
 {
 	resize();
@@ -1351,6 +1375,7 @@ function datachanged()
 	saved = false;
 
 	postpone()
+	.then(waitpending)
 	.then(() =>
 	{
 		var content = getnotecontent();
@@ -1378,19 +1403,18 @@ function datachanged()
 
 			if (localdata)
 			{
+				pending = true;
 				queryremote({action: "push", data: JSON.stringify(localdata)})
-				.then(() => {
-
+				.then(() =>
+				{
 					console.log("data saved on server.");
 					saved = true;
-
-					if (content != getnotecontent())
-					{
-						console.log("but data changed in the meantime: will try again after delay");
-						datachanged();
-					}
 				})
-				.catch(remotecallfailed);
+				.catch(remotecallfailed)
+				.finally(() =>
+				{
+					pending = false;
+				});
 			}
 			else
 			{

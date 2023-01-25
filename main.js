@@ -274,8 +274,12 @@ var commands = [
 	hint: "Show note info",
 	action: showinfo,
 	shortcut: "ctrl+w"
-}
-];
+},
+{
+	hint: "Force save",
+	action: save,
+	shortcut: "ctrl+s"
+}];
 
 var snippets = [
 {
@@ -1368,14 +1372,10 @@ function waitpending()
 	});	
 }
 
-function datachanged()
+function save()
 {
-	resize();
-
-	saved = false;
-
-	postpone()
-	.then(waitpending)
+	clearTimeout(workerid);
+	waitpending()
 	.then(() =>
 	{
 		var content = getnotecontent();
@@ -1426,6 +1426,16 @@ function datachanged()
 			saved = true;
 		}
 	});
+}
+
+function datachanged()
+{
+	resize();
+
+	saved = false;
+
+	postpone()
+	.then(save);
 }
 
 function loadtodo()
@@ -1586,12 +1596,7 @@ function splitshortcut(s)
 
 function mainkeydownhandler()
 {
-	if (event.key == "s" && event.ctrlKey)
-	{
-		event.preventDefault();
-		console.log("ctrl+s is useless!");
-	}
-	else if (event.key == "Escape")
+	if (event.key == "Escape")
 	{
 		if (!searchdialog.hidden)
 		{

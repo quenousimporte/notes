@@ -5,13 +5,14 @@ var defaultsettings =
 	fontsize: "90%",
 	fontcolor: "black",
 	lineheight: "130%",
-	accentcolor: "#5AA7CE",
+    accentcolor: "#5AA7CE",
 
-	savedelay: 5000,
+	savedelay: 1000,
 	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
 	enablefolding: false,
-	tagautocomplete: false
+	tagautocomplete: false,
+	titleinaccentcolor: false
 };
 
 //builtin
@@ -26,7 +27,7 @@ var workerid = null;
 var folds = [];
 var backup = "";
 var localdata = null;
-var saved = true;
+var savestate = "saved";
 var settings = null;
 var tags = null;
 var currentvault = "";
@@ -78,6 +79,15 @@ var themes =
 		fontcolor: "black",
 		lineheight: "110%",
 		accentcolor: "rgb(128,0,255)"	
+	},
+	Calmly:
+	{
+		bgcolor: "rgb(250,250,250)",
+		fontfamily: "'Droid Serif', serif",
+		fontsize: "20px",
+		fontcolor: "rgb(60,60,60)",
+		lineheight: "30px",
+		accentcolor: "rgb(60,60,60)"
 	}
 };
 
@@ -315,7 +325,7 @@ function showinfo()
 		"title: " + currentnote.title + "\n",
 		"vault: " + currentvault + "\n",
 		(tags ? "tags: " + tags + "\n" : ""),
-		"state: " + (saved ? "saved\n" : "not saved\n"),
+		"state: " + savestate,
 		"word count: " + getwords()];
 
 	showtemporaryinfo(info);
@@ -585,17 +595,23 @@ function gettags(note)
 
 function marksaved()
 {
-	saved = true;
+	savestate = "saved";
 	mark.textContent = "\xa0";
 }
 
 function markunsaved(text)
 {
-	saved = false;
+	savestate = "unsaved";
 	if (text)
 	{
 		mark.textContent = text;
 	}
+}
+
+function marksaving()
+{
+	savestate = "saving";
+	mark.textContent = "⇅";
 }
 
 function share(html)
@@ -657,7 +673,15 @@ function save()
 {
 	var content = getnotecontent();
 	
-	if ((content == "" && backup != "") || content == "null" || content == "undefined")
+	if (savestate == "saved")
+	{
+		//console.warn("data is already saved.");
+	}
+	else if (savestate == "saving")
+	{
+		console.warn("data is already being saved.");
+	}
+	else if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		console.warn("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
 	}
@@ -676,6 +700,7 @@ function save()
 
 		if (isremote())
 		{
+			marksaving();
 			pushtoremote();
 		}
 		else
@@ -698,7 +723,6 @@ function remotecallfailed(error)
 
 function loadstorage()
 {
-	currentvault = window.localStorage.getItem("vault");
 	var item = window.localStorage.getItem(currentvault);
 	localdata = item ? JSON.parse(item) : [];
 
@@ -725,6 +749,11 @@ function applystyle()
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.color = settings.fontcolor;
 	document.body.style.caretColor = settings.accentcolor;
+	
+	if (settings.titleinaccentcolor)
+	{
+		title.style.color = settings.accentcolor;	
+	}
 }
 
 function loadsettings()
@@ -753,10 +782,10 @@ function loadsettings()
 
 function checksaved()
 {
-	if (!saved)
+	if (savestate != "saved")
 	{
 		return "not saved";
-	}	
+	}
 }
 
 function initsnippets()
@@ -804,13 +833,7 @@ function initvault()
 
 function startworker()
 {
-	workerid = setInterval(function()
-	{
-		if (!saved)
-		{
-			save();	
-		}
-	}, settings.savedelay);
+	workerid = setInterval(save, settings.savedelay);
 }
 
 function init()
@@ -871,7 +894,6 @@ function togglepassword()
 function pushtoremote()
 {
 	console.log("sending data to php server");
-	markunsaved("⇅");
 
 	if (localdata)
 	{
@@ -1398,7 +1420,7 @@ function before(nb)
 
 function resize()
 {
-	if (md.clientHeight > md.scrollHeight) return;
+	if (md.clientHeight >= md.scrollHeight) return;
 
 	//console.log("resize");
 	md.style.height = md.scrollHeight + 'px';
@@ -1422,7 +1444,10 @@ function putontop()
 function notecontentchanged()
 {
 	resize();
-	markunsaved("*");
+	if (savestate != "saving")
+	{
+		markunsaved("*");
+	}	
 }
 
 function loadtodo()
@@ -1617,7 +1642,7 @@ function mainkeydownhandler()
 		if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
 		{
 			event.preventDefault();
-			if (command.savedonly && !saved)
+			if (command.savedonly && savestate != "saved")
 			{
 				console.log("Cannot perform '" + command.hint + "' because current note is not saved.");
 			}
@@ -1782,7 +1807,7 @@ function bindfile(note)
 	setpos(note.pos || 0);
 
 	// to improve...
-	if (!issplit())
+	if (!issplit() && searchdialog.hidden)
 	{
 		md.focus();
 	}
@@ -1808,7 +1833,7 @@ function loadnote(name)
 
 function sendpassword()
 {
-	if (event.type == "blur" || event.key == "Enter")
+	if (!authentpage.hidden && (event.type == "blur" || event.key == "Enter"))
 	{
 		event.preventDefault();
 		window.localStorage.setItem("password", password.value);

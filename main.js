@@ -85,9 +85,9 @@ var themes =
 	{
 		bgcolor: "rgb(250,250,250)",
 		fontfamily: "'Droid Serif', serif",
-		fontsize: "20px",
+		fontsize: "19px",
 		fontcolor: "rgb(60,60,60)",
-		lineheight: "30px",
+		lineheight: "28.5px",
 		accentcolor: "rgb(60,60,60)"
 	}
 };
@@ -1359,7 +1359,7 @@ function waitpending()
 			{
 				if (!pending)
 				{
-					console.log("... clear.");
+					console.log("...clear");
 					clearInterval(id);
 					resolve();
 				}

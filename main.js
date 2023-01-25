@@ -75,7 +75,7 @@ var themes =
 	"Plus plus":
 	{
 		bgcolor: "white",
-		fontfamily: "'Courier New'",
+		fontfamily: "'Consolas', 'Courier New', monospace",
 		fontsize: "15px",
 		fontcolor: "black",
 		lineheight: "110%",
@@ -505,8 +505,12 @@ function showtemporaryinfo(data)
 		data = new Array(data);
 	}
 
+	filter.placeholder = "Info";
 	searchinlist(data)
-	.then();
+	.then(() => 
+		{
+			filter.placeholder = "Search...";
+		});
 	md.focus();
 }
 
@@ -1569,9 +1573,10 @@ function mainkeydownhandler()
 		{
 			event.preventDefault();
 			searchdialog.hidden = true;
+			filter.placeholder = "Search...";
 			md.focus();
 		}
-		else if (currentnote.title == "Help")
+		else if (currentnote.title == "Help" || currentnote.title == "Search result")
 		{
 			loadlast();
 		}
@@ -1599,7 +1604,7 @@ function mainkeydownhandler()
 				event.preventDefault();
 				if (command.savedonly && !saved)
 				{
-					console.log("Cannot perform '" + command.hint + "' because current note is not saved.");
+					showtemporaryinfo("Cannot perform '" + command.hint + "' because current note is not saved.");
 				}
 				else if (command.action)
 				{

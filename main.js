@@ -1348,84 +1348,72 @@ function postpone()
 	});
 }
 
-function waitpending()
-{
-	return new Promise(function(resolve)
-	{
-		if (!pending)
-		{
-			resolve();
-		}
-		else
-		{
-			console.log("query already pending, waiting...");
-			var id = setInterval(() =>
-			{
-				if (!pending)
-				{
-					console.log("...clear");
-					clearInterval(id);
-					resolve();
-				}
-			}, 100);
-		}
-	});	
-}
-
 function save()
 {
 	clearTimeout(workerid);
-	waitpending()
-	.then(() =>
+
+	if (!localdata)
 	{
-		var content = getnotecontent();
+		showtemporaryinfo("cannot push empty data");
+		return;
+	}
 
-		if ((content == "" && backup != "") || content == "null" || content == "undefined")
-		{
-			showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
-			return;
-		}
-			
-		currentnote.pos = md.selectionStart;
-		currentnote.content = content;
+	if (pending)
+	{
+		console.log("pending query: save cancelled");
+		return;
+	}
 
-		window.localStorage.setItem(currentvault, JSON.stringify(localdata));
-		if (currentnote.title == "settings.json")
-		{
-			settings = JSON.parse(content);
-			savesettings();
-		}
-		console.log("data serialized in local storage")
+	var content = getnotecontent();
+	if ((content == "" && backup != "") || content == "null" || content == "undefined")
+	{
+		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
+		return;
+	}
 
-		if (isremote())
-		{
-			console.log("sending data to php server...");
+	currentnote.pos = md.selectionStart;
+	currentnote.content = content;
 
-			if (localdata)
-			{
-				pending = true;
-				queryremote({action: "push", data: JSON.stringify(localdata)})
-				.then(() =>
-				{
-					console.log("data saved on server.");
-					saved = true;
-				})
-				.catch(remotecallfailed)
-				.finally(() =>
-				{
-					pending = false;
-				});
-			}
-			else
-			{
-				showtemporaryinfo("Cannot push empty data");
-			}
-		}
-		else
+	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
+
+	if (currentnote.title == "settings.json")
+	{
+		settings = JSON.parse(content);
+		savesettings();
+	}
+	console.log("data serialized in local storage")
+
+	if (isremote())
+	{
+		console.log("sending data to php server...");
+
+		pending = true;
+		queryremote({action: "push", data: JSON.stringify(localdata)})
+		.then(() =>
 		{
+			console.log("...data saved on server");
 			saved = true;
-		}
-	});
+		})
+		.catch(remotecallfailed)
+		.finally(() =>
+		{
+			pending = false;
+			if (content != getnotecontent())
+			{
+				console.log("but content changed: will save again");
+				datachanged();
+			}
+			else if (!saved)
+			{
+				console.log("save failed. Data unsaved on server, manual action required.");
+			}
+		});
+
+	}
+	else
+	{
+		saved = true;
+	}
 }
 
 function datachanged()

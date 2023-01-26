@@ -1437,13 +1437,19 @@ function showhelp()
 
 	help.push("## Libs");
 	help.push("[Showdown](https://showdownjs.com/)");
+
+	help.push("## Fonts");
 	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");
+	help.push("[Hack](https://sourcefoundry.org/hack/)");
+	help.push("[Droid Serif](https://fonts.adobe.com/fonts/droid-serif)");
 
 	help.push("## Inspiration");
 	help.push("[rwtxt](https://rwtxt.com)");
 	help.push("[Offline Notepad](https://offlinenotepad.com/)");
 	help.push("[Writemonkey3](http://writemonkey.com/wm3/)");
 	help.push("[Sublime Text](https://www.sublimetext.com/)");
+	help.push("[Notion](https://www.notion.so/)");
+	help.push("[Calmly Writer](https://calmlywriter.com/)");
 
 	bindfile(
 	{

@@ -99,108 +99,92 @@ var commands = [
 {
 	shortcut: "ctrl+p",
 	hint: "Show notes list",
-	savedonly: true,
 	action: searchandloadnote
 },
 {
 	hint: "Share note",
-	savedonly: true,
 	action: share
 }/*,
 {
 	hint: "Share note (html)",
-	savedonly: true,
 	action: sharehtml
 }*/,
 {
 	shortcut: "ctrl+n",
 	hint: "New note",
-	savedonly: true,
 	action: startnewnote
 },
 {
 	shortcut: "ctrl+shift+P",
 	hint: "Command palette",
-	savedonly: false,
+	allowunsaved: true,
 	action: commandpalette,
 	excludepalette: true
 },
 {
 	shortcut: "ctrl+t",
 	hint: "Open todo",
-	savedonly: true,
 	action: loadtodo
 },
 {
 	shortcut: "ctrl+q",
 	hint: "Open quick note",
-	savedonly: true,
 	action: loadquicknote
 },
 {
 	shortcut: "ctrl+g",
 	hint: "Find in notes",
-	savedonly: true,
 	action: showgrep
 },
 {
 	shortcut: "ctrl+i",
 	hint: "Toggle title",
-	savedonly: true,
 	action: toggletitle
 },
 {
 	shortcut: "ctrl+m",
 	hint: "Toggle preview",
-	savedonly: true,
 	action: togglepreview
 },
 {
 	shortcut: "ctrl+d",
 	hint: "Delete note",
-	savedonly: true,
 	action: deletenote
 },
 {
 	hint: "Restore note",
-	savedonly: true,
 	action: restore
 },
 {
 	shortcut: "ctrl+h",
 	hint: "Insert markdown header",
-	action: insertheader
+	action: insertheader,
+	allowunsaved: true
 },
 {
-	savedonly: true,
 	shortcut: "F1",
 	hint: "Show help",
 	action: showhelp
 },
 {
-	savedonly: true,
 	shortcut: "ctrl+shift+C",
 	hint: "Fold",
 	action: fold
 },
 {
-	savedonly: true,
 	shortcut: "ctrl+shift+O",
 	hint: "Unfold",
 	action: unfold
 },
 {
-	savedonly: true,
 	hint: "Unfold all",
 	action: unfoldall
 },
 {
-	savedonly: true,
 	hint: "Download note",
 	action: downloadnote
 },
 {
-	savedonly: true,
 	hint: "Download local data",
 	action: downloadlocal,
 	shortcut: "ctrl+shift+S"
@@ -208,54 +192,44 @@ var commands = [
 {
 	hint: "Search tags",
 	action: searchtags,
-	savedonly: true,
 	shortcut: "ctrl+shift+T"
 },
 {
 	hint: "Log out",
 	action: logout,
-	savedonly: true
 },
 {
 	hint: "Toggle split view",
-	savedonly: true,
 	action: togglesplit
 },
 {
 	hint: "Load previous note",
-	savedonly: true,
 	action: loadprevious,
 	shortcut: "ctrl+b"
 },
 {
 	hint: "Sort text",
-	savedonly: true,
 	action: sortselection
 },
 {
 	hint: "Settings",
-	savedonly: true,
 	action: editsettings	
 },
 {
 	hint: "Restore default settings",
-	savedonly: true,
 	action: restoresettings	
 },
 {
 	hint: "Note outline",
-	savedonly: true,
 	action: showoutline,
 	shortcut: "ctrl+o"
 },
 {
 	hint: "Internal links",
-	savedonly: true,
 	action: showinternallinks		
 },
 {
 	hint: "Switch vault",
-	savedonly: true,
 	action: switchvault,
 	shortcut: "ctrl+shift+V"
 },
@@ -263,22 +237,22 @@ var commands = [
 	hint: "Add tag filter",
 	action: addtagfilter,
 	shortcut: "ctrl+shift+F",
-	savedonly: true
 },
 {
 	hint: "Select theme",
-	savedonly: true,
 	action: selecttheme
 },
 {
 	hint: "Show note info",
 	action: showinfo,
-	shortcut: "ctrl+w"
+	shortcut: "ctrl+w",
+	allowunsaved: true
 },
 {
 	hint: "Force save",
 	action: save,
-	shortcut: "ctrl+s"
+	shortcut: "ctrl+s",
+	allowunsaved: true
 }];
 
 var snippets = [
@@ -1207,9 +1181,9 @@ function commandpalette()
 	.then(hint =>
 	{
 		var command = commands.find(c => c.hint == hint);
-		if (command && command.action)
+		if (command)
 		{
-			command.action();
+			executecommand(command);	
 		}
 		else
 		{
@@ -1582,6 +1556,18 @@ function splitshortcut(s)
 	return r;
 }
 
+function executecommand(command)
+{
+	if (!command.allowunsaved && !saved)
+	{
+		showtemporaryinfo("Cannot perform '" + command.hint + "' because current note is not saved.");
+	}
+	else if (command.action)
+	{
+		command.action();
+	}
+}
+
 function mainkeydownhandler()
 {
 	if (event.key == "Escape")
@@ -1619,14 +1605,7 @@ function mainkeydownhandler()
 			if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
 			{
 				event.preventDefault();
-				if (command.savedonly && !saved)
-				{
-					showtemporaryinfo("Cannot perform '" + command.hint + "' because current note is not saved.");
-				}
-				else if (command.action)
-				{
-					command.action();
-				}			
+				executecommand(command);		
 			}
 		});
 	}

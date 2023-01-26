@@ -34,6 +34,20 @@ var tags = null;
 var currentvault = "";
 var currenttag = "";
 
+var stat = 
+{
+	ses:
+	{
+		q: 0,
+		t: timestamp()
+	},
+	cur:
+	{
+		q: 0,
+		t: timestamp()
+	}
+}
+
 var themes = 
 {
 	Default:
@@ -89,6 +103,15 @@ var themes =
 		fontcolor: "rgb(60,60,60)",
 		lineheight: "28.5px",
 		accentcolor: "rgb(60,60,60)"
+	},
+	Breakers:
+	{
+		bgcolor: "rgb(252,253,253)",
+		fontfamily: "'Consolas', monospace",
+		fontsize: "15px",
+		fontcolor: "rgb(50,50,50)",
+		lineheight: "110%",
+		accentcolor: "rgb(95,180,180)"
 	}
 };
 
@@ -243,7 +266,7 @@ var commands = [
 	action: selecttheme
 },
 {
-	hint: "Show note info",
+	hint: "Show info",
 	action: showinfo,
 	shortcut: "ctrl+w",
 	allowunsaved: true
@@ -290,14 +313,18 @@ var snippets = [
 function showinfo()
 {
 	var tags = gettags(currentnote);
-	var info = [ 
-		"title: " + currentnote.title + "\n",
-		"vault: " + currentvault + "\n",
-		(tags ? "tags: " + tags + "\n" : ""),
-		"saved: " + saved,
-		"word count: " + getwords()];
-
-	showtemporaryinfo(info);
+	showtemporaryinfo(
+		[ 
+			"title: " + currentnote.title,
+			"vault: " + currentvault,
+			(tags ? "tags: " + tags : ""),
+			"saved: " + saved,
+			"word count: " + getwords(),
+			"current note start: " + stat.cur.t,
+			"current note queries: " + stat.cur.q,
+			"session start: " + stat.ses.t,
+			"session queries: " + stat.ses.q
+		]);
 }
 
 function loadtheme(theme)
@@ -794,6 +821,9 @@ function togglepassword()
 function queryremote(params)
 {
 	return new Promise( (apply, failed) => {
+
+		stat.cur.q++;
+		stat.ses.q++;
 
 		params.password = window.localStorage.getItem("password");
 
@@ -1519,15 +1549,12 @@ function deletenote()
 {
 	if (confirm('delete "' + currentnote.title + '"?'))
 	{
-		var error = rename(".deleted_" + currentnote.title);
-		if (!error)
-		{
-			loadlast();
-		}
-		else
-		{
-			console.warn("Failed to delete '" + currentnote.title + "'");
-		}
+		var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
+		trash.push(currentnote);
+		loadlast();
+		window.localStorage.setItem("trash", JSON.stringify(trash));
+		localdata = localdata.filter(n => n != currentnote);
+		datachanged();
 	}
 }
 
@@ -1630,17 +1657,26 @@ function setwindowtitle()
 function ontitlechange()
 {
 	var oldname = currentnote.title;
-	var error = rename(title.value);
-
-	if (!error)
+	
+	if (localdata.find(n => n.title == title.value))
 	{
-		console.log("'" + oldname + "' renamed to '" + currentnote.title + "'");
-		setwindowtitle();
-	}
-	else
-	{
+		showtemporaryinfo(title.value + " alreday exists");
 		title.value = currentnote.title;
+		return;
 	}
+
+	// rename internal references
+	localdata
+	.filter(note => note != currentnote)
+	.forEach(note =>
+	{
+		note.content = note.content.replaceAll("[[" + currentnote.title + "]]", "[[" + title.value + "]]");
+	});
+
+	currentnote.title = title.value;
+
+	datachanged();
+	setwindowtitle();
 }
 
 function applyfilter()
@@ -1792,6 +1828,9 @@ function loadnote(name)
 
 	bindfile(note);
 	putontop();
+
+	stat.cur.q = 0;
+	stat.cur.t = timestamp();
 }
 
 function sendpassword()

@@ -1322,16 +1322,10 @@ function before(nb)
 
 function resize()
 {
-	if (md.clientHeight >= md.scrollHeight) return;
-
-	//console.log("resize");
-	md.style.height = md.scrollHeight + 'px';
-
-	/*md.rows = (md.value.match(/\n/g) || []).length + 1;
-	while (md.scrollHeight > md.clientHeight)
+	if (md.clientHeight < md.scrollHeight)
 	{
-		md.rows *= 1.5;
-	}*/
+		md.style.height = md.scrollHeight + 'px';
+	}
 }
 
 function putontop()
@@ -1646,12 +1640,12 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = currentvault + " -";
+	document.title = "";
 	if (currenttag)
 	{
-		document.title += " tag:" + currenttag + " -";
+		document.title += "[" + currenttag + "] -\xa0";
 	}
-	document.title += " " + currentnote.title;
+	document.title += currentnote.title;
 }
 
 function ontitlechange()

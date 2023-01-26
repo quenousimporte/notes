@@ -1,4 +1,4 @@
-var defaultsettings = 
+var defaultsettings =
 {
 	bgcolor: "white",
 	fontfamily: "'Inconsolata', 'Consolas', monospace",
@@ -34,7 +34,7 @@ var tags = null;
 var currentvault = "";
 var currenttag = "";
 
-var stat = 
+var stat =
 {
 	ses:
 	{
@@ -48,7 +48,7 @@ var stat =
 	}
 }
 
-var themes = 
+var themes =
 {
 	Default:
 	{
@@ -84,7 +84,7 @@ var themes =
 		fontsize: "15px",
 		fontcolor: "rgb(216,222,233)",
 		lineheight: "110%",
-		accentcolor: "rgb(249,174,88)"	
+		accentcolor: "rgb(249,174,88)"
 	},
 	"Plus plus":
 	{
@@ -93,7 +93,7 @@ var themes =
 		fontsize: "15px",
 		fontcolor: "black",
 		lineheight: "110%",
-		accentcolor: "rgb(128,0,255)"	
+		accentcolor: "rgb(128,0,255)"
 	},
 	Calmly:
 	{
@@ -236,11 +236,11 @@ var commands = [
 },
 {
 	hint: "Settings",
-	action: editsettings	
+	action: editsettings
 },
 {
 	hint: "Restore default settings",
-	action: restoresettings	
+	action: restoresettings
 },
 {
 	hint: "Note outline",
@@ -249,7 +249,7 @@ var commands = [
 },
 {
 	hint: "Internal links",
-	action: showinternallinks		
+	action: showinternallinks
 },
 {
 	hint: "Switch vault",
@@ -314,7 +314,7 @@ function showinfo()
 {
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
-		[ 
+		[
 			"title: " + currentnote.title,
 			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
@@ -345,7 +345,7 @@ function savesettings()
 function selecttheme()
 {
 	searchinlist(Object.keys(themes), loadtheme)
-	.then(t => 
+	.then(t =>
 		{
 			loadtheme(t);
 			savesettings();
@@ -355,16 +355,16 @@ function selecttheme()
 function addtagfilter()
 {
 	var command = commands.find(c => c.action == addtagfilter);
-	
+
 	if (!currenttag)
 	{
 		tagslist()
-		.then(t => 
+		.then(t =>
 			{
 				currenttag = t;
 				command.hint = "Remove tag filter '" + currenttag + "'";
 				setwindowtitle();
-			});	
+			});
 	}
 	else
 	{
@@ -386,7 +386,7 @@ function showinternallinks()
 		getnotecontent()
 		.match(/\[\[([^\]]*)\]\]/g || [])
 		.map(l => l.replace("[[", "").replace("]]", "")))
-	.then(loadnote);	
+	.then(loadnote);
 }
 
 function showoutline()
@@ -402,7 +402,7 @@ function showoutline()
 			.replace("# ", "")
 			.replace(/#/g, "\xa0\xa0\xa0\xa0");
 			outline[line] = pos;
-		}		
+		}
 	});
 	searchinlist(Object.keys(outline))
 	.then(line =>
@@ -512,7 +512,7 @@ function showtemporaryinfo(data)
 
 	filter.placeholder = "Info";
 	searchinlist(data)
-	.then(() => 
+	.then(() =>
 		{
 			filter.placeholder = "Search...";
 		});
@@ -551,8 +551,8 @@ function logout()
 	if (isremote())
 	{
 		window.localStorage.removeItem("password");
-		togglepassword();	
-	}	
+		togglepassword();
+	}
 }
 
 function tagslist()
@@ -561,10 +561,10 @@ function tagslist()
 
 	localdata
 	.filter(n => !n.title.startsWith("."))
-	.forEach(n => 
+	.forEach(n =>
 	{
 		var ts = gettags(n);
-		ts.forEach(t => 
+		ts.forEach(t =>
 		{
 			tags[t] = tags[t] || [];
 			tags[t].push(n.title);
@@ -600,8 +600,8 @@ function share(html)
 		{
 			text: html ? md2html(getnotecontent()) : getnotecontent(),
 			title: currentnote.title
-		});	
-	}	
+		});
+	}
 }
 
 function sharehtml()
@@ -634,7 +634,7 @@ function downloadnotes()
 
 function downloadlocal()
 {
-	var data = 
+	var data =
 	{
 		local : JSON.parse(window.localStorage.getItem("local")),
 		remote : JSON.parse(window.localStorage.getItem("remote"))
@@ -684,10 +684,10 @@ function applystyle()
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.color = settings.fontcolor;
 	document.body.style.caretColor = settings.accentcolor;
-	
+
 	if (settings.titleinaccentcolor)
 	{
-		title.style.color = settings.accentcolor;	
+		title.style.color = settings.accentcolor;
 	}
 }
 
@@ -702,7 +702,7 @@ function loadsettings()
 		{
 			if (typeof item[key] !== "undefined")
 			{
-				settings[key] = item[key];	
+				settings[key] = item[key];
 			}
 		}
 	}
@@ -775,7 +775,7 @@ function init()
 
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
-	
+
 	initsnippets();
 
 	currenttag = "";
@@ -800,11 +800,11 @@ function init()
 		window.onstorage = loadstorage;
 		if (settings.defaultpreviewinsplit && name == "right")
 		{
-			togglepreview();	
-		} 
+			togglepreview();
+		}
 		else if (name == "left")
 		{
-			md.focus();	
+			md.focus();
 		}
 	}
 }
@@ -877,7 +877,7 @@ function queryremote(params)
 				catch(error)
 				{
 					failed("Handler result is not valid. JS error: " + error);
-				}			
+				}
 			}
 		}
 		xhr.send(paramlist.join("&"));
@@ -1188,7 +1188,7 @@ function showgrep()
 		{
 			event.preventDefault();
 			searchdialog.hidden = true;
-			showgrepresult(grep(filter.value));			
+			showgrepresult(grep(filter.value));
 		}
 	}
 
@@ -1198,7 +1198,7 @@ function showgrep()
 		if (filter.value.length > 1)
 		{
 			showgrepresult(grep(filter.value));
-		}		
+		}
 	}*/
 }
 
@@ -1213,7 +1213,7 @@ function commandpalette()
 		var command = commands.find(c => c.hint == hint);
 		if (command)
 		{
-			executecommand(command);	
+			executecommand(command);
 		}
 		else
 		{
@@ -1339,7 +1339,7 @@ function putontop()
 	if (localdata.find(n => n == currentnote))
 	{
 		localdata.splice(localdata.indexOf(currentnote), 1);
-		localdata.unshift(currentnote);	
+		localdata.unshift(currentnote);
 	}
 }
 
@@ -1638,7 +1638,7 @@ function mainkeydownhandler()
 			if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
 			{
 				event.preventDefault();
-				executecommand(command);		
+				executecommand(command);
 			}
 		});
 	}
@@ -1657,7 +1657,7 @@ function setwindowtitle()
 function ontitlechange()
 {
 	var oldname = currentnote.title;
-	
+
 	if (localdata.find(n => n.title == title.value))
 	{
 		showtemporaryinfo(title.value + " alreday exists");
@@ -1728,7 +1728,7 @@ function editorkeydown()
 			insert("    ", 2);
 		}
 		// disable tab
-		/*else 
+		/*else
 		{
 			insert("    ");
 		}*/
@@ -1745,7 +1745,7 @@ function editorkeydown()
 		// search in tags list
 		console.log(event.key);
 		tagslist()
-		.then(tag => 
+		.then(tag =>
 		{
 			insert(" " + tag);
 			md.focus();

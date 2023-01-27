@@ -285,6 +285,12 @@ var commands = [
 	action: save,
 	shortcut: "ctrl+s",
 	allowunsaved: true
+},
+{
+	hint: "Toggle spell check",
+	action: togglespellcheck,
+	allowunsaved: true,
+	shortcut: "F7"
 }];
 
 var snippets = [
@@ -318,6 +324,11 @@ var snippets = [
 	insert: "— ",
 	cursor: 0
 }];
+
+function togglespellcheck()
+{
+	md.spellcheck = !md.spellcheck;
+}
 
 function showinfo()
 {
@@ -1571,7 +1582,7 @@ function deletenote()
 	{
 		var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
 		trash.push(currentnote);
-		
+
 		window.localStorage.setItem("trash", JSON.stringify(trash));
 		localdata = localdata.filter(n => n != currentnote);
 
@@ -1824,7 +1835,10 @@ function bindfile(note)
 	preview.innerHTML = md2html(getnotecontent());
 
 	resetfolds();
+
+	md.style.height = "0px";
 	resize();
+
 	setpos(note.pos || 0);
 
 	// to improve...

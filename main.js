@@ -126,7 +126,8 @@ var commands = [
 },
 {
 	hint: "Share note",
-	action: share
+	action: share,
+	allowunsaved: true
 }/*,
 {
 	hint: "Share note (html)",
@@ -162,12 +163,14 @@ var commands = [
 {
 	shortcut: "ctrl+i",
 	hint: "Toggle title",
-	action: toggletitle
+	action: toggletitle,
+	allowunsaved: true
 },
 {
 	shortcut: "ctrl+m",
 	hint: "Toggle preview",
-	action: togglepreview
+	action: togglepreview,
+	allowunsaved: true
 },
 {
 	shortcut: "ctrl+d",
@@ -192,16 +195,19 @@ var commands = [
 {
 	shortcut: "ctrl+shift+C",
 	hint: "Fold",
-	action: fold
+	action: fold,
+	allowunsaved: true
 },
 {
 	shortcut: "ctrl+shift+O",
 	hint: "Unfold",
-	action: unfold
+	action: unfold,
+	allowunsaved: true
 },
 {
 	hint: "Unfold all",
-	action: unfoldall
+	action: unfoldall,
+	allowunsaved: true
 },
 {
 	hint: "Download note",
@@ -232,7 +238,8 @@ var commands = [
 },
 {
 	hint: "Sort text",
-	action: sortselection
+	action: sortselection,
+	allowunsaved: true
 },
 {
 	hint: "Settings",
@@ -245,7 +252,8 @@ var commands = [
 {
 	hint: "Note outline",
 	action: showoutline,
-	shortcut: "ctrl+o"
+	shortcut: "ctrl+o",
+	allowunsaved: true
 },
 {
 	hint: "Internal links",
@@ -263,7 +271,8 @@ var commands = [
 },
 {
 	hint: "Select theme",
-	action: selecttheme
+	action: selecttheme,
+	allowunsaved: true
 },
 {
 	hint: "Show info",

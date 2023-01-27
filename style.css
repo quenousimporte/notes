@@ -60,14 +60,6 @@ body::-webkit-scrollbar-thumb {
 	width: 100%;
 }
 
-#topbar > span {
-	display: table-cell;
-}
-
-#titlecontainer {
-	width: 100%;
-}
-
 #title {
 	width: 100%;
 	padding-top: 10px;

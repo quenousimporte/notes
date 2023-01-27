@@ -128,11 +128,11 @@ var commands = [
 	hint: "Share note",
 	action: share,
 	allowunsaved: true
-}/*,
+},
 {
 	hint: "Share note (html)",
 	action: sharehtml
-}*/,
+},
 {
 	shortcut: "ctrl+n",
 	hint: "New note",
@@ -256,7 +256,7 @@ var commands = [
 	allowunsaved: true
 },
 {
-	hint: "Internal links",
+	hint: "Internal and back links",
 	action: showinternallinks
 },
 {
@@ -333,7 +333,7 @@ function showinfo()
 			"current note queries: " + stat.cur.q,
 			"session start: " + stat.ses.t,
 			"session queries: " + stat.ses.q
-		]);
+		], "Note info");
 }
 
 function loadtheme(theme)
@@ -391,10 +391,14 @@ function switchvault()
 
 function showinternallinks()
 {
-	searchinlist(
-		getnotecontent()
-		.match(/\[\[([^\]]*)\]\]/g || [])
-		.map(l => l.replace("[[", "").replace("]]", "")))
+	var backlinks = localdata
+		.filter(n => n.content.indexOf("[[" + currentnote.title + "]]") != -1)
+		.map(n => n.title);
+
+	var internal = getnotecontent().match(/\[\[([^\]]*)\]\]/g) || [];
+	internal = internal.map(l => l.replace("[[", "").replace("]]", ""));
+
+	searchinlist(internal.concat(backlinks))
 	.then(loadnote);
 }
 
@@ -409,7 +413,7 @@ function showoutline()
 		{
 			line = line
 			.replace("# ", "")
-			.replace(/#/g, "\xa0\xa0\xa0\xa0");
+			.replace(/#/g, "\xa0".repeat(4));
 			outline[line] = pos;
 		}
 	});
@@ -512,14 +516,14 @@ function editsettings()
 	});
 }
 
-function showtemporaryinfo(data)
+function showtemporaryinfo(data, title)
 {
 	if (typeof data == "string")
 	{
 		data = new Array(data);
 	}
 
-	filter.placeholder = "Info";
+	filter.placeholder = title || "Info";
 	searchinlist(data)
 	.then(() =>
 		{
@@ -601,13 +605,13 @@ function gettags(note)
 	return [];
 }
 
-function share(html)
+function share()
 {
 	if (navigator.share)
 	{
 		navigator.share(
 		{
-			text: html ? md2html(getnotecontent()) : getnotecontent(),
+			text: getnotecontent(),
 			title: currentnote.title
 		});
 	}
@@ -615,7 +619,20 @@ function share(html)
 
 function sharehtml()
 {
-	share(true);
+	if (navigator.share)
+	{
+		var file = new File(['<html><body>' + md2html(getnotecontent()) + '</body></html>'],
+			currentnote.title + ".html",
+			{
+		  		type: "text/html",
+			});
+
+		navigator.share(
+		{
+		    title: currentnote.title,
+		    files: [file]
+		});
+	}
 }
 
 function download(filename, content)
@@ -661,7 +678,7 @@ function remotecallfailed(error)
 	if (error)
 	{
 		console.warn(error);
-		showtemporaryinfo(error);
+		showtemporaryinfo(error, "Error");
 	}
 }
 
@@ -1554,9 +1571,11 @@ function deletenote()
 	{
 		var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
 		trash.push(currentnote);
-		loadlast();
+		
 		window.localStorage.setItem("trash", JSON.stringify(trash));
 		localdata = localdata.filter(n => n != currentnote);
+
+		loadlast();
 		datachanged();
 	}
 }

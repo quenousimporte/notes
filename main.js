@@ -118,7 +118,7 @@ var themes =
 		bgcolor: "white",
 		fontfamily: "'Josefin Sans', sans-serif",
 		fontsize: "16px",
-		fontcolor: "rgb(54,54,54)",
+		fontcolor: "rgb(78,78,78)",
 		lineheight: "24px",
 		accentcolor: "rgb(54,54,54)"		
 	}
@@ -410,12 +410,16 @@ function switchvault()
 	init();
 }
 
-function ascendants(note)
+function ancestors(note)
 {
 	var list = parents(note);
 	list.forEach(title => 
 	{
-		list = list.concat(ascendants(localdata.find(n => n.title == title)));
+		var parent = localdata.find(n => n.title == title);
+		if (parent && !list.find(p => p.title == parent))
+		{
+			list = list.concat(ancestors(parent));
+		}
 	})
 	return list;
 }
@@ -425,7 +429,11 @@ function descendants(note)
 	var list = children(note);
 	list.forEach(title => 
 	{
-		list = list.concat(descendants(localdata.find(n => n.title == title)));
+		var child = localdata.find(n => n.title == title);
+		if (child && !list.find(p => p.title == child))
+		{
+			list = list.concat(descendants(localdata.find(n => n.title == title)));	
+		}		
 	})
 	return list;
 }
@@ -446,15 +454,22 @@ function parents(note)
 
 function showinternallinks()
 {
-	var list = ascendants(currentnote).reverse();
-	var index = list.length;
-	list.push(currentnote.title);
-	list = list.concat(descendants(currentnote));
+	try
+	{
+		var list = ancestors(currentnote).reverse();
+		var index = list.length;
+		list.push(currentnote.title);
+		list = list.concat(descendants(currentnote));
 
-	//[...new Set(internal.concat(backlinks))]
+		//[...new Set(internal.concat(backlinks))]
 
-	searchinlist(list, null, index)
-	.then(loadnote);
+		searchinlist(list, null, index)
+		.then(loadnote);
+	}
+	catch(err)
+	{
+		showtemporaryinfo("Loop, cannot show links");
+	}
 }
 
 function showoutline()
@@ -480,26 +495,28 @@ function showoutline()
 	});
 }
 
-function getbetween(a, b)
-{
-	var start = md.value.lastIndexOf(a, md.selectionStart);
-	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
-	
-	var end = md.value.indexOf(b, md.selectionStart);
-	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
-
-	return md.value.substring(start + a.length, end);
-}
-
 function linkatpos()
 {
-	return getbetween("[[", "]]");
+	var start = md.value.lastIndexOf("[[", md.selectionStart);
+	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
+	
+	var end = md.value.indexOf("]]", md.selectionStart);
+	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
+
+	return md.value.substring(start + 2, end);
 }
 
 function tagatpos()
 {
-	// to improve: the last has no comma!
-	return getbetween(" ", ",");
+	var start = md.value.lastIndexOf(" ", md.selectionStart);
+	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
+	
+	var nextcomma = md.value.indexOf(",", md.selectionStart);
+	var nexteol = md.value.indexOf("\n", md.selectionStart);
+	var end = Math.min(nexteol, nextcomma); 
+	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
+
+	return md.value.substring(start + 1, end);
 }
 
 function clickeditor()
@@ -601,7 +618,6 @@ function tagslist()
 	tags = {};
 
 	localdata
-	.filter(n => !n.title.startsWith("."))
 	.forEach(n =>
 	{
 		var ts = gettags(n);
@@ -679,7 +695,6 @@ function download(filename, content)
 function downloadnotes()
 {
 	localdata
-	.filter(note => !note.title.startsWith("."))
 	.forEach(note =>
 	{
 		download(note.title + ".md", note.content);
@@ -841,6 +856,7 @@ function init()
 		.then(data =>
 		{
 			localdata = data;
+			window.localStorage.setItem("remote", JSON.stringify(data));
 			loadlast();
 		})
 		.catch(remotecallfailed);
@@ -1161,8 +1177,7 @@ function list()
 {
 	return localdata
 	.filter(n => currenttag == "" || gettags(n).includes(currenttag))
-	.map(n => n.title)
-	.filter(t => !t.startsWith("."));
+	.map(n => n.title);
 }
 
 function loadlast()
@@ -1180,7 +1195,6 @@ function grep(needle)
 	var result = {};
 
 	localdata
-	.filter(n => !n.title.startsWith("."))
 	.forEach(note =>
 	{
 		if (note.title.toLowerCase().includes(needle.toLowerCase()))

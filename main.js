@@ -549,10 +549,10 @@ function showoutline()
 {
 	var outline = {};
 	var pos = 0;
-	getnotecontent().split("\n").forEach(line =>
+	getnotecontent().split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
-		if (line.startsWith("#"))
+		if (line.startsWith("#") || line == "---")
 		{
 			line = line
 			.replace("# ", "")
@@ -560,7 +560,15 @@ function showoutline()
 			outline[line] = pos;
 		}
 	});
-	searchinlist(Object.keys(outline))
+
+	var keys = Object
+	.keys(outline)
+	.sort((a,b) =>
+		{
+			return outline[a] - outline[b];
+		});
+
+	searchinlist(keys)
 	.then(line =>
 	{
 		md.setSelectionRange(outline[line], outline[line]);

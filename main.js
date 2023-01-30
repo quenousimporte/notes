@@ -552,7 +552,7 @@ function showoutline()
 	getnotecontent().split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
-		if (line.startsWith("#") || line == "---")
+		if (line.startsWith("#"))
 		{
 			line = line
 			.replace("# ", "")
@@ -602,12 +602,20 @@ function linkatpos()
 
 function tagatpos()
 {
+	if (md.value.lastIndexOf("tags: ", md.selectionStart) < md.value.lastIndexOf("\n", md.selectionStart))
+	{
+		return null;
+	}
+
 	var start = md.value.lastIndexOf(" ", md.selectionStart);
 	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
 	
-	var nextcomma = md.value.indexOf(",", md.selectionStart);
-	var nexteol = md.value.indexOf("\n", md.selectionStart);
-	var end = Math.min(nexteol, nextcomma); 
+	var end = md.value.indexOf(",", md.selectionStart);
+	if (end == -1)
+	{
+		end = md.value.indexOf("\n", md.selectionStart);
+	}
+	
 	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
 
 	return md.value.substring(start + 1, end);

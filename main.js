@@ -223,6 +223,10 @@ var commands = [
 	action: downloadnote
 },
 {
+	hint: "Download note with subnotes",
+	action: downloadnotewithsubs
+},
+{
 	hint: "Download local data",
 	action: downloadlocal,
 	shortcut: "ctrl+shift+S"
@@ -265,8 +269,8 @@ var commands = [
 	allowunsaved: true
 },
 {
-	hint: "Internal and back links",
-	action: showinternallinks,
+	hint: "Show connected notes",
+	action: shownotelinks,
 	shortcut: "ctrl+l"
 },
 {
@@ -301,6 +305,14 @@ var commands = [
 	action: togglespellcheck,
 	allowunsaved: true,
 	shortcut: "F7"
+},
+{
+	hint: "Create subnote from selection",
+	action: createsubnote
+},
+{
+	hint: "Include subnote",
+	action: includesub
 }];
 
 var snippets = [
@@ -334,6 +346,56 @@ var snippets = [
 	insert: "— ",
 	cursor: 0
 }];
+
+function getnote(title)
+{
+	return localdata.find(note => note.title == title);
+}
+
+function createsubnote()
+{
+	var range = getlinesrange();
+	var content = md.value.substring(range.start, range.end);
+	searchinlist([], null, "Title...")
+	.then(title => 
+	{
+		if (getnote(title))
+		{
+			showtemporaryinfo("'" + title + "' already exists");
+		}
+		else
+		{
+			var newnote = 
+			{
+				title: title,
+				content: content
+			}
+			localdata.unshift(newnote);
+			md.value = md.value.substring(0, range.start)
+			+ "[[" + title + "]]"
+			+ md.value.substring(range.end);
+			datachanged();
+		}
+	})
+}
+
+function includesub()
+{
+	var range = linkrangeatpos();
+	if (range)
+	{
+		var title = linkatpos();
+		if (confirm("Replace [[" + title + "]] by its content?"))
+		{
+			md.value = 
+			md.value.substring(0, range.start)
+			+ getnote(title).content
+			+ md.value.substring(range.end);
+
+			datachanged();
+		}
+	}
+}
 
 function togglespellcheck()
 {
@@ -412,7 +474,7 @@ function switchvault()
 
 function ancestors(note)
 {
-	var list = parents(note);
+	var list = [... new Set(parents(note))];
 	list.forEach(title => 
 	{
 		var parent = localdata.find(n => n.title == title);
@@ -426,7 +488,7 @@ function ancestors(note)
 
 function descendants(note)
 {
-	var list = children(note);
+	var list = [... new Set(children(note))];
 	list.forEach(title => 
 	{
 		var child = localdata.find(n => n.title == title);
@@ -452,7 +514,7 @@ function parents(note)
 		.map(n => n.title);
 }
 
-function showinternallinks()
+function shownotelinks()
 {
 	try
 	{
@@ -461,14 +523,12 @@ function showinternallinks()
 		list.push(currentnote.title);
 		list = list.concat(descendants(currentnote));
 
-		//[...new Set(internal.concat(backlinks))]
-
 		searchinlist(list, null, index)
 		.then(loadnote);
 	}
 	catch(err)
 	{
-		showtemporaryinfo("Loop, cannot show links");
+		showtemporaryinfo("Loop detected");
 	}
 }
 
@@ -495,15 +555,28 @@ function showoutline()
 	});
 }
 
-function linkatpos()
+function linkrangeatpos()
 {
 	var start = md.value.lastIndexOf("[[", md.selectionStart);
-	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
+	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return null
 	
 	var end = md.value.indexOf("]]", md.selectionStart);
-	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
+	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return null;
 
-	return md.value.substring(start + 2, end);
+	return {
+		start: start,
+		end: end + 2
+	};	
+}
+
+function linkatpos()
+{
+	var range = linkrangeatpos();
+	if (range)
+	{
+		return md.value.substring(range.start + 2, range.end - 2);
+	}
+	return null;
 }
 
 function tagatpos()
@@ -709,6 +782,36 @@ function downloadlocal()
 		remote : JSON.parse(window.localStorage.getItem("remote"))
 	};
 	download(timestamp() + " notes.json", JSON.stringify(data));
+}
+
+function downloadnotewithsubs()
+{
+	try
+	{
+		descendants(currentnote);	
+	}
+	catch (err)
+	{
+		showtemporaryinfo("Loop detected");
+		return;
+	}
+
+	var tempnote = 
+	{
+		title: currentnote.title + " (with sub notes)",
+		content: getnotecontent()
+	};
+
+	var kids = children(tempnote);
+	while (kids.length)
+	{
+		kids.forEach(t =>
+		{
+			tempnote.content = tempnote.content.replaceAll("[[" + t + "]]", getnote(t).content);
+		});
+		kids = children(tempnote);
+	}
+	download(tempnote.title + ".md", tempnote.content);
 }
 
 function downloadnote()

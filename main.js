@@ -1613,7 +1613,10 @@ function loadquicknote()
 
 function timestamp()
 {
-	return (new Date).toISOString().replace("T", " ").replace(/\..*/, "").replace(/:/g, ".");
+	var utc = new Date();
+	var loc = new Date(utc - utc.getTimezoneOffset() * 60 * 1000);
+
+	return loc.toISOString().replace("T", " ").replace(/\..*/, "").replace(/:/g, ".");
 }
 
 function startnewnote()

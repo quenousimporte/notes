@@ -602,7 +602,7 @@ function linkatpos()
 
 function tagatpos()
 {
-	if (md.value.lastIndexOf("tags: ", md.selectionStart) < md.value.lastIndexOf("\n", md.selectionStart))
+	if (md.value.lastIndexOf("tags: ", md.selectionStart) < md.value.lastIndexOf("\n", md.selectionStart) || md.selectionStart < 6)
 	{
 		return null;
 	}
@@ -610,14 +610,14 @@ function tagatpos()
 	var start = md.value.lastIndexOf(" ", md.selectionStart);
 	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
 	
+	var eol = md.value.indexOf("\n", md.selectionStart);
 	var end = md.value.indexOf(",", md.selectionStart);
-	if (end == -1)
+
+	if (end == -1 || eol < end)
 	{
-		end = md.value.indexOf("\n", md.selectionStart);
+		end = eol;
 	}
 	
-	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
-
 	return md.value.substring(start + 1, end);
 }
 

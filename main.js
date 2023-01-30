@@ -16,7 +16,7 @@ var defaultsettings =
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] "];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    "];
 var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 
@@ -112,6 +112,15 @@ var themes =
 		fontcolor: "rgb(50,50,50)",
 		lineheight: "110%",
 		accentcolor: "rgb(95,180,180)"
+	},
+	Cryptee:
+	{
+		bgcolor: "white",
+		fontfamily: "'Josefin Sans', sans-serif",
+		fontsize: "16px",
+		fontcolor: "rgb(54,54,54)",
+		lineheight: "24px",
+		accentcolor: "rgb(54,54,54)"		
 	}
 };
 
@@ -257,7 +266,8 @@ var commands = [
 },
 {
 	hint: "Internal and back links",
-	action: showinternallinks
+	action: showinternallinks,
+	shortcut: "ctrl+l"
 },
 {
 	hint: "Switch vault",
@@ -400,16 +410,50 @@ function switchvault()
 	init();
 }
 
+function ascendants(note)
+{
+	var list = parents(note);
+	list.forEach(title => 
+	{
+		list = list.concat(ascendants(localdata.find(n => n.title == title)));
+	})
+	return list;
+}
+
+function descendants(note)
+{
+	var list = children(note);
+	list.forEach(title => 
+	{
+		list = list.concat(descendants(localdata.find(n => n.title == title)));
+	})
+	return list;
+}
+
+function children(note)
+{
+	return (note.content
+		.match(/\[\[([^\]]*)\]\]/g) || [])
+		.map(l => l.replace("[[", "").replace("]]", ""));
+}
+
+function parents(note)
+{
+	return localdata
+		.filter(n => n.content.indexOf("[[" + note.title + "]]") != -1)
+		.map(n => n.title);
+}
+
 function showinternallinks()
 {
-	var backlinks = localdata
-		.filter(n => n.content.indexOf("[[" + currentnote.title + "]]") != -1)
-		.map(n => n.title);
+	var list = ascendants(currentnote).reverse();
+	var index = list.length;
+	list.push(currentnote.title);
+	list = list.concat(descendants(currentnote));
 
-	var internal = getnotecontent().match(/\[\[([^\]]*)\]\]/g) || [];
-	internal = internal.map(l => l.replace("[[", "").replace("]]", ""));
+	//[...new Set(internal.concat(backlinks))]
 
-	searchinlist(internal.concat(backlinks))
+	searchinlist(list, null, index)
 	.then(loadnote);
 }
 
@@ -436,53 +480,26 @@ function showoutline()
 	});
 }
 
+function getbetween(a, b)
+{
+	var start = md.value.lastIndexOf(a, md.selectionStart);
+	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
+	
+	var end = md.value.indexOf(b, md.selectionStart);
+	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return "";
+
+	return md.value.substring(start + a.length, end);
+}
+
 function linkatpos()
 {
-	var s = md.selectionStart;
-	while (s > 2 && md.value[s] != "\n")
-	{
-		if (md.value.substring(s - 2, s) == "[[")
-		{
-			var e = md.selectionStart;
-			while (e < md.value.length - 2 && md.value[e-2] != "\n")
-			{
-				if (md.value.substring(e, e + 2) == "]]")
-				{
-					return md.value.substring(s, e);
-				}
-				e++;
-			}
-		}
-		s--;
-	}
-	return "";
+	return getbetween("[[", "]]");
 }
 
 function tagatpos()
 {
-	if (md.value.substring(0, getpos()).split("\n").pop().startsWith("tags: "))
-	{
-		var s = md.selectionStart;
-		while (s > 1 && md.value[s] != "\n")
-		{
-			var c = md.value[s-1];
-			if (c == " " || c == ",")
-			{
-				var e = md.selectionStart;
-				while (e < md.value.length - 1 && md.value[e-1] != "\n")
-				{
-					c = md.value[e];
-					if (c == " " || c == "," || c == "\n")
-					{
-						return md.value.substring(s, e);
-					}
-					e++;
-				}
-			}
-			s--;
-		}
-		return "";
-	}
+	// to improve: the last has no comma!
+	return getbetween(" ", ",");
 }
 
 function clickeditor()
@@ -698,6 +715,7 @@ function loadstorage()
 	var item = window.localStorage.getItem(currentvault);
 	localdata = item ? JSON.parse(item) : [];
 
+	// only refresh content?
 	if (currentnote)
 	{
 		currentnote = localdata.find(n => n.title == currentnote.title);
@@ -1276,7 +1294,7 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 	datachanged();
 }
 
-function searchinlist(list, customevent)
+function searchinlist(list, customevent, index)
 {
 	return new Promise(selectitem =>
 	{
@@ -1301,6 +1319,11 @@ function searchinlist(list, customevent)
 		});
 
 		applyfilter();
+		if (index)
+		{
+			fileindex = index;
+			applyfileindex();
+		}
 
 		filter.onkeydown = function()
 		{
@@ -1503,6 +1526,7 @@ function showhelp()
 	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");
 	help.push("[Hack](https://sourcefoundry.org/hack/)");
 	help.push("[Droid Serif](https://fonts.adobe.com/fonts/droid-serif)");
+	help.push("[Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans)");
 
 	help.push("## Inspiration");
 	help.push("[rwtxt](https://rwtxt.com)");
@@ -1511,6 +1535,7 @@ function showhelp()
 	help.push("[Sublime Text](https://www.sublimetext.com/)");
 	help.push("[Notion](https://www.notion.so/)");
 	help.push("[Calmly Writer](https://calmlywriter.com/)");
+	help.push("[Cryptee](https://crypt.ee/)");
 
 	bindfile(
 	{
@@ -1553,6 +1578,16 @@ function searchandloadnote()
 	selectnote().then(loadnote);
 }
 
+function renamereferences(newname)
+{
+	localdata
+	.filter(note => note != currentnote)
+	.forEach(note =>
+	{
+		note.content = note.content.replaceAll("[[" + currentnote.title + "]]", "[[" + newname + "]]");
+	});	
+}
+
 function rename(newname)
 {
 	if (localdata.find(n => n.title == newname))
@@ -1562,13 +1597,7 @@ function rename(newname)
 		return error;
 	}
 
-	// rename internal references
-	localdata
-	.filter(note => note != currentnote)
-	.forEach(note =>
-	{
-		note.content = note.content.replaceAll("[[" + currentnote.title + "]]", "[[" + newname + "]]");
-	});
+	renamereferences(newname);
 
 	currentnote.title = newname;
 
@@ -1582,9 +1611,11 @@ function deletenote()
 	{
 		var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
 		trash.push(currentnote);
-
 		window.localStorage.setItem("trash", JSON.stringify(trash));
+
 		localdata = localdata.filter(n => n != currentnote);
+
+		renamereferences(currentnote.title + " (deleted)");
 
 		loadlast();
 		datachanged();
@@ -1710,6 +1741,7 @@ function ontitlechange()
 
 	datachanged();
 	setwindowtitle();
+	toggletitle();
 }
 
 function applyfilter()
@@ -1821,6 +1853,7 @@ function resetfolds()
 
 function bindfile(note)
 {
+	var changed = currentnote != note;
 	if (currentnote && currentnote.title == "settings.json")
 	{
 		loadsettings();
@@ -1836,7 +1869,10 @@ function bindfile(note)
 
 	resetfolds();
 
-	md.style.height = "0px";
+	if (changed)
+	{
+		md.style.height = "0px";
+	}	
 	resize();
 
 	setpos(note.pos || 0);

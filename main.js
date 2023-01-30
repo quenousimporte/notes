@@ -313,6 +313,10 @@ var commands = [
 {
 	hint: "Include subnote",
 	action: includesub
+},
+{
+	hint: "Comment selection",
+	action: comment
 }];
 
 var snippets = [
@@ -376,7 +380,16 @@ function createsubnote()
 			+ md.value.substring(range.end);
 			datachanged();
 		}
-	})
+	});
+}
+
+function comment()
+{
+	md.value = md.value.substring(0, md.selectionStart)
+	+ "<!-- "
+	+ md.value.substring(md.selectionStart, md.selectionEnd)
+	+ " -->"
+	+ md.value.substring(md.selectionEnd);
 }
 
 function includesub()

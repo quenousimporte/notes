@@ -187,7 +187,7 @@ var commands = [
 {
 	shortcut: "ctrl+d",
 	hint: "Delete note",
-	action: deletenote
+	action: deletecurrentnote
 },
 {
 	hint: "Restore note",
@@ -220,19 +220,6 @@ var commands = [
 	hint: "Unfold all",
 	action: unfoldall,
 	allowunsaved: true
-},
-{
-	hint: "Download note",
-	action: downloadnote
-},
-{
-	hint: "Download note with subnotes",
-	action: downloadnotewithsubs
-},
-{
-	hint: "Download vault",
-	action: downloadvault,
-	shortcut: "ctrl+shift+S"
 },
 {
 	hint: "Search tags",
@@ -314,12 +301,25 @@ var commands = [
 	action: createsubnote
 },
 {
-	hint: "Include subnote",
+	hint: "Merge subnote",
 	action: includesub
 },
 {
 	hint: "Comment selection",
 	action: comment
+},
+{
+	hint: "Download note",
+	action: downloadnote
+},
+{
+	hint: "Download note with merged subnotes",
+	action: downloadnotewithsubs
+},
+{
+	hint: "Download vault",
+	action: downloadvault,
+	shortcut: "ctrl+shift+S"
 }];
 
 var snippets = [
@@ -359,16 +359,28 @@ function getnote(title)
 	return localdata.find(note => note.title == title);
 }
 
-function createsubnote()
+function createsubnote(suggestedtitle)
 {
+	var name = [];
+	if (suggestedtitle)
+	{
+		name.push(suggestedtitle);
+	}
 	var range = getlinesrange();
 	var content = md.value.substring(range.start, range.end);
-	searchinlist([], null, "Title...")
+	filter.placeholder = "Subnote title...";
+	searchinlist(name)
 	.then(title => 
 	{
-		if (getnote(title))
+		if (!title)
+		{
+			showtemporaryinfo("No title provided");
+			setpos(md.selectionStart);
+		}
+		else if (getnote(title))
 		{
 			showtemporaryinfo("'" + title + "' already exists");
+			setpos(md.selectionStart);
 		}
 		else
 		{
@@ -403,10 +415,16 @@ function includesub()
 		var title = linkatpos();
 		if (confirm("Replace [[" + title + "]] by its content?"))
 		{
+			var subnote = getnote(title);
 			md.value = 
 			md.value.substring(0, range.start)
-			+ getnote(title).content
+			+ subnote.content
 			+ md.value.substring(range.end);
+
+			if (confirm("Delete '" + title + "'?"))
+			{
+				deletenote(subnote);
+			}
 
 			datachanged();
 		}
@@ -834,7 +852,7 @@ function downloadnotewithsubs()
 
 	var tempnote = 
 	{
-		title: currentnote.title + " (with sub notes)",
+		title: currentnote.title + " (with subnotes)",
 		content: getnotecontent()
 	};
 
@@ -1215,12 +1233,6 @@ function unfoldall()
 
 function checkfolding()
 {
-	if (!settings.enablefolding)
-	{
-		console.log("folding is disabled.");
-		return;
-	}
-
 	var range = getlinesrange();
 	var line = md.value.substring(range.start, range.end);
 	var sectionmark = sectionmarks.find(m => line.startsWith(m));
@@ -1256,7 +1268,15 @@ function checkfolding()
 			}
 
 			md.setSelectionRange(range.start, sectionend);
-			fold();
+
+			if (settings.enablefolding)
+			{
+				fold();	
+			}
+			else
+			{
+				createsubnote(currentnote.title + " -" + line.replace(/#/g, ""));
+			}
 		}
 	}
 	else if (isfold(line))
@@ -1775,18 +1795,22 @@ function rename(newname)
 	return "";
 }
 
-function deletenote()
+function deletenote(note)
+{
+	var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
+	trash.push(note);
+	window.localStorage.setItem("trash", JSON.stringify(trash));
+
+	localdata = localdata.filter(n => n != note);
+
+	renamereferences(note.title + " (deleted)");
+}
+
+function deletecurrentnote()
 {
 	if (confirm('delete "' + currentnote.title + '"?'))
 	{
-		var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
-		trash.push(currentnote);
-		window.localStorage.setItem("trash", JSON.stringify(trash));
-
-		localdata = localdata.filter(n => n != currentnote);
-
-		renamereferences(currentnote.title + " (deleted)");
-
+		deletenote(currentnote);
 		loadlast();
 		datachanged();
 	}

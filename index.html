@@ -37,6 +37,7 @@
 			</div>
 
 			<div id="notecontent">
+				<input id="datafile" type="file" onchange="loaddatafile(this)" hidden/>
 			    <textarea id="md" spellcheck="false" oninput="datachanged()" onkeydown="editorkeydown()" onclick="clickeditor()"></textarea>
 			    <div hidden id="preview"></div>
 			</div>

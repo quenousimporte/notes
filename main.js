@@ -35,6 +35,8 @@ var tags = null;
 var currentvault = "";
 var currenttag = "";
 
+var vaults = ["local", "remote", "sandbox"];
+
 var stat =
 {
 	ses:
@@ -228,8 +230,8 @@ var commands = [
 	action: downloadnotewithsubs
 },
 {
-	hint: "Download local data",
-	action: downloadlocal,
+	hint: "Download vault",
+	action: downloadvault,
 	shortcut: "ctrl+shift+S"
 },
 {
@@ -275,7 +277,7 @@ var commands = [
 	shortcut: "ctrl+l"
 },
 {
-	hint: "Switch vault",
+	hint: "Change vault",
 	action: switchvault,
 	shortcut: "ctrl+shift+V"
 },
@@ -482,8 +484,17 @@ function addtagfilter()
 
 function switchvault()
 {
-	window.localStorage.setItem("vault", othervault());
-	init();
+	searchinlist(vaults)
+	.then(vault => 
+	{
+		window.localStorage.setItem("vault", vault);
+		init();
+
+		if (vault == "sandbox")
+		{
+			datafile.hidden = false;
+		}
+	});
 }
 
 function ancestors(note)
@@ -804,14 +815,9 @@ function downloadnotes()
 	});
 }
 
-function downloadlocal()
+function downloadvault()
 {
-	var data =
-	{
-		local : JSON.parse(window.localStorage.getItem("local")),
-		remote : JSON.parse(window.localStorage.getItem("remote"))
-	};
-	download(timestamp() + " notes.json", JSON.stringify(data));
+	download("notes " + timestamp() + " " + currentvault + ".json", window.localStorage.getItem(currentvault));
 }
 
 function downloadnotewithsubs()
@@ -961,22 +967,31 @@ function initsnippets()
 	}
 }
 
-function othervault()
-{
-	return isremote() ? "local" : "remote";
-}
-
 function initvault()
 {
 	currentvault = window.localStorage.getItem("vault") || "local";
+}
+
+function loaddatafile(filepath)
+{
+	reader = new FileReader();
+    if (filepath.files && filepath.files[0]) 
+	{           
+        reader.onload = function (e) 
+	    {
+            localdata = JSON.parse(e.target.result);
+            loadlast();
+            datafile.hidden = true;
+        };
+        reader.readAsText(filepath.files[0]);
+    }       
+    return true;
 }
 
 function init()
 {
 	loadsettings();
 	initvault();
-
-	commands.find(c => c.action == switchvault).hint = "Switch to " + othervault() + " vault";
 
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
@@ -1865,7 +1880,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = "";
+	document.title = "[" + currentvault + "] -\xa0";
 	if (currenttag)
 	{
 		document.title += "[" + currenttag + "] -\xa0";

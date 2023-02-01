@@ -354,6 +354,19 @@ var snippets = [
 	cursor: 0
 }];
 
+function ask(question)
+{
+	return new Promise( (resolve) => 
+	{
+		filter.placeholder = question;
+		return searchinlist(["Yes", "No"])
+		.then(answer => 
+		{
+			resolve(answer);
+		});
+	});
+}
+
 function getnote(title)
 {
 	return localdata.find(note => note.title == title);
@@ -413,21 +426,25 @@ function includesub()
 	if (range)
 	{
 		var title = linkatpos();
-		if (confirm("Replace [[" + title + "]] by its content?"))
+		ask("Replace [[" + title + "]] by its content?")
+		.then( (answser) =>
 		{
+			if (answser != "Yes") return;
+
 			var subnote = getnote(title);
 			md.value = 
 			md.value.substring(0, range.start)
 			+ subnote.content
 			+ md.value.substring(range.end);
 
-			if (confirm("Delete '" + title + "'?"))
+			ask("Delete '" + title + "'?")
+			.then( (answser) =>
 			{
+				if (answser != "Yes") return;
 				deletenote(subnote);
-			}
-
-			datachanged();
-		}
+			})
+			.finally(datachanged);
+		});
 	}
 }
 

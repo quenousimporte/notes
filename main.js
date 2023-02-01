@@ -6,6 +6,7 @@ var defaultsettings =
 	fontcolor: "black",
 	lineheight: "130%",
     accentcolor: "#5AA7CE",
+    margins: "7%",
 
 	savedelay: 2000,
 	foldmarkstart: 22232,
@@ -886,6 +887,8 @@ function applystyle()
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.color = settings.fontcolor;
 	document.body.style.caretColor = settings.accentcolor;
+	document.body.style.marginLeft = settings.margins;
+	document.body.style.marginRight = settings.margins;
 
 	if (settings.titleinaccentcolor)
 	{
@@ -1556,6 +1559,15 @@ function save()
 {
 	clearTimeout(workerid);
 
+	if (currentnote.title == "settings.json")
+	{
+		settings = JSON.parse(md.value);
+		savesettings();
+		loadsettings();
+		saved = true;
+		return;
+	}
+
 	if (!localdata)
 	{
 		showtemporaryinfo("cannot push empty data");
@@ -1579,12 +1591,6 @@ function save()
 	currentnote.content = content;
 
 	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
-
-	if (currentnote.title == "settings.json")
-	{
-		settings = JSON.parse(content);
-		savesettings();
-	}
 	console.log("data serialized in local storage")
 
 	if (isremote())
@@ -2003,10 +2009,6 @@ function resetfolds()
 function bindfile(note)
 {
 	var changed = currentnote != note;
-	if (currentnote && currentnote.title == "settings.json")
-	{
-		loadsettings();
-	}
 
 	backup = note.content;
 	currentnote = note;

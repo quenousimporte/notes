@@ -525,10 +525,7 @@ function switchvault()
 		window.localStorage.setItem("vault", vault);
 		init();
 
-		if (vault == "sandbox")
-		{
-			datafile.hidden = false;
-		}
+		datafile.hidden = vault != "sandbox";
 	});
 }
 

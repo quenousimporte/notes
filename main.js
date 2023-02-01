@@ -463,6 +463,7 @@ function showinfo()
 			(tags ? "tags: " + tags : ""),
 			"saved: " + saved,
 			"word count: " + getwords(),
+			"current filter: " + currenttag || "",
 			"current note start: " + stat.cur.t,
 			"current note queries: " + stat.cur.q,
 			"session start: " + stat.ses.t,
@@ -1918,12 +1919,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = "[" + currentvault + "] -\xa0";
-	if (currenttag)
-	{
-		document.title += "[" + currenttag + "] -\xa0";
-	}
-	document.title += currentnote.title;
+	document.title = currentnote.title;
 }
 
 function ontitlechange()

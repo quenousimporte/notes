@@ -426,25 +426,20 @@ function includesub()
 	if (range)
 	{
 		var title = linkatpos();
-		ask("Replace [[" + title + "]] by its content?")
-		.then( (answser) =>
+		if confirm("Replace [[" + title + "]] by its content?")
 		{
-			if (answser != "Yes") return;
-
 			var subnote = getnote(title);
 			md.value = 
 			md.value.substring(0, range.start)
 			+ subnote.content
 			+ md.value.substring(range.end);
 
-			ask("Delete '" + title + "'?")
-			.then( (answser) =>
+			if confirm("Delete '" + title + "'?")
 			{
-				if (answser != "Yes") return;
 				deletenote(subnote);
-			})
-			.finally(datachanged);
-		});
+				datachanged();
+			}
+		}
 	}
 }
 

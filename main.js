@@ -729,7 +729,7 @@ function showtemporaryinfo(data, title)
 		{
 			filter.placeholder = "Search...";
 		});
-	md.focus();
+	//md.focus();
 }
 
 function getwords()

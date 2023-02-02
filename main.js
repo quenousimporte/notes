@@ -17,7 +17,7 @@ var defaultsettings =
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    "];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• "];
 var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 
@@ -356,6 +356,10 @@ var snippets = [
 	hint: "Dialog mark",
 	insert: "— ",
 	cursor: 0
+},
+{
+	command: "/*",
+	insert: "• "
 }];
 
 function ask(question)
@@ -611,6 +615,19 @@ function showoutline()
 			.replace("# ", "")
 			.replace(/#/g, "\xa0".repeat(4));
 			outline[line] = pos;
+		}
+		else if (line == "---" && index != 0 && index != 3)
+		{
+			var next;
+			if (next = lines.find((current, i) => 
+			{
+				return i > index && current != "";
+			}))
+			{
+				var nbcar = 40;
+				next = next.length < nbcar ? next : next.substring(0, nbcar) + "...";
+				outline["section L" + index + ": " + next] = pos;
+			}
 		}
 	});
 

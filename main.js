@@ -264,7 +264,11 @@ var commands = [
 	shortcut: "ctrl+l"
 },
 {
-	hint: "Change vault",
+	hint: "Select vault",
+	action: selectvault
+},
+{
+	hint: "Switch local/remote vault",
 	action: switchvault,
 	shortcut: "ctrl+shift+V"
 },
@@ -426,7 +430,7 @@ function includesub()
 	if (range)
 	{
 		var title = linkatpos();
-		if confirm("Replace [[" + title + "]] by its content?")
+		if (confirm("Replace [[" + title + "]] by its content?"))
 		{
 			var subnote = getnote(title);
 			md.value = 
@@ -434,7 +438,7 @@ function includesub()
 			+ subnote.content
 			+ md.value.substring(range.end);
 
-			if confirm("Delete '" + title + "'?")
+			if (confirm("Delete '" + title + "'?"))
 			{
 				deletenote(subnote);
 				datachanged();
@@ -513,15 +517,24 @@ function addtagfilter()
 	}
 }
 
+function applyvault(vault)
+{
+	window.localStorage.setItem("vault", vault);
+	init();
+	datafile.hidden = vault != "sandbox";
+}
+
 function switchvault()
 {
-	searchinlist(vaults)
+	applyvault(currentvault == "local" ? "remote" : "local");
+}
+
+function selectvault()
+{
+	searchinlist(vaults, null, vaults.findIndex( (v) => v == currentvault))
 	.then(vault => 
 	{
-		window.localStorage.setItem("vault", vault);
-		init();
-
-		datafile.hidden = vault != "sandbox";
+		applyvault(vault);
 	});
 }
 

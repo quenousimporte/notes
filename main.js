@@ -389,7 +389,7 @@ function createsubnote(suggestedtitle)
 	}
 	var range = getlinesrange();
 	var content = md.value.substring(range.start, range.end);
-	filter.placeholder = "Subnote title...";
+	filter.placeholder = "Create subnote...";
 	searchinlist(name)
 	.then(title => 
 	{
@@ -2021,11 +2021,43 @@ function editorkeydown()
 			setpos(getpos() - 2);
 			insert("    ", 2);
 		}
-		// disable tab
-		/*else
+		else
 		{
-			insert("    ");
-		}*/
+			var init = {
+				start: md.selectionStart,
+				end: md.selectionEnd
+			};
+			var range = getlinesrange();
+			range.start--;
+			range.end--;
+			var selection = md.value.substring(range.start, range.end);
+			var newtext;
+			if (event.shiftKey)
+			{
+				newtext = selection.replaceAll("\n    ", "\n");
+			}
+			else
+			{
+				newtext = selection.replaceAll("\n", "\n    ");
+
+			}
+			md.value = md.value.substring(0, range.start)
+			+ newtext
+			+ md.value.substring(range.end);
+
+			var shift = 0;
+			if (newtext.length < selection.length)
+			{
+				shift = -4;
+			}
+			else if (newtext.length > selection.length)
+			{
+				shift = 4;
+			}
+
+			md.selectionStart = init.start + shift;
+			md.selectionEnd = init.end + (newtext.length - selection.length);
+		}
 	}
 	else if (event.key === "[" && before(1) == "[")
 	{

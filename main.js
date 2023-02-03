@@ -86,9 +86,9 @@ var themes =
 	{
 		bgcolor: "rgb(48,56,65)",
 		fontfamily: "'Consolas', monospace",
-		fontsize: "15px",
+		fontsize: "16px",
 		fontcolor: "rgb(216,222,233)",
-		lineheight: "110%",
+		lineheight: "120%",
 		accentcolor: "rgb(249,174,88)"
 	},
 	"Plus plus":
@@ -113,9 +113,9 @@ var themes =
 	{
 		bgcolor: "rgb(252,253,253)",
 		fontfamily: "'Consolas', monospace",
-		fontsize: "15px",
+		fontsize: "16px",
 		fontcolor: "rgb(50,50,50)",
-		lineheight: "110%",
+		lineheight: "120%",
 		accentcolor: "rgb(95,180,180)"
 	},
 	Cryptee:

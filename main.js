@@ -42,12 +42,14 @@ var stat =
 	ses:
 	{
 		q: 0,
-		t: timestamp()
+		t: timestamp(),
+		d: 0
 	},
 	cur:
 	{
 		q: 0,
-		t: timestamp()
+		t: timestamp(),
+		d: 0
 	}
 }
 
@@ -313,17 +315,21 @@ var commands = [
 	action: comment
 },
 {
-	hint: "Download note",
+	hint: "Download current note",
 	action: downloadnote
 },
 {
-	hint: "Download note with merged subnotes",
+	hint: "Download current note with merged subnotes",
 	action: downloadnotewithsubs
 },
 {
-	hint: "Download vault",
+	hint: "Download current vault",
 	action: downloadvault,
 	shortcut: "ctrl+shift+S"
+},
+{
+	hint: "Download all vaults",
+	action: downloadallvaults
 }];
 
 var snippets = [
@@ -456,6 +462,22 @@ function togglespellcheck()
 	md.spellcheck = !md.spellcheck;
 }
 
+function formatsize(size)
+{
+	var unit = "b";
+	if (size > 1024)
+	{
+		size /= 1024;
+		unit = "kb";
+	}
+	if (size > 1024)
+	{
+		size /= 1024;
+		unit = "mb";
+	}
+ 	return size.toFixed(2) + " " + unit;
+}
+
 function showinfo()
 {
 	var tags = gettags(currentnote);
@@ -465,12 +487,15 @@ function showinfo()
 			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
 			"saved: " + saved,
+			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
 			"word count: " + getwords(),
 			"current filter: " + currenttag || "",
 			"current note start: " + stat.cur.t,
 			"current note queries: " + stat.cur.q,
+			"current note data sent: " + formatsize(stat.cur.d),
 			"session start: " + stat.ses.t,
-			"session queries: " + stat.ses.q
+			"session queries: " + stat.ses.q,
+			"session data sent: " + formatsize(stat.ses.d)
 		], "Note info");
 }
 
@@ -530,7 +555,11 @@ function applyvault(vault)
 
 function switchvault()
 {
-	applyvault(currentvault == "local" ? "remote" : "local");
+	var newvault = currentvault == "local" ? "remote" : "local";
+	if (confirm("Switch to " + newvault + "?"))
+	{
+		applyvault(newvault);
+	}	
 }
 
 function selectvault()
@@ -873,6 +902,18 @@ function downloadnotes()
 	});
 }
 
+function downloadallvaults()
+{
+	var data = 
+	{
+		local: JSON.parse(window.localStorage.getItem("local")),
+		remote: JSON.parse(window.localStorage.getItem("remote")),
+		sandbox: JSON.parse(window.localStorage.getItem("sandbox")),
+		trash: JSON.parse(window.localStorage.getItem("trash")),
+	};
+	download("notes " + timestamp() + ".json", JSON.stringify(data));
+}
+
 function downloadvault()
 {
 	download("notes " + timestamp() + " " + currentvault + ".json", window.localStorage.getItem(currentvault));
@@ -1111,6 +1152,9 @@ function queryremote(params)
 		{
 			paramlist.push(i + "=" + encodeURIComponent(params[i]));
 		}
+
+		stat.cur.d += paramlist.join("&").length;
+		stat.ses.d += paramlist.join("&").length;
 
 		var xhr = new XMLHttpRequest();
 		xhr.open("POST", "handler.php");
@@ -2015,49 +2059,40 @@ function editorkeydown()
 	else if (event.key === "Tab")
 	{
 		event.preventDefault();
-        // todo: reverse with shift
-		if (before(2) == "* " || before(2) == "- ")
+		var init = {
+			start: md.selectionStart,
+			end: md.selectionEnd
+		};
+		var range = getlinesrange();
+		range.start--;
+		range.end--;
+		var selection = md.value.substring(range.start, range.end);
+		var newtext;
+		if (event.shiftKey)
 		{
-			setpos(getpos() - 2);
-			insert("    ", 2);
+			newtext = selection.replaceAll("\n    ", "\n");
 		}
 		else
 		{
-			var init = {
-				start: md.selectionStart,
-				end: md.selectionEnd
-			};
-			var range = getlinesrange();
-			range.start--;
-			range.end--;
-			var selection = md.value.substring(range.start, range.end);
-			var newtext;
-			if (event.shiftKey)
-			{
-				newtext = selection.replaceAll("\n    ", "\n");
-			}
-			else
-			{
-				newtext = selection.replaceAll("\n", "\n    ");
+			newtext = selection.replaceAll("\n", "\n    ");
 
-			}
-			md.value = md.value.substring(0, range.start)
-			+ newtext
-			+ md.value.substring(range.end);
-
-			var shift = 0;
-			if (newtext.length < selection.length)
-			{
-				shift = -4;
-			}
-			else if (newtext.length > selection.length)
-			{
-				shift = 4;
-			}
-
-			md.selectionStart = init.start + shift;
-			md.selectionEnd = init.end + (newtext.length - selection.length);
 		}
+		md.value = md.value.substring(0, range.start)
+		+ newtext
+		+ md.value.substring(range.end);
+
+		var shift = 0;
+		if (newtext.length < selection.length)
+		{
+			shift = -4;
+		}
+		else if (newtext.length > selection.length)
+		{
+			shift = 4;
+		}
+
+		md.selectionStart = init.start + shift;
+		md.selectionEnd = init.end + (newtext.length - selection.length);
 	}
 	else if (event.key === "[" && before(1) == "[")
 	{
@@ -2159,6 +2194,7 @@ function loadnote(name)
 	putontop();
 
 	stat.cur.q = 0;
+	stat.cur.d = 0;
 	stat.cur.t = timestamp();
 }
 

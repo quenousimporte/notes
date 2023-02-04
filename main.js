@@ -573,63 +573,75 @@ function selectvault()
 
 function ancestors(note)
 {
-	var list = [... new Set(parents(note))];
-	list.forEach(title => 
+	var list = [note];
+	var result = [];
+	
+	while (list.length)
 	{
-		var parent = localdata.find(n => n.title == title);
-		if (parent && !list.find(p => p.title == parent))
+		var current = list.shift();
+		if (result.indexOf(current) == -1)
 		{
-			list = list.concat(ancestors(parent));
+			result.push(current);
+			list = list.concat(parents(current));
 		}
-	})
-	return list;
+	}
+	return result;
 }
 
 function descendants(note)
 {
-	var list = [... new Set(children(note))];
-	list.forEach(title => 
+	var list = [note];
+	var result = [];
+	
+	while (list.length)
 	{
-		var child = localdata.find(n => n.title == title);
-		if (child && !list.find(p => p.title == child))
+		var current = list.shift();
+		if (result.indexOf(current) == -1)
 		{
-			list = list.concat(descendants(localdata.find(n => n.title == title)));	
-		}		
-	})
-	return list;
+			result.push(current);
+			list = list.concat(children(current));
+		}
+	}
+	return result;
 }
 
 function children(note)
 {
 	return (note.content
 		.match(/\[\[([^\]]*)\]\]/g) || [])
-		.map(l => l.replace("[[", "").replace("]]", ""));
+		.map(l => l.replace("[[", "").replace("]]", ""))
+		.map(l => getnote(l));
 }
 
 function parents(note)
 {
 	return localdata
-		.filter(n => n.content.indexOf("[[" + note.title + "]]") != -1)
-		.map(n => n.title);
+		.filter(n => n.content.indexOf("[[" + note.title + "]]") != -1);
+}
+
+function connected(note)
+{
+	var list = [note];
+	var result = [];
+	
+	while (list.length)
+	{
+		var current = list.shift();
+		if (result.indexOf(current) == -1)
+		{
+			result.push(current);
+			list = list.concat(children(current)).concat(parents(current));
+		}
+	}
+	return result;
 }
 
 function shownotelinks()
 {
-	try
-	{
-		var list = ancestors(currentnote).reverse();
-		var index = list.length;
-		list.push(currentnote.title);
-		list = list.concat(descendants(currentnote));
-
-		searchinlist(list, null, index)
-		.then(loadnote);
-	}
-	catch(err)
-	{
-		showtemporaryinfo("Loop detected");
-	}
+	searchinlist(connected(currentnote).map(n => n.title))
+	.then(loadnote);
 }
+
 
 function showoutline()
 {

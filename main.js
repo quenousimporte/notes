@@ -648,6 +648,7 @@ function shownotelinks()
 	if (settings.enablenetwork)
 	{
 		networkpage.hidden = false;
+		md.hidden = true;
 		function id(note)
 		{
 			return localdata.indexOf(note);
@@ -712,8 +713,9 @@ function shownotelinks()
 		var graph = new vis.Network(network, data, options);
 		graph.on("click", function(event)
 		{
-			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
 			networkpage.hidden = true;
+			md.hidden = false;
+			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
 		});
 	}
 	else
@@ -1771,6 +1773,12 @@ function save()
 		return;
 	}
 
+	if (saved)
+	{
+		console.log("nothing to save");
+		return;
+	}
+
 	var content = getnotecontent();
 	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
@@ -2030,6 +2038,11 @@ function mainkeydownhandler()
 		else if (currentnote.title == "Help" || currentnote.title == "Search result")
 		{
 			loadlast();
+		}
+		else if (networkpage.hidden == false)
+		{
+			networkpage.hidden = true;
+			md.hidden = false;
 		}
 		else if (preview.hidden == false)
 		{

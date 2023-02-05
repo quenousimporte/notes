@@ -13,7 +13,8 @@ var defaultsettings =
 	defaultpreviewinsplit: false,
 	enablefolding: false,
 	tagautocomplete: false,
-	titleinaccentcolor: false
+	titleinaccentcolor: false,
+	enablenetwork: false
 };
 
 //builtin
@@ -184,6 +185,12 @@ var commands = [
 	shortcut: "ctrl+m",
 	hint: "Toggle preview",
 	action: togglepreview,
+	allowunsaved: true
+},
+{
+	shortcut: "ctrl+shift+M",
+	hint: "Toggle preview with merged subnotes",
+	action: togglepreviewwithsubs,
 	allowunsaved: true
 },
 {
@@ -638,8 +645,82 @@ function connected(note)
 
 function shownotelinks()
 {
-	searchinlist(connected(currentnote).map(n => n.title))
-	.then(loadnote);
+	if (settings.enablenetwork)
+	{
+		networkpage.hidden = false;
+		function id(note)
+		{
+			return localdata.indexOf(note);
+		}
+
+		var nodes = [];
+		var edges = [];
+
+		var list = [currentnote];
+		
+		while (list.length)
+		{
+			var current = list.shift();
+			if (!nodes.find(n => n.id == id(current)))
+			{
+				nodes.push(
+					{
+						id: id(current),
+						label: current.title
+					});
+
+				var buddies = children(current).concat(parents(current));
+
+				list = list.concat(buddies);
+
+				buddies.
+				forEach(buddy => {
+					if (!edges.find(edge => (edge.to == id(current) && edge.from == id(buddy)) || (edge.to == id(buddy) && edge.from == id(current))))
+					{
+						edges.push({
+							from: id(current),
+							to: id(buddy)
+						});
+					}				
+				});
+			}
+		}
+
+		var data = {
+			nodes: nodes,
+			edges: edges
+		};
+
+		var options = 
+		{
+			nodes:
+			{
+				color:
+				{
+					background: settings.bgcolor,
+					border: settings.fontcolor,
+				},
+				font:
+				{
+					color: settings.fontcolor,
+					size: 16,
+					face: settings.fontfamily
+				}
+			}
+		};
+		
+		var graph = new vis.Network(network, data, options);
+		graph.on("click", function(event)
+		{
+			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
+			networkpage.hidden = true;
+		});
+	}
+	else
+	{
+		searchinlist(connected(currentnote).map(n => n.title))
+		.then(loadnote);
+	}
 }
 
 
@@ -933,32 +1014,11 @@ function downloadvault()
 
 function downloadnotewithsubs()
 {
-	try
+	var note = withsubs();
+	if (note)
 	{
-		descendants(currentnote);	
-	}
-	catch (err)
-	{
-		showtemporaryinfo("Loop detected");
-		return;
-	}
-
-	var tempnote = 
-	{
-		title: currentnote.title + " (with subnotes)",
-		content: getnotecontent()
-	};
-
-	var kids = children(tempnote);
-	while (kids.length)
-	{
-		kids.forEach(t =>
-		{
-			tempnote.content = tempnote.content.replaceAll("[[" + t + "]]", getnote(t).content);
-		});
-		kids = children(tempnote);
-	}
-	download(tempnote.title + ".md", tempnote.content);
+		download(note.title + ".md", note.content);	
+	}	
 }
 
 function downloadnote()
@@ -1807,6 +1867,7 @@ function showhelp()
 
 	help.push("## Libs");
 	help.push("[Showdown](https://showdownjs.com/)");
+	help.push("[vis-network](https://visjs.org/)");
 
 	help.push("## Fonts");
 	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");
@@ -2152,6 +2213,54 @@ function togglepreview()
 		resize();
 		md.focus();
 	}
+}
+
+function withsubs()
+{
+	try
+	{
+		descendants(currentnote);	
+	}
+	catch (err)
+	{
+		showtemporaryinfo(err);
+		return null;
+	}
+
+	var tempnote = 
+	{
+		title: currentnote.title + " (with subnotes)",
+		content: getnotecontent()
+	};
+
+	var kids = children(tempnote);
+	while (kids.length)
+	{
+		kids.forEach(kid =>
+		{
+			tempnote.content = tempnote.content.replaceAll("[[" + kid.title + "]]", kid.content);
+		});
+		kids = children(tempnote);
+	}
+
+	return tempnote;
+}
+
+function togglepreviewwithsubs()
+{
+	var note = withsubs();
+	if (note)
+	{
+		preview.innerHTML = md2html(note.content);
+		md.hidden = !md.hidden;
+		preview.hidden = !preview.hidden;
+
+		if (preview.hidden)
+		{
+			resize();
+			md.focus();
+		}	
+	}	
 }
 
 function resetfolds()

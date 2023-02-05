@@ -2255,7 +2255,13 @@ function withsubs()
 	{
 		kids.forEach(kid =>
 		{
-			tempnote.content = tempnote.content.replaceAll("[[" + kid.title + "]]", kid.content);
+			var kidcontent = kid.content;
+			if (kidcontent.startsWith("---\n"))
+			{
+				var pos = kidcontent.indexOf("---\n", 4);
+				kidcontent = kidcontent.substring(pos + 4);
+			}
+			tempnote.content = tempnote.content.replaceAll("[[" + kid.title + "]]", kidcontent);
 		});
 		kids = children(tempnote);
 	}

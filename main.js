@@ -2057,6 +2057,10 @@ function mainkeydownhandler()
 		fileindex = Math.max(fileindex, 0);
 		applyfileindex();
 	}
+	else if (event.ctrlKey && event.key == " " || event.key == "F2")
+	{
+		commandpalette();
+	}
 	else
 	{
 		commands.filter(c => c.shortcut)

@@ -495,6 +495,7 @@ function showinfo()
 			(tags ? "tags: " + tags : ""),
 			"saved: " + saved,
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
+			"notes count: " + localdata.length,
 			"word count: " + getwords(),
 			"current filter: " + currenttag || "",
 			"current note start: " + stat.cur.t,

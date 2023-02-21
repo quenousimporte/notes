@@ -330,6 +330,10 @@ var commands = [
 	action: downloadnotewithsubs
 },
 {
+	hint: "Download all notes as flat markdown files",
+	action: downloadnotes
+},
+{
 	hint: "Download current vault",
 	action: downloadvault,
 	shortcut: "ctrl+shift+S"
@@ -978,24 +982,29 @@ function sharehtml()
 
 function download(filename, content)
 {
-	// trick: https://www.bitdegree.org/learn/javascript-download
-	// to improve...
 	var element = document.createElement('a');
-	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+	element.setAttribute('href', 'data:text/markdown;charset=utf-8,' + encodeURIComponent(content));
 	element.setAttribute('download', filename);
 	element.style.display = 'none';
 	document.body.appendChild(element);
 	element.click();
 	document.body.removeChild(element);
+	element = null;
 }
 
 function downloadnotes()
 {
-	localdata
-	.forEach(note =>
+	var copy = localdata.slice();
+	console.log(copy.length + " notes to download");
+	var id = setInterval(() => 
 	{
+		var note = copy.pop();
 		download(note.title + ".md", note.content);
-	});
+		if (copy.length == 0)
+		{
+			clearInterval(id);
+		}
+	}, 500);
 }
 
 function downloadallvaults()

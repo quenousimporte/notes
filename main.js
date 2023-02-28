@@ -377,6 +377,11 @@ var snippets = [
 {
 	command: "/*",
 	insert: "• "
+},
+{
+	command: "//",
+	insert: "<!--\n\n-->",
+	cursor: -4
 }];
 
 function ask(question)
@@ -494,10 +499,10 @@ function showinfo()
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
 		[
+			"saved: " + saved,
 			"title: " + currentnote.title,
 			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
-			"saved: " + saved,
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
 			"notes count: " + localdata.length,
 			"word count: " + getwords(),

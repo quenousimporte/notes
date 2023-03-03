@@ -740,7 +740,7 @@ function showoutline()
 {
 	var outline = {};
 	var pos = 0;
-	getnotecontent().split("\n").forEach((line, index, lines) =>
+	geteditorcontentwithfolds().split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
 		if (line.startsWith("#"))
@@ -885,7 +885,7 @@ function showtemporaryinfo(data, title)
 
 function getwords()
 {
-	return getnotecontent().split(/\s+\b/).length;
+	return geteditorcontentwithfolds().split(/\s+\b/).length;
 }
 
 function issplit()
@@ -961,7 +961,7 @@ function share()
 	{
 		navigator.share(
 		{
-			text: getnotecontent(),
+			text: geteditorcontentwithfolds(),
 			title: currentnote.title
 		});
 	}
@@ -971,7 +971,7 @@ function sharehtml()
 {
 	if (navigator.share)
 	{
-		var file = new File(['<html><body>' + md2html(getnotecontent()) + '</body></html>'],
+		var file = new File(['<html><body>' + md2html(geteditorcontentwithfolds()) + '</body></html>'],
 			currentnote.title + ".html",
 			{
 		  		type: "text/html",
@@ -1040,7 +1040,7 @@ function downloadnotewithsubs()
 
 function downloadnote()
 {
-	download(currentnote.title + ".md", getnotecontent());
+	download(currentnote.title + ".md", geteditorcontentwithfolds());
 }
 
 function remotecallfailed(error)
@@ -1321,7 +1321,7 @@ function getlinesrange()
 
 function sortselection()
 {
-	var content = getnotecontent();
+	var content = geteditorcontentwithfolds();
 	var range = {start: 0, end: content.length};
 	if (md.selectionStart != md.selectionEnd)
 	{
@@ -1369,7 +1369,7 @@ function fold()
 
 	folds.push(value);
 
-	setnotecontent(content.substring(0, md.selectionStart)
+	seteditorcontent(content.substring(0, md.selectionStart)
 		+ char
 		+ content.substring(md.selectionEnd));
 
@@ -1396,7 +1396,7 @@ function unfold()
 
 function unfoldall()
 {
-	md.value = getnotecontent();
+	md.value = geteditorcontentwithfolds();
 	resetfolds();
 	setpos(0);
 	md.focus();
@@ -1459,14 +1459,19 @@ function checkfolding()
 	}
 }
 
-function setnotecontent(content)
+function seteditorcontent(content)
 {
 	md.value = content;
 }
 
-function getnotecontent()
+function geteditorcontentwithfolds()
 {
 	return applyfolds(md.value);
+}
+
+function geteditorcontent()
+{
+	return md.value;
 }
 
 function ontopbarclick()
@@ -1794,7 +1799,7 @@ function save()
 		return;
 	}
 
-	var content = getnotecontent();
+	var content = geteditorcontentwithfolds();
 	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
@@ -1822,7 +1827,7 @@ function save()
 		.finally(() =>
 		{
 			pending = false;
-			if (content != getnotecontent())
+			if (content != geteditorcontentwithfolds())
 			{
 				console.log("but content changed: will save again");
 				datachanged();
@@ -2000,14 +2005,14 @@ function restore()
 {
 	if (confirm('restore "' + currentnote.title + '"?'))
 	{
-		setnotecontent(backup);
+		seteditorcontent(backup);
 		datachanged();
 	}
 }
 
 function insertheader()
 {
-	if (!getnotecontent().startsWith("---"))
+	if (!geteditorcontentwithfolds().startsWith("---"))
 	{
 		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
 		md.value = headers + md.value;
@@ -2236,7 +2241,7 @@ function insertautocomplete(selectednote)
 
 function togglepreview()
 {
-	preview.innerHTML = md2html(getnotecontent());
+	preview.innerHTML = md2html(geteditorcontentwithfolds());
 	md.hidden = !md.hidden;
 	preview.hidden = !preview.hidden;
 
@@ -2262,7 +2267,7 @@ function withsubs()
 	var tempnote = 
 	{
 		title: currentnote.title + " (with subnotes)",
-		content: getnotecontent()
+		content: geteditorcontentwithfolds()
 	};
 
 	var kids = children(tempnote);
@@ -2315,8 +2320,8 @@ function bindfile(note)
 	title.value = note.title;
 	setwindowtitle();
 
-	setnotecontent(note.content || "");
-	preview.innerHTML = md2html(getnotecontent());
+	seteditorcontent(note.content || "");
+	preview.innerHTML = md2html(geteditorcontentwithfolds());
 
 	resetfolds();
 

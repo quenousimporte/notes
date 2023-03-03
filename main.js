@@ -14,7 +14,8 @@ var defaultsettings =
 	enablefolding: false,
 	tagautocomplete: false,
 	titleinaccentcolor: false,
-	enablenetwork: false
+	enablenetwork: false,
+	titlebydefault: false
 };
 
 //builtin
@@ -1111,6 +1112,11 @@ function loadsettings()
 	if (!settings.enablefolding)
 	{
 		commands = commands.filter(c => !c.hint.toLowerCase().includes("fold"));
+	}
+
+	if (settings.titlebydefault)
+	{
+		toggletitle();
 	}
 }
 

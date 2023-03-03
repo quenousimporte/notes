@@ -70,9 +70,11 @@ body::-webkit-scrollbar-thumb {
 
 #title {
 	width: 100%;
-	padding-top: 10px;
 	font-size: 20px;
 	background-color: inherit;
+	height: 100%;
+	font-weight: bold;
+
 }
 
 /* search file dialog */

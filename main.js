@@ -403,6 +403,11 @@ function getnote(title)
 	return localdata.find(note => note.title == title);
 }
 
+function getrangecontent(range)
+{
+	return md.value.substring(range.start, range.end);
+}
+
 function createsubnote(suggestedtitle)
 {
 	var name = [];
@@ -411,7 +416,7 @@ function createsubnote(suggestedtitle)
 		name.push(suggestedtitle);
 	}
 	var range = getlinesrange();
-	var content = md.value.substring(range.start, range.end);
+	var content = getrangecontent(range);
 	filter.placeholder = "Create subnote...";
 	searchinlist(name)
 	.then(title => 
@@ -502,6 +507,7 @@ function showinfo()
 		[
 			"saved: " + saved,
 			"title: " + currentnote.title,
+			"cursor position: " + (100 * md.selectionStart / md.value.length).toFixed(2) + "%",
 			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",

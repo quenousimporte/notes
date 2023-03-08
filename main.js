@@ -767,7 +767,7 @@ function showoutline()
 			{
 				var nbcar = 40;
 				next = next.length < nbcar ? next : next.substring(0, nbcar) + "...";
-				outline["section L" + index + ": " + next] = pos;
+				outline["section line " + index + ": " + next] = pos;
 			}
 		}
 	});

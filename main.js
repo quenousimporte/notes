@@ -1291,6 +1291,12 @@ function checkevents()
 	queryremote({action: "cal"})
 	.then(data =>
 	{
+		if (!isremote())
+		{
+			console.log("ignore events because current vault is " + currentvault);
+			return;
+		}
+
 		var events = ics2json(data.ics);
 
 		// todo: keep future only
@@ -2467,7 +2473,7 @@ function loadnote(name)
 		localdata.unshift(note);
 	}
 
-	if (!preview.hidden)
+	if (!preview.hidden || (preview.hidden && note.title == "Revue de presse"))
 	{
 		togglepreview();
 	}

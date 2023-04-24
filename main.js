@@ -342,6 +342,11 @@ var commands = [
 {
 	hint: "Download all vaults",
 	action: downloadallvaults
+},
+{
+	hint: "Open revue de presse",
+	action: loadreview,
+	shortcut: "ctrl+r"
 }];
 
 var snippets = [
@@ -1982,6 +1987,11 @@ function datachanged()
 function loadtodo()
 {
 	loadnote("todo");
+}
+
+function loadreview()
+{
+	loadnote("Revue de presse");
 }
 
 function loadquicknote()

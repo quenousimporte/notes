@@ -1331,7 +1331,7 @@ function checkevents()
 			showtemporaryinfo("New events to check");
 			var todo = getnote("todo");
 			var content = todo.content;
-			var newcontent = "";
+			var newcontent = "---\n";
 			newevents.forEach(evt =>
 			{
 				newcontent += "new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY + "\n";

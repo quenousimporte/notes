@@ -2,7 +2,7 @@
 
 ## getting started
 
-navigate to index.html from your own web server or local computer, or try https://notes.ouvaton.org.
+launch index.html from your web server or local computer, or try https://notes.ouvaton.org.
 
 your notes are stored in your browser local storage.
 

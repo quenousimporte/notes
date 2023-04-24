@@ -1208,6 +1208,7 @@ function init()
 			localdata = data;
 			window.localStorage.setItem("remote", JSON.stringify(data));
 			loadlast();
+			checkevents();
 		})
 		.catch(remotecallfailed);
 	}
@@ -1237,6 +1238,111 @@ function togglepassword()
 	notepage.style.display = "none";
 	document.title = "notes";
 	password.focus();
+}
+
+function cvdt(text)
+{
+	var day = text.substr(0,8);
+	return new Date(
+		day.substr(0,4) + "-" +
+		day.substr(4,2) + "-" +
+		day.substr(6,2));
+}
+
+function ics2json(ics)
+{
+	// check DTSTAMP if event is modified?
+
+	var keys = ["UID", "SUMMARY", "DTSTART"];
+	var events = {};
+	ics.split("BEGIN:VEVENT").forEach(block =>
+	{
+		var evt = {};
+		block.split("\r\n").forEach(line =>
+		{
+			var tuple = line.split(":");
+			if (tuple.length > 1)
+			{
+				var key = tuple.shift().split(";")[0];
+				var value = tuple.join(":");
+				if (keys.includes(key))
+				{
+					if (key == "UID")
+					{
+						events[value] = evt;
+					}
+					else if (key == "DTSTART")
+					{
+						evt.DTSTART = cvdt(value);
+					}
+					else
+					{
+						evt[key] = value;
+					}
+				}
+			}
+		});
+	});
+	return events;
+}
+
+function checkevents()
+{
+	queryremote({action: "cal"})
+	.then(data =>
+	{
+		var events = ics2json(data.ics);
+
+		// todo: keep future only
+		/*var today = new Date();
+		today.setHours(0,0,0,0);
+		events = events.filter(e => e.DTSTART >= today);*/
+
+		var note = getnote("events.json");
+		if (!note)
+		{
+			note = {
+				title: "events.json",
+				content: "{}"
+			};
+			localdata.push(note);
+		}
+
+		// check new events
+		var existing = JSON.parse(note.content);
+		var newevents = [];
+		Object.keys(events).forEach(uid =>
+		{
+			if (!existing[uid])
+			{
+				newevents.push(events[uid]);
+				console.log("new event found: " + events[uid].SUMMARY)
+			}
+		});
+
+		if (newevents.length)
+		{
+			showtemporaryinfo("New events to check");
+			var todo = getnote("todo");
+			var content = todo.content;
+			var newcontent = "";
+			newevents.forEach(evt =>
+			{
+				newcontent += "new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY + "\n";
+			});
+			todo.content = newcontent + "---\n" + content;
+
+			// reload todo if open
+			if (currentnote == todo)
+			{
+				bindfile(todo);
+			}
+
+			note.content = JSON.stringify(events);
+			datachanged();
+		}
+	})
+	.catch(remotecallfailed);
 }
 
 function queryremote(params)

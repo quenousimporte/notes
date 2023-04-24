@@ -2,6 +2,8 @@
 
 // global settings
 $datafile = '../data/data.json';
+$icsfile = 'ics url';
+
 $password = '';
 
 // check authent
@@ -35,6 +37,12 @@ else if (isset($_POST['action']))
 			{
 				echo '{}';
 			}			
+		break;
+
+		case 'cal':
+			$result = array();
+			$result["ics"] = file_get_contents($icsfile);
+			echo json_encode($result);
 		break;
 
 		default:

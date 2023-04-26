@@ -15,7 +15,8 @@ var defaultsettings =
 	tagautocomplete: false,
 	titleinaccentcolor: false,
 	enablenetwork: false,
-	titlebydefault: false
+	titlebydefault: false,
+	chat: true
 };
 
 //builtin
@@ -344,7 +345,7 @@ var commands = [
 	action: downloadallvaults
 },
 {
-	hint: "Open revue de presse",
+	hint: "Open press review",
 	action: loadreview,
 	shortcut: "ctrl+r"
 }];
@@ -1234,6 +1235,14 @@ function init()
 			md.focus();
 		}
 	}
+
+	if (settings.chat)
+	{
+	    converse.initialize({
+	        bosh_service_url: 'https://conversejs.org/http-bind/',
+	        show_controlbox_by_default: true
+	    });	
+	}
 }
 
 function togglepassword()
@@ -1641,6 +1650,7 @@ function md2html(content)
 	converter.setOption("simplifiedAutoLink", true);
 	converter.setOption("simpleLineBreaks", true);
 	converter.setOption("metadata", true);
+	converter.setOption("openLinksInNewWindow", true);
 
 	var html = converter.makeHtml(content);
 
@@ -1991,7 +2001,7 @@ function loadtodo()
 
 function loadreview()
 {
-	loadnote("Revue de presse");
+	loadnote("press review");
 }
 
 function loadquicknote()
@@ -2483,7 +2493,7 @@ function loadnote(name)
 		localdata.unshift(note);
 	}
 
-	if (!preview.hidden || (preview.hidden && note.title == "Revue de presse"))
+	if (!preview.hidden || (preview.hidden && note.title == "press review"))
 	{
 		togglepreview();
 	}

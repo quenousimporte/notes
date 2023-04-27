@@ -16,7 +16,7 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	chat: true
+	chat: false
 };
 
 //builtin
@@ -2493,7 +2493,7 @@ function loadnote(name)
 		localdata.unshift(note);
 	}
 
-	if (!preview.hidden || (preview.hidden && note.title == "press review"))
+	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
 	{
 		togglepreview();
 	}

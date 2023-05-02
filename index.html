@@ -2,26 +2,25 @@
 <html>
 	<head>
 		<title>notes</title>
-	    <link rel="stylesheet" type="text/css" href="style.css">
-	    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
 	    <meta charset="UTF-8">
 	    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-		<link rel="stylesheet" href="https://fonts.cdnfonts.com/css/inconsolata-2">
+ 		
+ 		<link rel="icon" type="image/x-icon" href="favicon.ico">
+	    <link rel="stylesheet" type="text/css" href="style.css">
+
+	   	<link rel="stylesheet" href="https://fonts.cdnfonts.com/css/inconsolata-2">
 		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Droid+Serif" />
 		<link rel='stylesheet' href='//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack-subset.css'>
 		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Josefin+Sans" />
-
-		<link rel="stylesheet" type="text/css" media="screen" href="https://cdn.conversejs.org/10.1.2/dist/converse.min.css">
-		<script src="libsignal-protocol.js"></script>
-		<script src="https://cdn.conversejs.org/10.1.2/dist/converse.min.js" charset="utf-8"></script>
 	</head>
 
 	<body onload="init()" onkeydown="mainkeydownhandler()" onresize="resize()">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="libs/showdown.min.js"></script>
+		<script src="libs/vis-network.min.js"></script>
+
 		<script src="main.js"></script>
-
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-network.min.js" integrity="sha512-GE9mKnPrTn2DY5AZuIC9yE6K4FF8T+9lsO7jwHn+RW9rEjnHzF/in0oGwlPzRwjhQ+oJiawmtfvleX+l6h5/cA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+		
 		<div id="networkpage" hidden>
 			<div id="network"></div>
 		</div>

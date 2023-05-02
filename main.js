@@ -15,8 +15,7 @@ var defaultsettings =
 	tagautocomplete: false,
 	titleinaccentcolor: false,
 	enablenetwork: false,
-	titlebydefault: false,
-	chat: false
+	titlebydefault: false
 };
 
 //builtin
@@ -1234,14 +1233,6 @@ function init()
 		{
 			md.focus();
 		}
-	}
-
-	if (settings.chat)
-	{
-	    converse.initialize({
-	        bosh_service_url: 'https://conversejs.org/http-bind/',
-	        show_controlbox_by_default: true
-	    });	
 	}
 }
 

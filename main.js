@@ -37,8 +37,6 @@ var tags = null;
 var currentvault = "";
 var currenttag = "";
 
-var vaults = ["local", "remote", "sandbox"];
-
 var stat =
 {
 	ses:
@@ -272,10 +270,6 @@ var commands = [
 	hint: "Show connected notes",
 	action: shownotelinks,
 	shortcut: "ctrl+l"
-},
-{
-	hint: "Select vault",
-	action: selectvault
 },
 {
 	hint: "Switch local/remote vault",
@@ -579,7 +573,6 @@ function applyvault(vault)
 {
 	window.localStorage.setItem("vault", vault);
 	init();
-	datafile.hidden = vault != "sandbox";
 }
 
 function switchvault()
@@ -589,15 +582,6 @@ function switchvault()
 	{
 		applyvault(newvault);
 	}	
-}
-
-function selectvault()
-{
-	searchinlist(vaults, null, vaults.findIndex( (v) => v == currentvault))
-	.then(vault => 
-	{
-		applyvault(vault);
-	});
 }
 
 function ancestors(note)
@@ -1026,11 +1010,10 @@ function downloadnotes()
 
 function downloadallvaults()
 {
-	var data = 
+	var data =
 	{
 		local: JSON.parse(window.localStorage.getItem("local")),
 		remote: JSON.parse(window.localStorage.getItem("remote")),
-		sandbox: JSON.parse(window.localStorage.getItem("sandbox")),
 		trash: JSON.parse(window.localStorage.getItem("trash")),
 	};
 	download("notes " + timestamp() + ".json", JSON.stringify(data));
@@ -1175,22 +1158,6 @@ function initsnippets()
 function initvault()
 {
 	currentvault = window.localStorage.getItem("vault") || "local";
-}
-
-function loaddatafile(filepath)
-{
-	reader = new FileReader();
-    if (filepath.files && filepath.files[0]) 
-	{           
-        reader.onload = function (e) 
-	    {
-            localdata = JSON.parse(e.target.result);
-            loadlast();
-            datafile.hidden = true;
-        };
-        reader.readAsText(filepath.files[0]);
-    }       
-    return true;
 }
 
 function init()

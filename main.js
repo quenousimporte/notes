@@ -1138,21 +1138,6 @@ function initsnippets()
 			});
 		}
 	});
-
-	// md headings
-	for (var i = 1; i <= 3; i++)
-	{
-		if (!snippets.find(s => s.command ==  "/" + i))
-		{
-			snippets.push(
-			{
-				command: "/" + i,
-				hint: "Heading " + i,
-				insert: "#".repeat(i) + " ",
-				cursor: 0
-			});
-		}
-	}
 }
 
 function initvault()

@@ -1,12 +1,12 @@
 var defaultsettings =
 {
 	bgcolor: "white",
-	fontfamily: "'Inconsolata', 'Consolas', monospace",
-	fontsize: "90%",
-	fontcolor: "black",
-	lineheight: "130%",
-    accentcolor: "#5AA7CE",
-    margins: "7%",
+	fontfamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
+	fontsize: "16px",
+	fontcolor: "rgb(55,53,47)",
+	lineheight: "24px",
+	accentcolor: "rgb(55,53,47)",
+	margins: "7%",
 
 	savedelay: 2000,
 	foldmarkstart: 22232,

@@ -1652,7 +1652,7 @@ function showgrepresult(grepresult)
 		grepcontent.push("[[" + file + "]]");
 		for (var l in grepresult[file])
 		{
-			grepcontent.push("[" + l + "] " + grepresult[file][l].replace(new RegExp("(" + filter.value + ")", "gi"), "**$1**"));
+			grepcontent.push("[" + l + "] " + grepresult[file][l]);
 		}
 		grepcontent.push("");
 	}
@@ -1706,7 +1706,9 @@ function commandpalette()
 	searchinlist(commands
 		.filter(c => !c.excludepalette)
 		.map(c => c.hint)
-		.concat(snippets.map(s => "Insert snippet: " + s.hint)))
+		.concat(snippets.map(s => "Insert snippet: " + s.hint))
+		.concat(list().map(t => "Open note: " + t))
+		)
 	.then(hint =>
 	{
 		var command = commands.find(c => c.hint == hint);
@@ -1721,6 +1723,10 @@ function commandpalette()
 			{
 				insert(snippet.insert, snippet.cursor);
 				md.focus();
+			}
+			else if (hint.startsWith("Open note: "))
+			{
+				loadnote(hint.replace("Open note: ", ""));
 			}
 		}
 	});

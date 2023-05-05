@@ -13,7 +13,8 @@ var defaultsettings =
 	tagautocomplete: false,
 	titleinaccentcolor: false,
 	enablenetwork: false,
-	titlebydefault: false
+	titlebydefault: false,
+	headerbydefault: false
 };
 
 //builtin
@@ -2267,6 +2268,12 @@ function bindfile(note)
 	if (!issplit() && searchdialog.hidden)
 	{
 		md.focus();
+	}
+
+	currentheader = "";
+	if (!settings.headerbydefault && md.value.startsWith("---"))
+	{
+		toggleheader();
 	}
 }
 

@@ -2183,14 +2183,16 @@ function mainkeydownhandler()
 	else
 	{
 		commands.filter(c => c.shortcut)
-		.forEach(command =>
+		.every(command =>
 		{
 			var s = splitshortcut(command.shortcut);
 			if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
 			{
 				event.preventDefault();
 				executecommand(command);
+				return false;
 			}
+			return true;
 		});
 	}
 }

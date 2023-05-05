@@ -9,9 +9,7 @@ var defaultsettings =
 	margins: "7%",
 
 	savedelay: 2000,
-	foldmarkstart: 22232,
 	defaultpreviewinsplit: false,
-	enablefolding: false,
 	tagautocomplete: false,
 	titleinaccentcolor: false,
 	enablenetwork: false,
@@ -27,7 +25,6 @@ var codelanguages = ["xml", "js", "sql"];
 var currentnote = null;
 var fileindex = 0;
 var workerid = null;
-var folds = [];
 var backup = "";
 var localdata = null;
 var saved = true;
@@ -201,23 +198,6 @@ var commands = [
 	shortcut: "F1",
 	hint: "Show help",
 	action: showhelp
-},
-{
-	shortcut: "ctrl+shift+C",
-	hint: "Fold",
-	action: fold,
-	allowunsaved: true
-},
-{
-	shortcut: "ctrl+shift+O",
-	hint: "Unfold",
-	action: unfold,
-	allowunsaved: true
-},
-{
-	hint: "Unfold all",
-	action: unfoldall,
-	allowunsaved: true
 },
 {
 	hint: "Search tags",
@@ -721,7 +701,7 @@ function showoutline()
 {
 	var outline = {};
 	var pos = 0;
-	geteditorcontentwithfolds().split("\n").forEach((line, index, lines) =>
+	geteditorcontent().split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
 		if (line.startsWith("#"))
@@ -822,10 +802,6 @@ function clickeditor()
 			searchinlist(tags[tag.toLowerCase()])
 			.then(loadnote);
 		}
-		else
-		{
-			checkfolding();
-		}
 	}
 }
 
@@ -866,7 +842,7 @@ function showtemporaryinfo(data, title)
 
 function getwords()
 {
-	return geteditorcontentwithfolds().split(/\s+\b/).length;
+	return geteditorcontent().split(/\s+\b/).length;
 }
 
 function issplit()
@@ -942,7 +918,7 @@ function share()
 	{
 		navigator.share(
 		{
-			text: geteditorcontentwithfolds(),
+			text: geteditorcontent(),
 			title: currentnote.title
 		});
 	}
@@ -952,7 +928,7 @@ function sharehtml()
 {
 	if (navigator.share)
 	{
-		var file = new File(['<html><body>' + md2html(geteditorcontentwithfolds()) + '</body></html>'],
+		var file = new File(['<html><body>' + md2html(geteditorcontent()) + '</body></html>'],
 			currentnote.title + ".html",
 			{
 		  		type: "text/html",
@@ -1020,7 +996,7 @@ function downloadnotewithsubs()
 
 function downloadnote()
 {
-	download(currentnote.title + ".md", geteditorcontentwithfolds());
+	download(currentnote.title + ".md", geteditorcontent());
 }
 
 function remotecallfailed(error)
@@ -1088,11 +1064,6 @@ function loadsettings()
 	}
 
 	applystyle();
-
-	if (!settings.enablefolding)
-	{
-		commands = commands.filter(c => !c.hint.toLowerCase().includes("fold"));
-	}
 
 	if (settings.titlebydefault)
 	{
@@ -1383,15 +1354,6 @@ function queryremote(params)
 	});
 }
 
-function applyfolds(content)
-{
-	for (var i = folds.length - 1; i >= 0; i--)
-	{
-		content = content.replace(String.fromCodePoint(settings.foldmarkstart + i), folds[i]);
-	}
-	return content;
-}
-
 function getlinesrange()
 {
 	var start = md.selectionStart;
@@ -1408,7 +1370,7 @@ function getlinesrange()
 
 function sortselection()
 {
-	var content = geteditorcontentwithfolds();
+	var content = geteditorcontent();
 	var range = {start: 0, end: content.length};
 	if (md.selectionStart != md.selectionEnd)
 	{
@@ -1428,132 +1390,9 @@ function selectlines()
 	md.selectionEnd = range.end;
 }
 
-function isfold(linecontent)
-{
-	var res = linecontent.length == 1 && linecontent.codePointAt(0) >= settings.foldmarkstart;
-	if (res)
-	{
-		//security: if > 100, probably not a fold. Maybe an emoji. To improve.
-		res &= foldindex(linecontent) < 100;
-	}
-	return res;
-}
-
-function foldindex(foldmark)
-{
-	return foldmark.codePointAt(0) - settings.foldmarkstart;
-}
-
-function fold()
-{
-	// todo: forbid if > 100?
-	var start = md.selectionStart;
-	selectlines();
-
-	var content = md.value;
-	var char = String.fromCodePoint(settings.foldmarkstart + folds.length);
-	var value = content.substring(md.selectionStart, md.selectionEnd)
-
-	folds.push(value);
-
-	seteditorcontent(content.substring(0, md.selectionStart)
-		+ char
-		+ content.substring(md.selectionEnd));
-
-	md.focus();
-	setpos(start);
-
-	resize();
-}
-
-function unfold()
-{
-	var range = getlinesrange();
-	var linecontent = md.value.substring(range.start, range.end);
-	if (isfold(linecontent))
-	{
-		var i = foldindex(linecontent);
-		md.value = md.value.replace(linecontent, folds[i]);
-		md.focus();
-		setpos(range.start + folds[i].length);
-	}
-
-	resize();
-}
-
-function unfoldall()
-{
-	md.value = geteditorcontentwithfolds();
-	resetfolds();
-	setpos(0);
-	md.focus();
-
-	resize();
-}
-
-function checkfolding()
-{
-	var range = getlinesrange();
-	var line = md.value.substring(range.start, range.end);
-	var sectionmark = sectionmarks.find(m => line.startsWith(m));
-	if (sectionmark)
-	{
-		event.preventDefault();
-
-		// move to next line
-		setpos(range.end + 1);
-		range = getlinesrange();
-		var nextline = md.value.substring(range.start, range.end);
-
-		if (isfold(nextline))
-		{
-			unfold();
-		}
-		else
-		{
-			// find next occurence. If not found take all the remaining file.
-			if (md.value.includes("\n" + sectionmark, range.end))
-			{
-				sectionend = md.value.indexOf("\n" + sectionmark, range.end);
-			}
-			else
-			{
-				sectionend = md.value.length;
-			}
-
-			// keep last empty line if any
-			if (md.value[sectionend] == "\n")
-			{
-				sectionend--;
-			}
-
-			md.setSelectionRange(range.start, sectionend);
-
-			if (settings.enablefolding)
-			{
-				fold();	
-			}
-			else
-			{
-				createsubnote(currentnote.title + " -" + line.replace(/#/g, ""));
-			}
-		}
-	}
-	else if (isfold(line))
-	{
-		event.preventDefault();
-		unfold();
-	}
-}
-
 function seteditorcontent(content)
 {
 	md.value = content;
-}
-
-function geteditorcontentwithfolds()
-{
-	return applyfolds(md.value);
 }
 
 function geteditorcontent()
@@ -1568,23 +1407,6 @@ function ontopbarclick()
 		commandpalette();
 	}
 }
-
-/*function checkfoldmismatch()
-{
-	start = settings.foldmarkstart.toString(16);
-	end = (settings.foldmarkstart + 100).toString(16);
-	var match = md.value.match(new RegExp("[\\u" + start + "-\\u" + end + "]", "g"));
-	var markcount = 0;
-	if (match)
-	{
-		markcount = match.length;
-	}
-	var diff = folds.length - markcount;
-	if (diff)
-	{
-		console.warn(diff + " fold(s) missing.");
-	}
-}*/
 
 function md2html(content)
 {
@@ -1893,7 +1715,7 @@ function save()
 		return;
 	}
 
-	var content = geteditorcontentwithfolds();
+	var content = geteditorcontent();
 	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
@@ -1921,7 +1743,7 @@ function save()
 		.finally(() =>
 		{
 			pending = false;
-			if (content != geteditorcontentwithfolds())
+			if (content != geteditorcontent())
 			{
 				console.log("but content changed: will save again");
 				datachanged();
@@ -2111,7 +1933,7 @@ function restore()
 
 function insertheader()
 {
-	if (!geteditorcontentwithfolds().startsWith("---"))
+	if (!geteditorcontent().startsWith("---"))
 	{
 		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
 		md.value = headers + md.value;
@@ -2342,7 +2164,7 @@ function insertautocomplete(selectednote)
 
 function togglepreview()
 {
-	preview.innerHTML = md2html(geteditorcontentwithfolds());
+	preview.innerHTML = md2html(geteditorcontent());
 	md.hidden = !md.hidden;
 	preview.hidden = !preview.hidden;
 
@@ -2368,7 +2190,7 @@ function withsubs()
 	var tempnote = 
 	{
 		title: currentnote.title + " (with subnotes)",
-		content: geteditorcontentwithfolds()
+		content: geteditorcontent()
 	};
 
 	var kids = children(tempnote);
@@ -2407,11 +2229,6 @@ function togglepreviewwithsubs()
 	}	
 }
 
-function resetfolds()
-{
-	folds = [];
-}
-
 function bindfile(note)
 {
 	var changed = currentnote != note;
@@ -2422,9 +2239,7 @@ function bindfile(note)
 	setwindowtitle();
 
 	seteditorcontent(note.content || "");
-	preview.innerHTML = md2html(geteditorcontentwithfolds());
-
-	resetfolds();
+	preview.innerHTML = md2html(geteditorcontent());
 
 	if (changed)
 	{

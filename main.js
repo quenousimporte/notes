@@ -23,6 +23,7 @@ var codelanguages = ["xml", "js", "sql"];
 
 // globals
 var currentnote = null;
+var currentheader = "";
 var fileindex = 0;
 var workerid = null;
 var backup = "";
@@ -190,8 +191,8 @@ var commands = [
 },
 {
 	shortcut: "ctrl+h",
-	hint: "Insert markdown header",
-	action: insertheader,
+	hint: "Toggle markdown header",
+	action: toggleheader,
 	allowunsaved: true
 },
 {
@@ -701,7 +702,7 @@ function showoutline()
 {
 	var outline = {};
 	var pos = 0;
-	geteditorcontent().split("\n").forEach((line, index, lines) =>
+	geteditorcontentwithheader().split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
 		if (line.startsWith("#"))
@@ -842,7 +843,7 @@ function showtemporaryinfo(data, title)
 
 function getwords()
 {
-	return geteditorcontent().split(/\s+\b/).length;
+	return geteditorcontentwithheader().split(/\s+\b/).length;
 }
 
 function issplit()
@@ -918,7 +919,7 @@ function share()
 	{
 		navigator.share(
 		{
-			text: geteditorcontent(),
+			text: geteditorcontentwithheader(),
 			title: currentnote.title
 		});
 	}
@@ -928,7 +929,7 @@ function sharehtml()
 {
 	if (navigator.share)
 	{
-		var file = new File(['<html><body>' + md2html(geteditorcontent()) + '</body></html>'],
+		var file = new File(['<html><body>' + md2html(geteditorcontentwithheader()) + '</body></html>'],
 			currentnote.title + ".html",
 			{
 		  		type: "text/html",
@@ -996,7 +997,7 @@ function downloadnotewithsubs()
 
 function downloadnote()
 {
-	download(currentnote.title + ".md", geteditorcontent());
+	download(currentnote.title + ".md", geteditorcontentwithheader());
 }
 
 function remotecallfailed(error)
@@ -1370,7 +1371,7 @@ function getlinesrange()
 
 function sortselection()
 {
-	var content = geteditorcontent();
+	var content = geteditorcontentwithheader();
 	var range = {start: 0, end: content.length};
 	if (md.selectionStart != md.selectionEnd)
 	{
@@ -1395,9 +1396,9 @@ function seteditorcontent(content)
 	md.value = content;
 }
 
-function geteditorcontent()
+function geteditorcontentwithheader()
 {
-	return md.value;
+	return currentheader + md.value;
 }
 
 function ontopbarclick()
@@ -1715,7 +1716,7 @@ function save()
 		return;
 	}
 
-	var content = geteditorcontent();
+	var content = geteditorcontentwithheader();
 	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
@@ -1743,7 +1744,7 @@ function save()
 		.finally(() =>
 		{
 			pending = false;
-			if (content != geteditorcontent())
+			if (content != geteditorcontentwithheader())
 			{
 				console.log("but content changed: will save again");
 				datachanged();
@@ -1931,14 +1932,27 @@ function restore()
 	}
 }
 
-function insertheader()
+function toggleheader()
 {
-	if (!geteditorcontent().startsWith("---"))
+	if (md.value.startsWith("---"))
+	{
+		var idx = md.value.indexOf("---", 3);
+		var header = md.value.substring(0, idx + 4);
+		currentheader = header;
+		md.value = md.value.substring(idx + 4);
+	}
+	else if (currentheader)
+	{
+		md.value = currentheader + md.value;
+		currentheader = "";
+	}
+	else
 	{
 		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
 		md.value = headers + md.value;
 		setpos(27);
 	}
+
 	resize();
 }
 
@@ -2164,7 +2178,7 @@ function insertautocomplete(selectednote)
 
 function togglepreview()
 {
-	preview.innerHTML = md2html(geteditorcontent());
+	preview.innerHTML = md2html(geteditorcontentwithheader());
 	md.hidden = !md.hidden;
 	preview.hidden = !preview.hidden;
 
@@ -2190,7 +2204,7 @@ function withsubs()
 	var tempnote = 
 	{
 		title: currentnote.title + " (with subnotes)",
-		content: geteditorcontent()
+		content: geteditorcontentwithheader()
 	};
 
 	var kids = children(tempnote);
@@ -2239,7 +2253,7 @@ function bindfile(note)
 	setwindowtitle();
 
 	seteditorcontent(note.content || "");
-	preview.innerHTML = md2html(geteditorcontent());
+	preview.innerHTML = md2html(geteditorcontentwithheader());
 
 	if (changed)
 	{

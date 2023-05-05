@@ -160,16 +160,6 @@ var commands = [
 	excludepalette: true
 },
 {
-	shortcut: "ctrl+t",
-	hint: "Open todo",
-	action: loadtodo
-},
-{
-	shortcut: "ctrl+q",
-	hint: "Open quick note",
-	action: loadquicknote
-},
-{
 	shortcut: "ctrl+g",
 	hint: "Find in notes",
 	action: showgrep
@@ -336,11 +326,6 @@ var commands = [
 {
 	hint: "Download all vaults",
 	action: downloadallvaults
-},
-{
-	hint: "Open press review",
-	action: loadreview,
-	shortcut: "ctrl+r"
 }];
 
 var snippets = [
@@ -1066,6 +1051,7 @@ function loadstorage()
 	{
 		loadlast();
 	}
+	initshortcuts();
 }
 
 function applystyle()
@@ -1145,6 +1131,27 @@ function initvault()
 	currentvault = window.localStorage.getItem("vault") || "local";
 }
 
+function initshortcuts()
+{
+	localdata
+	.filter(n => n.content.includes("shortcut: "))
+	.forEach(n => {
+		var hint = "Open " + n.title;
+		if (!commands.find(c => c.hint == hint))
+		{
+			var shortcut = n.content.match(/shortcut: (.*)/)[1];
+			commands.unshift({
+				hint: hint,
+				shortcut: shortcut,
+				action: function()
+				{
+					loadnote(n.title);
+				}
+			});
+		}
+	});
+}
+
 function init()
 {
 	loadsettings();
@@ -1162,9 +1169,8 @@ function init()
 		queryremote({action: "fetch"})
 		.then(data =>
 		{
-			localdata = data;
 			window.localStorage.setItem("remote", JSON.stringify(data));
-			loadlast();
+			loadstorage();
 			checkevents();
 		})
 		.catch(remotecallfailed);

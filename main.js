@@ -1935,26 +1935,29 @@ function restore()
 
 function toggleheader()
 {
-	if (md.value.startsWith("---"))
+	if (preview.hidden)
 	{
-		var idx = md.value.indexOf("---", 3);
-		var header = md.value.substring(0, idx + 4);
-		currentheader = header;
-		md.value = md.value.substring(idx + 4);
-	}
-	else if (currentheader)
-	{
-		md.value = currentheader + md.value;
-		currentheader = "";
-	}
-	else
-	{
-		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
-		md.value = headers + md.value;
-		setpos(27);
-	}
+		if (md.value.startsWith("---"))
+		{
+			var idx = md.value.indexOf("---", 3);
+			var header = md.value.substring(0, idx + 4);
+			currentheader = header;
+			md.value = md.value.substring(idx + 4);
+		}
+		else if (currentheader)
+		{
+			md.value = currentheader + md.value;
+			currentheader = "";
+		}
+		else
+		{
+			var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
+			md.value = headers + md.value;
+			setpos(27);
+		}
 
-	resize();
+		resize();
+	}
 }
 
 function splitshortcut(s)

@@ -14,7 +14,8 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	headerbydefault: false
+	headerbydefault: false,
+	linksinnewtab: true
 };
 
 //builtin
@@ -1267,12 +1268,12 @@ function checkevents()
 			showtemporaryinfo("New events to check");
 			var todo = getnote("todo");
 			var content = todo.content;
-			var newcontent = "---\n";
+			var newcontent = [];
 			newevents.forEach(evt =>
 			{
-				newcontent += "new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY + "\n";
+				newcontent.push("new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
 			});
-			todo.content = newcontent + "---\n" + content;
+			todo.content = newcontent.join("\n") + "\n" + content;
 
 			// reload todo if open
 			if (currentnote == todo)
@@ -1423,8 +1424,12 @@ function md2html(content)
 	converter.setOption("simplifiedAutoLink", true);
 	converter.setOption("simpleLineBreaks", true);
 	converter.setOption("metadata", true);
-	converter.setOption("openLinksInNewWindow", true);
 
+	if (settings.linksinnewtab)
+	{
+		converter.setOption("openLinksInNewWindow", true);
+	}
+	
 	var html = converter.makeHtml(content);
 
 	// internal links
@@ -1557,6 +1562,11 @@ function commandpalette()
 			else if (hint.startsWith("Open note: "))
 			{
 				loadnote(hint.replace("Open note: ", ""));
+			}
+			else
+			{
+				// if unknown command, create a new note
+				loadnote(hint);
 			}
 		}
 	});
@@ -2289,17 +2299,17 @@ function loadnote(name)
 		localdata.unshift(note);
 	}
 
-	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
-	{
-		togglepreview();
-	}
-
 	bindfile(note);
 	putontop();
 
 	stat.cur.q = 0;
 	stat.cur.d = 0;
 	stat.cur.t = timestamp();
+
+	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
+	{
+		togglepreview();
+	}	
 }
 
 function sendpassword()

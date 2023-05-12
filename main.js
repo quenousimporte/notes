@@ -55,6 +55,15 @@ var stat =
 
 var themes =
 {
+	mingw64:
+	{
+		bgcolor: "white",
+		fontfamily: "Lucida console",
+		fontsize: "13px",
+		fontcolor: "black",
+		lineheight: "100%",
+	    accentcolor: "rgb(177,54,186)"
+	},
 	Default:
 	{
 		bgcolor: "white",

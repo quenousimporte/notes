@@ -14,7 +14,7 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	headerbydefault: false,
+	hideheaderbydefault: true,
 	linksinnewtab: true
 };
 
@@ -2293,7 +2293,7 @@ function bindfile(note)
 	}
 
 	currentheader = "";
-	if (!settings.headerbydefault && md.value.startsWith("---"))
+	if (settings.hideheaderbydefault && md.value.startsWith("---"))
 	{
 		toggleheader();
 	}

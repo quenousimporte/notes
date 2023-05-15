@@ -500,7 +500,7 @@ function showinfo()
 			"session start: " + stat.ses.t,
 			"session queries: " + stat.ses.q,
 			"session data sent: " + formatsize(stat.ses.d)
-		], "Note info");
+		].join("\n"));
 }
 
 function loadtheme(theme)
@@ -840,20 +840,9 @@ function editsettings()
 	});
 }
 
-function showtemporaryinfo(data, title)
+function showtemporaryinfo(info)
 {
-	if (typeof data == "string")
-	{
-		data = new Array(data);
-	}
-
-	filter.placeholder = title || "Info";
-	searchinlist(data)
-	.then(() =>
-		{
-			filter.placeholder = "Search...";
-		});
-	//md.focus();
+	alert(info);
 }
 
 function getwords()
@@ -1041,7 +1030,7 @@ function remotecallfailed(error)
 	if (error)
 	{
 		console.warn(error);
-		showtemporaryinfo(error, "Error");
+		showtemporaryinfo("Error: " + error);
 	}
 }
 

@@ -61,7 +61,7 @@ var themes =
 		fontfamily: "Lucida console",
 		fontsize: "13px",
 		fontcolor: "black",
-		lineheight: "100%",
+		lineheight: "110%",
 	    accentcolor: "rgb(177,54,186)"
 	},
 	Default:
@@ -318,6 +318,10 @@ var commands = [
 {
 	hint: "Download all vaults",
 	action: downloadallvaults
+},
+{
+	hint: "Insert text in todo",
+	action: inserttodo
 }];
 
 var snippets = [
@@ -979,6 +983,27 @@ function downloadnotes()
 			clearInterval(id);
 		}
 	}, 500);
+}
+
+function inserttodo()
+{
+	filter.placeholder = "Text...";
+	filter.value = "";
+	filteredlist.hidden = true;
+	searchdialog.hidden = false;
+	filter.focus();
+	filter.select();
+
+	filter.onkeydown = function()
+	{
+		if (event.key === "Enter")
+		{
+			event.preventDefault();
+			searchdialog.hidden = true;
+			getnote("todo").content += "\n" + filter.value;
+			datachanged();
+		}
+	}
 }
 
 function downloadallvaults()

@@ -1039,10 +1039,20 @@ function loadstorage()
 	var item = window.localStorage.getItem(currentvault);
 	localdata = item ? JSON.parse(item) : [];
 
-	// only refresh content?
+	var urlparam = (new URLSearchParams(window.location.search)).get("n");
+
 	if (currentnote)
 	{
-		currentnote = localdata.find(n => n.title == currentnote.title);
+		currentnote = getnote(currentnote.title);
+	}
+	else if (urlparam)
+	{
+		currentnote = getnote(urlparam);
+		if (!currentnote)
+		{
+			currentnote = {title: urlparam, content: ""};
+			localdata.unshift(currentnote);
+		}
 	}
 
 	if (currentnote)

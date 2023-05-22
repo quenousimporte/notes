@@ -1493,6 +1493,7 @@ function grep(needle)
 	var result = {};
 
 	localdata
+	.filter(note => note.title != "events.json")
 	.forEach(note =>
 	{
 		if (note.title.toLowerCase().includes(needle.toLowerCase()))

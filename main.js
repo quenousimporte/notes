@@ -1213,18 +1213,19 @@ function togglepassword()
 function cvdt(text)
 {
 	var day = text.substr(0,8);
+	var time = text.substr(9,6);
 	return new Date(
-		day.substr(0,4) + "-" +
-		day.substr(4,2) + "-" +
-		day.substr(6,2));
+		day.substr(0,4),
+		day.substr(4,2),
+		day.substr(6,2),
+		time.substr(0,2),
+		time.substr(2,2),
+		time.substr(4,2));
 }
 
 function ics2json(ics)
 {
-	// check DTSTAMP if event is modified?
-
-	var keys = ["UID", "SUMMARY", "DTSTART"];
-	var events = {};
+	var events = [];
 	ics.split("BEGIN:VEVENT").forEach(block =>
 	{
 		var evt = {};
@@ -1233,25 +1234,23 @@ function ics2json(ics)
 			var tuple = line.split(":");
 			if (tuple.length > 1)
 			{
-				var key = tuple.shift().split(";")[0];
+				var field = tuple.shift().split(";")[0];
 				var value = tuple.join(":");
-				if (keys.includes(key))
+				if (field == "DTSTART")
 				{
-					if (key == "UID")
-					{
-						events[value] = evt;
-					}
-					else if (key == "DTSTART")
-					{
-						evt.DTSTART = cvdt(value);
-					}
-					else
-					{
-						evt[key] = value;
-					}
+					evt.DTSTART = cvdt(value);
+				}
+				else if (field == "UID" || field == "SUMMARY")
+				{
+					evt[field] = value;
 				}
 			}
 		});
+
+		if (evt.UID && evt.SUMMARY && evt.DTSTART)
+		{
+			events.push(evt);
+		}
 	});
 	return events;
 }
@@ -1267,45 +1266,55 @@ function checkevents()
 			return;
 		}
 
-		var events = ics2json(data.ics);
-
-		// todo: keep future only
-		/*var today = new Date();
-		today.setHours(0,0,0,0);
-		events = events.filter(e => e.DTSTART >= today);*/
-
 		var note = getnote("events.json");
 		if (!note)
 		{
 			note = {
 				title: "events.json",
-				content: "{}"
+				content: "[]"
 			};
 			localdata.push(note);
 		}
 
-		// check new events
-		var existing = JSON.parse(note.content);
-		var newevents = [];
-		Object.keys(events).forEach(uid =>
-		{
-			if (!existing[uid])
+		var events = ics2json(data.ics);
+		var existing = JSON.parse(note.content).map(e =>
 			{
-				newevents.push(events[uid]);
-				console.log("new event found: " + events[uid].SUMMARY)
+				e.DTSTART = new Date(e.DTSTART);
+				return e;
+			});
+
+		// keep future only
+		events = events.filter(e => e.DTSTART >= new Date);
+		existing = existing.filter(e => e.DTSTART >= new Date);
+
+		// check added, deleted, changed
+		var newcontent = [];
+		events.forEach(evt =>
+		{
+			var previous = existing.find(e => e.UID == evt.UID);
+			if (!previous)
+			{
+				newcontent.push("new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
+			}
+			else if (previous.SUMMARY != evt.SUMMARY)
+			{
+				newcontent.push("changed event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
 			}
 		});
 
-		if (newevents.length)
+		existing.forEach(evt =>
 		{
-			showtemporaryinfo("New events to check");
+			if (!events.find(e => e.UID == evt.UID))
+			{
+				newcontent.push("deleted event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
+			}
+		});
+
+		if (newcontent.length)
+		{
+			showtemporaryinfo("Calendar changes to check");
 			var todo = getnote("todo");
 			var content = todo.content;
-			var newcontent = [];
-			newevents.forEach(evt =>
-			{
-				newcontent.push("new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
-			});
 			todo.content = newcontent.join("\n") + "\n" + content;
 
 			// reload todo if open

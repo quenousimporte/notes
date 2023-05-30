@@ -1189,7 +1189,6 @@ function init()
 
 	if (issplit())
 	{
-		window.onstorage = loadstorage;
 		if (settings.defaultpreviewinsplit && name == "right")
 		{
 			togglepreview();

@@ -1215,7 +1215,7 @@ function cvdt(text)
 	var time = text.substr(9,6);
 	return new Date(
 		day.substr(0,4),
-		day.substr(4,2),
+		parseInt(day.substr(4,2)) - 1,
 		day.substr(6,2),
 		time.substr(0,2),
 		time.substr(2,2),
@@ -1251,7 +1251,7 @@ function ics2json(ics)
 			events.push(evt);
 		}
 	});
-	return events;
+	return events.sort( (a,b) => a.DTSTART - b.DTSTART);
 }
 
 function checkevents()
@@ -1293,11 +1293,11 @@ function checkevents()
 			var previous = existing.find(e => e.UID == evt.UID);
 			if (!previous)
 			{
-				newcontent.push("new event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
+				newcontent.push("new event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
 			}
 			else if (previous.SUMMARY != evt.SUMMARY)
 			{
-				newcontent.push("changed event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
+				newcontent.push("changed event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
 			}
 		});
 
@@ -1305,7 +1305,7 @@ function checkevents()
 		{
 			if (!events.find(e => e.UID == evt.UID))
 			{
-				newcontent.push("deleted event: " + evt.DTSTART.toDateString() + " " + evt.SUMMARY);
+				newcontent.push("deleted event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
 			}
 		});
 

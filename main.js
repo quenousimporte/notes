@@ -2146,7 +2146,7 @@ function editorkeydown()
 	{
 		var line = md.value.substring(0, getpos()).split("\n").pop();
 		markerslist.filter(marker => line.startsWith(marker))
-		.forEach(marker =>
+		.every(marker =>
 		{
 			event.preventDefault();
 			if (line != marker)
@@ -2157,6 +2157,7 @@ function editorkeydown()
 			{
 				backspace(marker.length);
 			}
+			return false;
 		});
 	}
 	else if (event.key === "Tab")

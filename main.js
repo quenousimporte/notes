@@ -1313,8 +1313,15 @@ function checkevents()
 		{
 			showtemporaryinfo("Calendar changes to check");
 			var todo = getnote("todo");
-			var content = todo.content;
-			todo.content = newcontent.join("\n") + "\n" + content;
+			var idx = 0;
+			if (todo.content.startsWith("---"))
+			{
+				idx = todo.content.indexOf("---", 3) + 4;
+			}
+			todo.content = todo.content.substring(0, idx)
+			+ newcontent.join("\n")
+			+ "\n"
+			+ todo.content.substring(idx);
 
 			// reload todo if open
 			if (currentnote == todo)

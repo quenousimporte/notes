@@ -1320,7 +1320,7 @@ function checkevents()
 			}
 			todo.content = todo.content.substring(0, idx)
 			+ newcontent.join("\n")
-			+ "\n"
+			+ "\n---\n"
 			+ todo.content.substring(idx);
 
 			// reload todo if open

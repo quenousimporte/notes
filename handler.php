@@ -1,10 +1,6 @@
 <?php
 
-// global settings
-$datafile = '../data/data.json';
-$icsfile = 'ics url';
-
-$password = '';
+require 'settings.php';
 
 // check authent
 if ($password && (!isset($_POST['password']) || $_POST['password'] != $password))

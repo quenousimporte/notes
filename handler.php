@@ -12,6 +12,11 @@ else if (isset($_POST['action']))
 	$action = $_POST['action'];
 	switch ($action)
 	{
+		case 'sms':
+			echo file_get_contents($smsurl . $_POST['data']);
+			echo '{}';
+		break;
+
 		case 'fetch':
 			if (file_exists($datafile))
 			{

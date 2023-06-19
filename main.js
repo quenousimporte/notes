@@ -322,6 +322,10 @@ var commands = [
 {
 	hint: "Insert text in todo",
 	action: inserttodo
+},
+{
+	hint: "Send by SMS",
+	action: sms
 }];
 
 var snippets = [
@@ -364,6 +368,15 @@ var snippets = [
 	insert: "<!--\n\n-->",
 	cursor: -4
 }];
+
+function sms()
+{
+	queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
+	.then(data =>
+	{
+		console.log("SMS sent to server");
+	});
+}
 
 function ask(question)
 {

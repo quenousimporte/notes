@@ -371,6 +371,12 @@ var snippets = [
 
 function sms()
 {
+	if (!isremote())
+	{
+		showtemporaryinfo("SMS is not available in local mode.");
+		return;
+	}
+
 	queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
 	.then(data =>
 	{

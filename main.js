@@ -1284,6 +1284,12 @@ function checkevents()
 			return;
 		}
 
+		if (!data.ics)
+		{
+			console.warn("could not retrieve events");
+			return;
+		}
+
 		var note = getnote("events.json");
 		if (!note)
 		{

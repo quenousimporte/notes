@@ -1497,6 +1497,7 @@ function md2html(content)
 	converter.setOption("simplifiedAutoLink", true);
 	converter.setOption("simpleLineBreaks", true);
 	converter.setOption("metadata", true);
+	converter.setOption("tasklists", true);
 
 	if (settings.linksinnewtab)
 	{

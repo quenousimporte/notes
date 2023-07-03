@@ -19,7 +19,7 @@ var defaultsettings =
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• "];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• ", "- [ ]"];
 var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 

@@ -55,6 +55,15 @@ var stat =
 
 var themes =
 {
+	mingwdark:
+	{
+	    bgcolor: "rgb(46,52,64)",
+	    fontfamily: "Lucida console",
+	    fontsize: "14px",
+	    fontcolor: "rgb(191,191,191)",
+	    lineheight: "120%",
+	    accentcolor: "rgb(177,54,186)"
+	},
 	mingw64:
 	{
 		bgcolor: "white",
@@ -758,6 +767,10 @@ function showoutline()
 				next = next.length < nbcar ? next : next.substring(0, nbcar) + "...";
 				outline["section line " + index + ": " + next] = pos;
 			}
+		}
+		else if (line.match(/^\d{4}-\d{2}-\d{2}/))
+		{
+			outline[line] = pos;
 		}
 	});
 

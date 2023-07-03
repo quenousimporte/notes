@@ -823,6 +823,11 @@ function tagatpos()
 
 function clickeditor()
 {
+	if (!saved)
+	{
+		console.log("Not saved, ctrl+click ignored.");
+		return;
+	}
 	if (event.ctrlKey)
 	{
 		var link = linkatpos();

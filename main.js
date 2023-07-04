@@ -334,7 +334,8 @@ var commands = [
 },
 {
 	hint: "Send by SMS",
-	action: sms
+	action: sms,
+	remoteonly: true
 }];
 
 var snippets = [
@@ -378,14 +379,9 @@ var snippets = [
 	cursor: -4
 }];
 
+
 function sms()
 {
-	if (!isremote())
-	{
-		showtemporaryinfo("SMS is not available in local mode.");
-		return;
-	}
-
 	queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
 	.then(data =>
 	{
@@ -2079,6 +2075,10 @@ function executecommand(command)
 	if (!command.allowunsaved && !saved)
 	{
 		showtemporaryinfo("Cannot perform '" + command.hint + "' because current note is not saved.");
+	}
+	else if (command.remoteonly && !isremote())
+	{
+		showtemporaryinfo(command.hint + " is not available in local mode.");
 	}
 	else if (command.action)
 	{

@@ -2086,30 +2086,35 @@ function executecommand(command)
 	}
 }
 
+function esc(event)
+{
+	if (!searchdialog.hidden)
+	{
+		event.preventDefault();
+		searchdialog.hidden = true;
+		filter.placeholder = "Search...";
+		md.focus();
+	}
+	else if (currentnote.title == "Help" || currentnote.title == "Search result")
+	{
+		loadlast();
+	}
+	else if (networkpage.hidden == false)
+	{
+		networkpage.hidden = true;
+		md.hidden = false;
+	}
+	else if (preview.hidden == false)
+	{
+		togglepreview();
+	}
+}
+
 function mainkeydownhandler()
 {
 	if (event.key == "Escape")
 	{
-		if (!searchdialog.hidden)
-		{
-			event.preventDefault();
-			searchdialog.hidden = true;
-			filter.placeholder = "Search...";
-			md.focus();
-		}
-		else if (currentnote.title == "Help" || currentnote.title == "Search result")
-		{
-			loadlast();
-		}
-		else if (networkpage.hidden == false)
-		{
-			networkpage.hidden = true;
-			md.hidden = false;
-		}
-		else if (preview.hidden == false)
-		{
-			togglepreview();
-		}
+		esc(event);
 	}
 	else if (!searchdialog.hidden && (event.key == "Tab" || event.keyCode == "40" || event.keyCode == "38"))
 	{

@@ -5,6 +5,10 @@ body {
 	margin-right: 7%;
 }
 
+a {
+	color: inherit;
+}
+
 input {
 	outline: none;
 	border: none;

@@ -764,10 +764,6 @@ function showoutline()
 				outline["section line " + index + ": " + next] = pos;
 			}
 		}
-		else if (line.match(/^\d{4}-\d{2}-\d{2}/))
-		{
-			outline[line] = pos;
-		}
 	});
 
 	var keys = Object

@@ -239,6 +239,11 @@ var commands = [
 	shortcut: "ctrl+b"
 },
 {
+	hint: "Load next note",
+	action: loadnext,
+	shortcut: "ctrl+shift+B"
+},
+{
 	hint: "Sort text",
 	action: sortselection,
 	allowunsaved: true
@@ -385,7 +390,7 @@ function sms()
 	queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
 	.then(data =>
 	{
-		console.log("SMS sent to server");
+		showtemporaryinfo("SMS sent. Result: '" + data.result + "'");
 	});
 }
 
@@ -1537,9 +1542,18 @@ function loadlast()
 function loadprevious()
 {
 	var index = localdata.indexOf(currentnote);
-	if (index > -1)
+	if (index > -1 && index < localdata.length - 1)
 	{
 		loadnote(localdata[index + 1].title);
+	}
+}
+
+function loadnext()
+{
+	var index = localdata.indexOf(currentnote);
+	if (index > -1 && index > 1)
+	{
+		loadnote(localdata[index - 1].title);
 	}
 }
 
@@ -1825,6 +1839,7 @@ function save()
 
 	currentnote.pos = md.selectionStart;
 	currentnote.content = content;
+	putontop();
 
 	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
 	console.log("data serialized in local storage")
@@ -1838,7 +1853,6 @@ function save()
 		.then(() =>
 		{
 			console.log("...data saved on server");
-			putontop();
 			saved = true;
 		})
 		.catch(remotecallfailed)
@@ -1859,7 +1873,6 @@ function save()
 	}
 	else
 	{
-		putontop();
 		saved = true;
 	}
 }

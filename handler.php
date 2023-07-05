@@ -13,8 +13,8 @@ else if (isset($_POST['action']))
 	switch ($action)
 	{
 		case 'sms':
-			echo file_get_contents($smsurl . $_POST['data']);
-			echo '{}';
+			$res = file_get_contents($smsurl . $_POST['data']);
+			echo '{"result": "' . $res . '"}';
 		break;
 
 		case 'fetch':

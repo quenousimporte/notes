@@ -348,7 +348,7 @@ var snippets = [
 {
 	command: "/date",
 	hint: "Current date",
-	insert: (new Date).toISOString().substring(0, 10) + " ",
+	insert: (new Date).toISOString().substring(0, 10),
 	cursor: 0
 },
 {

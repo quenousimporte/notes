@@ -1201,6 +1201,13 @@ function init()
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
 
+	history.pushState({}, '', '.');
+	window.onpopstate = function(evt)
+	{
+		history.pushState({}, '', '.');
+		esc(evt);
+	}
+
 	initsnippets();
 
 	currenttag = "";

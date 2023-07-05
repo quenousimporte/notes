@@ -516,7 +516,7 @@ function showinfo()
 		[
 			"saved: " + saved,
 			"title: " + currentnote.title,
-			"cursor position: " + (100 * md.selectionStart / md.value.length).toFixed(2) + "%",
+			"cursor position: " + md.selectionStart + " (" + (100 * md.selectionStart / md.value.length).toFixed(2) + "%)",
 			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
@@ -2389,8 +2389,6 @@ function bindfile(note)
 	}	
 	resize();
 
-	setpos(note.pos || 0);
-
 	// to improve...
 	if (!issplit() && searchdialog.hidden)
 	{
@@ -2402,6 +2400,8 @@ function bindfile(note)
 	{
 		toggleheader();
 	}
+
+	setpos(note.pos || 0);
 }
 
 function loadnote(name)

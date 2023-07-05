@@ -1536,7 +1536,11 @@ function loadlast()
 
 function loadprevious()
 {
-	loadnote(list()[1]);
+	var index = localdata.indexOf(currentnote);
+	if (index > -1)
+	{
+		loadnote(localdata[index + 1].title);
+	}
 }
 
 function grep(needle)
@@ -1834,6 +1838,7 @@ function save()
 		.then(() =>
 		{
 			console.log("...data saved on server");
+			putontop();
 			saved = true;
 		})
 		.catch(remotecallfailed)
@@ -1854,6 +1859,7 @@ function save()
 	}
 	else
 	{
+		putontop();
 		saved = true;
 	}
 }
@@ -2395,7 +2401,6 @@ function loadnote(name)
 	}
 
 	bindfile(note);
-	putontop();
 
 	stat.cur.q = 0;
 	stat.cur.d = 0;

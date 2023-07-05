@@ -1205,7 +1205,14 @@ function init()
 	window.onpopstate = function(evt)
 	{
 		history.pushState({}, '', '.');
-		esc(evt);
+		if (!searchdialog.hidden)
+		{
+			esc(evt);
+		}
+		else
+		{
+			loadprevious();	
+		}
 	}
 
 	initsnippets();

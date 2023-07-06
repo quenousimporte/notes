@@ -387,11 +387,14 @@ var snippets = [
 
 function sms()
 {
-	queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
-	.then(data =>
+	if (confirm("Send note by SMS?"))
 	{
-		showtemporaryinfo("SMS sent. Result: '" + data.result + "'");
-	});
+		queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
+		.then(data =>
+		{
+			showtemporaryinfo("SMS sent. Result: '" + data.result + "'");
+		});
+	}
 }
 
 function ask(question)

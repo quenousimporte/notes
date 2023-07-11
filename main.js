@@ -1196,6 +1196,10 @@ function initshortcuts()
 	});
 }
 
+function addfakehistory()
+{
+	history.pushState({}, '', '.');
+}
 function init()
 {
 	loadsettings();
@@ -1204,10 +1208,10 @@ function init()
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
 
-	history.pushState({}, '', '.');
+	addfakehistory();
 	window.onpopstate = function(evt)
 	{
-		history.pushState({}, '', '.');
+		addfakehistory();
 		if (!searchdialog.hidden)
 		{
 			esc(evt);

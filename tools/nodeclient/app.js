@@ -9,6 +9,7 @@ var rl = readline.createInterface({
 });
 
 var settings = JSON.parse(fs.readFileSync("settings.json", { encoding: "utf8", flag: "r" }));
+var filter = process.argv.length > 2 ? process.argv[2] : "";
 
 axios.post(`${settings.url}/handler.php`,
 {
@@ -24,7 +25,10 @@ axios.post(`${settings.url}/handler.php`,
 .then(res =>
 {
 	var notes = res.data;
-	notes.every( (note, i) =>
+
+	notes
+	.filter(n => n.title.includes(filter))
+	.every( (note, i) =>
 	{
 		console.log(`[${i}] ${note.title}`)
 		return i < settings.maxcount;
@@ -33,7 +37,7 @@ axios.post(`${settings.url}/handler.php`,
 	rl.prompt();
 	rl.on("line", (line) =>
 	{
-		var note = notes[line]
+		var note = notes.filter(n => n.title.includes(filter))[line];
 
 		fs.writeFileSync("note.md", note.content);
 
@@ -44,6 +48,10 @@ axios.post(`${settings.url}/handler.php`,
 			if (note.content != newcontent)
 			{
 				note.content = newcontent;
+
+				notes.splice(notes.indexOf(note), 1);
+				notes.unshift(note);
+
 				axios.post(`${settings.url}/handler.php`,
 				{
 					action: "push",

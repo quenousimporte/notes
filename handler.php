@@ -41,9 +41,16 @@ else if (isset($_POST['action']))
 		break;
 
 		case 'cal':
-			$result = array();
-			$result["ics"] = file_get_contents($icsfile);
-			echo json_encode($result);
+			if (file_exists($icsfile))
+			{
+				$result = array();
+				$result["ics"] = file_get_contents($icsfile);
+				echo json_encode($result);
+			}
+			else
+			{
+				echo '{"warning": "cannot load ics file"}';
+			}
 		break;
 
 		default:

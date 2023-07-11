@@ -1449,6 +1449,10 @@ function queryremote(params)
 							failed("Remote handler returned an error: " + data.error);
 						}
 					}
+					else if (data.warning)
+					{
+						console.warn("Remote warning: " + data.warning);
+					}
 					else
 					{
 						authentpage.hidden = true;
@@ -2271,7 +2275,6 @@ function editorkeydown()
 		else
 		{
 			newtext = selection.replaceAll("\n", "\n    ");
-
 		}
 		md.value = md.value.substring(0, range.start)
 		+ newtext

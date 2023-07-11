@@ -52,6 +52,7 @@ axios.post(`${settings.url}/handler.php`,
 				notes.splice(notes.indexOf(note), 1);
 				notes.unshift(note);
 
+				console.log("sending data file to server...");
 				axios.post(`${settings.url}/handler.php`,
 				{
 					action: "push",
@@ -63,7 +64,13 @@ axios.post(`${settings.url}/handler.php`,
 					{
 						"Content-type": "application/x-www-form-urlencoded"
 					}
+				}).then(res => {
+					console.log("done.");
 				});
+			}
+			else
+			{
+				console.log("no change.");
 			}
 		})
 		rl.close();

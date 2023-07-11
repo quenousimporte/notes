@@ -41,7 +41,7 @@ axios.post(`${settings.url}/handler.php`,
 
 		fs.writeFileSync("note.md", note.content);
 
-		cp.exec("sublime_text.exe -w note.md", function (err, stdout, stderr)
+		cp.exec(`${settings.command} note.md`, function (err, stdout, stderr)
 		{
 			var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
 

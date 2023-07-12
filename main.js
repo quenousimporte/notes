@@ -1538,6 +1538,7 @@ function md2html(content)
 	converter.setOption("simpleLineBreaks", true);
 	converter.setOption("metadata", true);
 	converter.setOption("tasklists", true);
+	converter.setOption("literalMidWordUnderscores", true);
 
 	if (settings.linksinnewtab)
 	{

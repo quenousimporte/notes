@@ -341,6 +341,10 @@ var commands = [
 	hint: "Send by SMS",
 	action: sms,
 	remoteonly: true
+},
+{
+	hint: "Edit pgp keys",
+	action: editpgpkeys
 }];
 
 var snippets = [
@@ -877,6 +881,15 @@ function editsettings()
 	});
 }
 
+function editpgpkeys()
+{
+	bindfile(
+	{
+		title: "pgpkeys",
+		content: localStorage.getItem("pgpkeys")
+	});
+}
+
 function showtemporaryinfo(info)
 {
 	alert(info);
@@ -1200,6 +1213,7 @@ function addfakehistory()
 {
 	history.pushState({}, '', '.');
 }
+
 function init()
 {
 	loadsettings();
@@ -1397,7 +1411,7 @@ function checkevents()
 	.catch(remotecallfailed);
 }
 
-function queryremote(params)
+async function queryremote(params)
 {
 	return new Promise( (apply, failed) => {
 
@@ -1424,7 +1438,7 @@ function queryremote(params)
 			failed("XMLHttpRequest error");
 		}
 
-		xhr.onload = function()
+		xhr.onload = async function()
 		{
 			if (xhr.status !== 200)
 			{
@@ -1435,7 +1449,22 @@ function queryremote(params)
 				var data = {};
 				try
 				{
-					data = JSON.parse(xhr.responseText);
+					var response = xhr.responseText;
+					if (localStorage.getItem("pgpkeys") && response.startsWith("-----BEGIN PGP MESSAGE-----"))
+					{
+						console.log("decrypting...");
+						var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+						var privateKey = await openpgp.readKey({ armoredKey: key });
+						var decrypted = await openpgp.decrypt({
+							message: await openpgp.readMessage({ armoredMessage: response }),
+							decryptionKeys: privateKey });
+					    const chunks = [];
+					    for await (const chunk of decrypted.data) {
+					        chunks.push(chunk);
+					    }
+					    response = chunks.join('');
+					}
+					data = JSON.parse(response);
 
 					if (data.error)
 					{
@@ -1825,7 +1854,7 @@ function postpone()
 	});
 }
 
-function save()
+async function save()
 {
 	clearTimeout(workerid);
 
@@ -1834,6 +1863,12 @@ function save()
 		settings = JSON.parse(md.value);
 		savesettings();
 		loadsettings();
+		saved = true;
+		return;
+	}
+	else if (currentnote.title == "pgpkeys")
+	{
+		localStorage.setItem("pgpkeys", md.value);
 		saved = true;
 		return;
 	}
@@ -1872,10 +1907,21 @@ function save()
 
 	if (isremote())
 	{
+		var datatosend = JSON.stringify(localdata);
+		if (localStorage.getItem("pgpkeys"))
+		{
+			console.log("encrypting...");
+			var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
+			var publicKey = await openpgp.readKey({ armoredKey: key });
+			datatosend = await openpgp.encrypt({
+				message: await openpgp.createMessage({ text: datatosend }),
+				encryptionKeys: publicKey });
+		}
+
 		console.log("sending data to php server...");
 
 		pending = true;
-		queryremote({action: "push", data: JSON.stringify(localdata)})
+		queryremote({action: "push", data: datatosend})
 		.then(() =>
 		{
 			console.log("...data saved on server");

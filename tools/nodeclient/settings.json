@@ -1,7 +1,6 @@
 {
 	"password": "",
 	"url": "http://localhost:8000",
-	"maxcount": 50
 	"maxcount": 50,
 	"command": "sublime_text.exe -w"
 }

@@ -15,8 +15,7 @@ var defaultsettings =
 	enablenetwork: false,
 	titlebydefault: false,
 	hideheaderbydefault: true,
-	linksinnewtab: true,
-	pgp: false
+	linksinnewtab: true
 };
 
 //builtin
@@ -342,6 +341,10 @@ var commands = [
 	hint: "Send by SMS",
 	action: sms,
 	remoteonly: true
+},
+{
+	hint: "Edit pgp keys",
+	action: editpgpkeys
 }];
 
 var snippets = [
@@ -878,6 +881,15 @@ function editsettings()
 	});
 }
 
+function editpgpkeys()
+{
+	bindfile(
+	{
+		title: "pgpkeys",
+		content: localStorage.getItem("pgpkeys")
+	});
+}
+
 function showtemporaryinfo(info)
 {
 	alert(info);
@@ -1142,18 +1154,6 @@ function loadsettings()
 	if (settings.titlebydefault)
 	{
 		toggletitle();
-	}
-
-	if (settings.pgp)
-	{
-		if (!localStorage.getItem("publickey"))
-		{
-			localStorage.setItem("publickey", prompt("Public key"));
-		}
-		if (!localStorage.getItem("privatekey"))
-		{
-			localStorage.setItem("privatekey", prompt("Private key"));
-		}
 	}
 }
 
@@ -1450,10 +1450,11 @@ async function queryremote(params)
 				try
 				{
 					var response = xhr.responseText;
-					if (settings.pgp && response.startsWith("-----BEGIN PGP MESSAGE-----"))
+					if (localStorage.getItem("pgpkeys") && response.startsWith("-----BEGIN PGP MESSAGE-----"))
 					{
-						console.log("decrypting...")
-						var privateKey = await openpgp.readKey({ armoredKey: localStorage.getItem("privatekey") });
+						console.log("decrypting...");
+						var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+						var privateKey = await openpgp.readKey({ armoredKey: key });
 						var decrypted = await openpgp.decrypt({
 							message: await openpgp.readMessage({ armoredMessage: response }),
 							decryptionKeys: privateKey });
@@ -1865,6 +1866,12 @@ async function save()
 		saved = true;
 		return;
 	}
+	else if (currentnote.title == "pgpkeys")
+	{
+		localStorage.setItem("pgpkeys", md.value);
+		saved = true;
+		return;
+	}
 
 	if (!localdata)
 	{
@@ -1901,10 +1908,11 @@ async function save()
 	if (isremote())
 	{
 		var datatosend = JSON.stringify(localdata);
-		if (settings.pgp)
+		if (localStorage.getItem("pgpkeys"))
 		{
 			console.log("encrypting...");
-			var publicKey = await openpgp.readKey({ armoredKey: localStorage.getItem("publickey") });
+			var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
+			var publicKey = await openpgp.readKey({ armoredKey: key });
 			datatosend = await openpgp.encrypt({
 				message: await openpgp.createMessage({ text: datatosend }),
 				encryptionKeys: publicKey });

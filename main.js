@@ -77,7 +77,7 @@ var themes =
 	{
 		bgcolor: "white",
 		fontfamily: "'Inconsolata', 'Consolas', monospace",
-		fontsize: "90%",
+		fontsize: "16px",
 		fontcolor: "black",
 		lineheight: "130%",
 	    accentcolor: "#5AA7CE"
@@ -1538,6 +1538,7 @@ function md2html(content)
 	converter.setOption("simpleLineBreaks", true);
 	converter.setOption("metadata", true);
 	converter.setOption("tasklists", true);
+	converter.setOption("literalMidWordUnderscores", true);
 
 	if (settings.linksinnewtab)
 	{

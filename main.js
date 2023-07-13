@@ -15,7 +15,8 @@ var defaultsettings =
 	enablenetwork: false,
 	titlebydefault: false,
 	hideheaderbydefault: true,
-	linksinnewtab: true
+	linksinnewtab: true,
+	pgp: false
 };
 
 //builtin
@@ -1142,6 +1143,18 @@ function loadsettings()
 	{
 		toggletitle();
 	}
+
+	if (settings.pgp)
+	{
+		if (!localStorage.getItem("publickey"))
+		{
+			localStorage.setItem("publickey", prompt("Public key"));
+		}
+		if (!localStorage.getItem("privatekey"))
+		{
+			localStorage.setItem("privatekey", prompt("Private key"));
+		}
+	}
 }
 
 function checksaved()
@@ -1200,6 +1213,7 @@ function addfakehistory()
 {
 	history.pushState({}, '', '.');
 }
+
 function init()
 {
 	loadsettings();
@@ -1397,7 +1411,7 @@ function checkevents()
 	.catch(remotecallfailed);
 }
 
-function queryremote(params)
+async function queryremote(params)
 {
 	return new Promise( (apply, failed) => {
 
@@ -1424,7 +1438,7 @@ function queryremote(params)
 			failed("XMLHttpRequest error");
 		}
 
-		xhr.onload = function()
+		xhr.onload = async function()
 		{
 			if (xhr.status !== 200)
 			{
@@ -1435,7 +1449,21 @@ function queryremote(params)
 				var data = {};
 				try
 				{
-					data = JSON.parse(xhr.responseText);
+					var response = xhr.responseText;
+					if (settings.pgp && response.startsWith("-----BEGIN PGP MESSAGE-----"))
+					{
+						console.log("decrypting...")
+						var privateKey = await openpgp.readKey({ armoredKey: localStorage.getItem("privatekey") });
+						var decrypted = await openpgp.decrypt({
+							message: await openpgp.readMessage({ armoredMessage: response }),
+							decryptionKeys: privateKey });
+					    const chunks = [];
+					    for await (const chunk of decrypted.data) {
+					        chunks.push(chunk);
+					    }
+					    response = chunks.join('');
+					}
+					data = JSON.parse(response);
 
 					if (data.error)
 					{
@@ -1825,7 +1853,7 @@ function postpone()
 	});
 }
 
-function save()
+async function save()
 {
 	clearTimeout(workerid);
 
@@ -1872,10 +1900,20 @@ function save()
 
 	if (isremote())
 	{
+		var datatosend = JSON.stringify(localdata);
+		if (settings.pgp)
+		{
+			console.log("encrypting...");
+			var publicKey = await openpgp.readKey({ armoredKey: localStorage.getItem("publickey") });
+			datatosend = await openpgp.encrypt({
+				message: await openpgp.createMessage({ text: datatosend }),
+				encryptionKeys: publicKey });
+		}
+
 		console.log("sending data to php server...");
 
 		pending = true;
-		queryremote({action: "push", data: JSON.stringify(localdata)})
+		queryremote({action: "push", data: datatosend})
 		.then(() =>
 		{
 			console.log("...data saved on server");

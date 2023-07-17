@@ -41,7 +41,7 @@ else if (isset($_POST['action']))
 		break;
 
 		case 'cal':
-			if (file_exists($icsfile))
+			if ($icsfile)
 			{
 				$result = array();
 				$result["ics"] = file_get_contents($icsfile);

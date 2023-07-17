@@ -1242,14 +1242,23 @@ function init()
 
 	if (isremote())
 	{
-		queryremote({action: "fetch"})
-		.then(data =>
+		if (localStorage.getItem("pgpkeys") && localStorage.getItem("pgpkeys").startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"))
 		{
-			window.localStorage.setItem("remote", JSON.stringify(data));
+			queryremote({action: "fetch"})
+			.then(data =>
+			{
+				window.localStorage.setItem("remote", JSON.stringify(data));
+				loadstorage();
+				checkevents();
+			})
+			.catch(remotecallfailed);
+		}
+		else
+		{
+			showtemporaryinfo("Pgp key empty or invalid. Switching to local.");
+			currentvault = "local";
 			loadstorage();
-			checkevents();
-		})
-		.catch(remotecallfailed);
+		}
 	}
 	else
 	{
@@ -1323,6 +1332,23 @@ function ics2json(ics)
 	return events.sort( (a,b) => a.DTSTART - b.DTSTART);
 }
 
+function getorcreate(title, content, putontop)
+{
+	var note = getnote(title);
+	if (!note)
+	{
+		note = {title: title, content: content};
+		localdata.push(note)
+	}
+
+	if (putontop)
+	{
+		localdata.splice(localdata.indexOf(note), 1);
+		localdata.unshift(note);
+	}
+	return note;
+}
+
 function checkevents()
 {
 	queryremote({action: "cal"})
@@ -1340,16 +1366,7 @@ function checkevents()
 			return;
 		}
 
-		var note = getnote("events.json");
-		if (!note)
-		{
-			note = {
-				title: "events.json",
-				content: "[]"
-			};
-			localdata.push(note);
-		}
-
+		var note = getorcreate("events.json", "[]", false);
 		var events = ics2json(data.ics);
 		var existing = JSON.parse(note.content).map(e =>
 			{
@@ -1387,21 +1404,21 @@ function checkevents()
 		if (newcontent.length)
 		{
 			showtemporaryinfo("Calendar changes to check");
-			var todo = getnote("todo");
+			var eventsnotes = getorcreate("events to check", "", true);
 			var idx = 0;
-			if (todo.content.startsWith("---"))
+			if (eventsnotes.content.startsWith("---"))
 			{
-				idx = todo.content.indexOf("---", 3) + 4;
+				idx = eventsnotes.content.indexOf("---", 3) + 4;
 			}
-			todo.content = todo.content.substring(0, idx)
+			eventsnotes.content = eventsnotes.content.substring(0, idx)
 			+ newcontent.join("\n")
 			+ "\n---\n"
-			+ todo.content.substring(idx);
+			+ eventsnotes.content.substring(idx);
 
-			// reload todo if open
-			if (currentnote == todo)
+			// reload eventsnotes if open
+			if (currentnote == eventsnotes)
 			{
-				bindfile(todo);
+				bindfile(eventsnotes);
 			}
 
 			note.content = JSON.stringify(events);
@@ -2123,7 +2140,7 @@ function toggleheader()
 {
 	if (preview.hidden)
 	{
-		if (md.value.startsWith("---"))
+		if (md.value.startsWith("---\n"))
 		{
 			var idx = md.value.indexOf("---", 3);
 			var header = md.value.substring(0, idx + 4);
@@ -2467,7 +2484,7 @@ function bindfile(note)
 	}
 
 	currentheader = "";
-	if (settings.hideheaderbydefault && md.value.startsWith("---"))
+	if (settings.hideheaderbydefault && md.value.startsWith("---\n"))
 	{
 		toggleheader();
 	}
@@ -2477,13 +2494,7 @@ function bindfile(note)
 
 function loadnote(name)
 {
-	var note = localdata.find(n => n.title == name);
-	if (!note)
-	{
-		note = {title: name, content: ""};
-		localdata.unshift(note);
-	}
-
+	var note = getorcreate(name, "", true);
 	bindfile(note);
 
 	stat.cur.q = 0;

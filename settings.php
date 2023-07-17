@@ -1,5 +1,5 @@
 <?php
-	$datafile = '../data/data.json';
+	$datafile = '../data/data.acs';
 	$icsfile = '';
 	$password = '';
 	$smsurl = '';

@@ -14,7 +14,6 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	hideheaderbydefault: true,
 	linksinnewtab: true
 };
 
@@ -25,7 +24,6 @@ var codelanguages = ["xml", "js", "sql"];
 
 // globals
 var currentnote = null;
-var currentheader = "";
 var fileindex = 0;
 var workerid = null;
 var backup = "";
@@ -208,12 +206,6 @@ var commands = [
 {
 	hint: "Restore note",
 	action: restore
-},
-{
-	shortcut: "ctrl+h",
-	hint: "Toggle markdown header",
-	action: toggleheader,
-	allowunsaved: true
 },
 {
 	shortcut: "F1",
@@ -521,10 +513,10 @@ function showinfo()
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
 		[
+			"vault: " + currentvault,			
 			"saved: " + saved,
 			"title: " + currentnote.title,
 			"cursor position: " + md.selectionStart + " (" + (100 * md.selectionStart / md.value.length).toFixed(2) + "%)",
-			"vault: " + currentvault,
 			(tags ? "tags: " + tags : ""),
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
 			"notes count: " + localdata.length,
@@ -753,7 +745,7 @@ function showoutline()
 {
 	var outline = {};
 	var pos = 0;
-	geteditorcontentwithheader().split("\n").forEach((line, index, lines) =>
+	md.value.split("\n").forEach((line, index, lines) =>
 	{
 		pos += line.length + 1;
 		if (line.startsWith("#"))
@@ -897,7 +889,7 @@ function showtemporaryinfo(info)
 
 function getwords()
 {
-	return geteditorcontentwithheader().split(/\s+\b/).length;
+	return md.value.split(/\s+\b/).length;
 }
 
 function issplit()
@@ -973,7 +965,7 @@ function share()
 	{
 		navigator.share(
 		{
-			text: geteditorcontentwithheader(),
+			text: md.value,
 			title: currentnote.title
 		});
 	}
@@ -983,7 +975,7 @@ function sharehtml()
 {
 	if (navigator.share)
 	{
-		var file = new File(['<html><body>' + md2html(geteditorcontentwithheader()) + '</body></html>'],
+		var file = new File(['<html><body>' + md2html(md.value) + '</body></html>'],
 			currentnote.title + ".html",
 			{
 		  		type: "text/html",
@@ -1072,7 +1064,7 @@ function downloadnotewithsubs()
 
 function downloadnote()
 {
-	download(currentnote.title + ".md", geteditorcontentwithheader());
+	download(currentnote.title + ".md", md.value);
 }
 
 function remotecallfailed(error)
@@ -1532,7 +1524,7 @@ function getlinesrange()
 
 function sortselection()
 {
-	var content = geteditorcontentwithheader();
+	var content = md.value;
 	var range = {start: 0, end: content.length};
 	if (md.selectionStart != md.selectionEnd)
 	{
@@ -1555,11 +1547,6 @@ function selectlines()
 function seteditorcontent(content)
 {
 	md.value = content;
-}
-
-function geteditorcontentwithheader()
-{
-	return currentheader + md.value;
 }
 
 function ontopbarclick()
@@ -1908,7 +1895,7 @@ async function save()
 		return;
 	}
 
-	var content = geteditorcontentwithheader();
+	var content = md.value;
 	if ((content == "" && backup != "") || content == "null" || content == "undefined")
 	{
 		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
@@ -1948,7 +1935,7 @@ async function save()
 		.finally(() =>
 		{
 			pending = false;
-			if (content != geteditorcontentwithheader())
+			if (content != md.value)
 			{
 				console.log("but content changed: will save again");
 				datachanged();
@@ -2133,33 +2120,6 @@ function restore()
 	{
 		seteditorcontent(backup);
 		datachanged();
-	}
-}
-
-function toggleheader()
-{
-	if (preview.hidden)
-	{
-		if (md.value.startsWith("---\n"))
-		{
-			var idx = md.value.indexOf("---", 3);
-			var header = md.value.substring(0, idx + 4);
-			currentheader = header;
-			md.value = md.value.substring(idx + 4);
-		}
-		else if (currentheader)
-		{
-			md.value = currentheader + md.value;
-			currentheader = "";
-		}
-		else
-		{
-			var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
-			md.value = headers + md.value;
-			setpos(27);
-		}
-
-		resize();
 	}
 }
 
@@ -2394,7 +2354,7 @@ function insertautocomplete(selectednote)
 
 function togglepreview()
 {
-	preview.innerHTML = md2html(geteditorcontentwithheader());
+	preview.innerHTML = md2html(md.value);
 	md.hidden = !md.hidden;
 	preview.hidden = !preview.hidden;
 
@@ -2420,7 +2380,7 @@ function withsubs()
 	var tempnote = 
 	{
 		title: currentnote.title + " (with subnotes)",
-		content: geteditorcontentwithheader()
+		content: md.value
 	};
 
 	var kids = children(tempnote);
@@ -2469,7 +2429,7 @@ function bindfile(note)
 	setwindowtitle();
 
 	seteditorcontent(note.content || "");
-	preview.innerHTML = md2html(geteditorcontentwithheader());
+	preview.innerHTML = md2html(md.value);
 
 	if (changed)
 	{
@@ -2481,12 +2441,6 @@ function bindfile(note)
 	if (!issplit() && searchdialog.hidden)
 	{
 		md.focus();
-	}
-
-	currentheader = "";
-	if (settings.hideheaderbydefault && md.value.startsWith("---\n"))
-	{
-		toggleheader();
 	}
 
 	setpos(note.pos || 0);

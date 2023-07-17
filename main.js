@@ -393,19 +393,6 @@ function sms()
 	}
 }
 
-function ask(question)
-{
-	return new Promise( (resolve) => 
-	{
-		filter.placeholder = question;
-		return searchinlist(["Yes", "No"])
-		.then(answer => 
-		{
-			resolve(answer);
-		});
-	});
-}
-
 function getnote(title)
 {
 	return localdata.find(note => note.title == title);

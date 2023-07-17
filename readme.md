@@ -11,12 +11,15 @@ your notes are stored in your browser local storage.
 you can use remote mode with your own php server to access your notes from the cloud.
 
 * put the source files on your php server
-* navigate to index.html
+* browse index.html
+* launch command "edit pgp keys" and paste your public and private keys as a single file (passphrase is not supported)
 * switch to remote mode: ctrl+shift+V
 
-to protect your data by a password, edit handler.php and change `$password` variable. 
+your data file will always be pgp encrypted and will never reach the server unencrypted.
 
-your password will be sent from browser to server through a POST http query with no more encryption than ssl, if enabled. it is stored unencrypted in your browser local storage.
+to protect your data file access by a password, edit settings.php and change `$password` variable.
+
+your password will be sent from browser to server through a post http query with no more encryption than ssl, if enabled. password is stored unencrypted in your browser local storage and in the settings.php file on server side.
 
 ## usage
 
@@ -28,4 +31,4 @@ your password will be sent from browser to server through a POST http query with
 
 download your notes in a single json file with ctrl+shift+s.
 
-write a moulinette to flatten them as md files.
+then you can write a moulinette to flatten them as md files.

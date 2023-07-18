@@ -1176,7 +1176,7 @@ function initshortcuts()
 		if (!commands.find(c => c.hint == hint))
 		{
 			var shortcut = n.content.match(/shortcut: (.*)/)[1];
-			commands.unshift({
+			commands.push({
 				hint: hint,
 				shortcut: shortcut,
 				action: function()
@@ -1200,20 +1200,6 @@ function init()
 
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
-
-	addfakehistory();
-	window.onpopstate = function(evt)
-	{
-		addfakehistory();
-		if (!searchdialog.hidden)
-		{
-			esc(evt);
-		}
-		else
-		{
-			loadprevious();	
-		}
-	}
 
 	initsnippets();
 

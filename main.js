@@ -208,6 +208,12 @@ var commands = [
 	action: restore
 },
 {
+	shortcut: "ctrl+h",
+	hint: "Insert markdown header",
+	action: insertheader,
+	allowunsaved: true
+},
+{
 	shortcut: "F1",
 	hint: "Show help",
 	action: showhelp
@@ -2094,6 +2100,17 @@ function restore()
 		seteditorcontent(backup);
 		datachanged();
 	}
+}
+
+function insertheader()
+{
+	if (preview.hidden && !md.value.startsWith("---\n"))
+	{
+		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
+		md.value = headers + md.value;
+		setpos(27);
+	}
+	resize();
 }
 
 function splitshortcut(s)

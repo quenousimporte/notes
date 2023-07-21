@@ -2227,7 +2227,11 @@ function ontitlechange()
 
 	datachanged();
 	setwindowtitle();
-	toggletitle();
+
+	if (!settings.titlebydefault)
+	{
+		toggletitle();
+	}
 }
 
 function applyfilter()

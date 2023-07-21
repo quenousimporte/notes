@@ -98,6 +98,16 @@ var themes =
 		lineheight: "24px",
 		accentcolor: "#5AA7CE"
 	},
+	"White monkey":
+	{
+		bgcolor: "white",
+		fontfamily: "'Inconsolata', 'Consolas', monospace",
+		fontsize: "18px",
+		fontcolor: "black",
+		lineheight: "150%",
+		accentcolor: "#5AA7CE",
+		titlebydefault: true
+	},
 	Mariana:
 	{
 		bgcolor: "rgb(48,56,65)",
@@ -1116,6 +1126,11 @@ function applystyle()
 	{
 		title.style.color = settings.accentcolor;
 	}
+
+	if (settings.titlebydefault && title.hidden)
+	{
+		toggletitle();
+	}
 }
 
 function loadsettings()
@@ -1136,7 +1151,7 @@ function loadsettings()
 
 	applystyle();
 
-	if (settings.titlebydefault)
+	if (settings.titlebydefault && title.hidden)
 	{
 		toggletitle();
 	}

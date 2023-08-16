@@ -2249,11 +2249,16 @@ function ontitlechange()
 	}
 }
 
+function simplifystring(str)
+{
+	return str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, "");
+}
+
 function applyfilter()
 {
 	[...filteredlist.children].forEach(div =>
 	{
-		div.hidden = div.textContent.toLowerCase().indexOf(filter.value.toLowerCase()) < 0;
+		div.hidden = simplifystring(div.textContent).indexOf(simplifystring(filter.value)) < 0;
 	});
 
 	fileindex = 0;

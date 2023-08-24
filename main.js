@@ -105,8 +105,7 @@ var themes =
 		fontsize: "18px",
 		fontcolor: "black",
 		lineheight: "150%",
-		accentcolor: "#5AA7CE",
-		titlebydefault: true
+		accentcolor: "#5AA7CE"
 	},
 	Mariana:
 	{
@@ -1125,11 +1124,6 @@ function applystyle()
 	if (settings.titleinaccentcolor)
 	{
 		title.style.color = settings.accentcolor;
-	}
-
-	if (settings.titlebydefault && title.hidden)
-	{
-		toggletitle();
 	}
 }
 

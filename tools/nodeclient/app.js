@@ -1,6 +1,7 @@
 const axios = require("axios");
 const readline = require("readline");
 const fs = require("fs");
+const openpgp = require("openpgp");
 var cp = require("child_process");
 
 var rl = readline.createInterface({
@@ -9,9 +10,33 @@ var rl = readline.createInterface({
 });
 
 var settings = JSON.parse(fs.readFileSync("settings.json", { encoding: "utf8", flag: "r" }));
+var pgpkey = fs.readFileSync("key.acs", { encoding: "utf8", flag: "r" });
 var filter = process.argv.length > 2 ? process.argv[2] : "";
 var intervalid = null;
 var notes = null;
+
+async function decrypt(str)
+{
+	var key = pgpkey.split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+	var privateKey = await openpgp.readKey({ armoredKey: key });
+	var decrypted = await openpgp.decrypt({
+		message: await openpgp.readMessage({ armoredMessage: str }),
+		decryptionKeys: privateKey });
+    const chunks = [];
+    for await (const chunk of decrypted.data) {
+        chunks.push(chunk);
+    }
+    return chunks.join('');
+}
+
+async function encrypt(str)
+{
+	var key = pgpkey.split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
+	var publicKey = await openpgp.readKey({ armoredKey: key });
+	return await openpgp.encrypt({
+		message: await openpgp.createMessage({ text: str }),
+		encryptionKeys: publicKey });
+}
 
 function filteredlist()
 {
@@ -30,9 +55,9 @@ axios.post(`${settings.url}/handler.php`,
 		"Content-type": "application/x-www-form-urlencoded"
 	}
 })
-.then(res =>
+.then(async function(res)
 {
-	notes = res.data;
+	notes = JSON.parse(await decrypt(res.data));
 
 	filteredlist()
 	.every( (note, i) =>
@@ -43,14 +68,14 @@ axios.post(`${settings.url}/handler.php`,
 
 	// todo: open if only one match. quit if no match
 	rl.prompt();
-	rl.on("line", (line) =>
+	rl.on("line", async function (line)
 	{
 		var note = filteredlist()[line];
 
 		// todo: use title instead? To put in data folder?
 		fs.writeFileSync("note.md", note.content);
 
-		cp.exec(`${settings.command} note.md`, function (err, stdout, stderr)
+		cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
 		{
 			clearInterval(intervalid);
 			var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
@@ -62,11 +87,12 @@ axios.post(`${settings.url}/handler.php`,
 				notes.unshift(note);
 
 				console.log("sending data file to server...");
+				var encrypted = await encrypt(JSON.stringify(notes));
 				axios.post(`${settings.url}/handler.php`,
 				{
 					action: "push",
 					password: settings.password,
-					data: JSON.stringify(notes)
+					data: encrypted
 				},
 				{
 					headers:
@@ -83,7 +109,7 @@ axios.post(`${settings.url}/handler.php`,
 			}
 		})
 
-		intervalid = setInterval(function()
+		intervalid = setInterval(async function()
 			{
 				//todo: refactor "save"
 				var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
@@ -95,11 +121,12 @@ axios.post(`${settings.url}/handler.php`,
 					notes.unshift(note);
 
 					console.log("sending data file to server...");
+					var encrypted = await encrypt(JSON.stringify(notes));
 					axios.post(`${settings.url}/handler.php`,
 					{
 						action: "push",
 						password: settings.password,
-						data: JSON.stringify(notes)
+						data: encrypted
 					},
 					{
 						headers:

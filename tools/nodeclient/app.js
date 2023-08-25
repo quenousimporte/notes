@@ -15,6 +15,11 @@ var filter = process.argv.length > 2 ? process.argv[2] : "";
 var intervalid = null;
 var notes = null;
 
+function simplifystring(str)
+{
+	return str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, "");
+}
+
 async function decrypt(str)
 {
 	var key = pgpkey.split("-----END PGP PUBLIC KEY BLOCK-----")[1];
@@ -41,7 +46,7 @@ async function encrypt(str)
 function filteredlist()
 {
 	return notes
-	.filter(n => n.title.toLowerCase().includes(filter.toLowerCase()));
+	.filter(n => simplifystring(n.title).includes(simplifystring(filter)));
 }
 
 axios.post(`${settings.url}/handler.php`,

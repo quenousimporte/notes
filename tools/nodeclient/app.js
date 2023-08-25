@@ -68,7 +68,7 @@ axios.post(`${settings.url}/handler.php`,
 	.every( (note, i) =>
 	{
 		console.log(`[${i}] ${note.title}`)
-		return i < settings.maxcount;
+		return Boolean(filter) || i < settings.maxcountifnofilter;
 	});
 
 	// todo: open if only one match. quit if no match

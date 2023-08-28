@@ -510,6 +510,11 @@ function formatsize(size)
  	return size.toFixed(2) + " " + unit;
 }
 
+function pospercent()
+{
+	return md.value.length > 0 ?(100 * md.selectionStart / md.value.length).toFixed(2) : 100;
+}
+
 function showinfo()
 {
 	var tags = gettags(currentnote);
@@ -518,7 +523,7 @@ function showinfo()
 			"vault: " + currentvault,			
 			"saved: " + saved,
 			"title: " + currentnote.title,
-			"cursor position: " + md.selectionStart + " (" + (100 * md.selectionStart / md.value.length).toFixed(2) + "%)",
+			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
 			(tags ? "tags: " + tags : ""),
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
 			"notes count: " + localdata.length,

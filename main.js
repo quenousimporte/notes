@@ -98,6 +98,15 @@ var themes =
 		lineheight: "24px",
 		accentcolor: "#5AA7CE"
 	},
+	"White monkey":
+	{
+		bgcolor: "white",
+		fontfamily: "'Inconsolata', 'Consolas', monospace",
+		fontsize: "18px",
+		fontcolor: "black",
+		lineheight: "150%",
+		accentcolor: "#5AA7CE"
+	},
 	Mariana:
 	{
 		bgcolor: "rgb(48,56,65)",
@@ -206,6 +215,12 @@ var commands = [
 {
 	hint: "Restore note",
 	action: restore
+},
+{
+	shortcut: "ctrl+h",
+	hint: "Insert markdown header",
+	action: insertheader,
+	allowunsaved: true
 },
 {
 	shortcut: "F1",
@@ -495,6 +510,11 @@ function formatsize(size)
  	return size.toFixed(2) + " " + unit;
 }
 
+function pospercent()
+{
+	return md.value.length > 0 ?(100 * md.selectionStart / md.value.length).toFixed(2) : 100;
+}
+
 function showinfo()
 {
 	var tags = gettags(currentnote);
@@ -503,7 +523,7 @@ function showinfo()
 			"vault: " + currentvault,			
 			"saved: " + saved,
 			"title: " + currentnote.title,
-			"cursor position: " + md.selectionStart + " (" + (100 * md.selectionStart / md.value.length).toFixed(2) + "%)",
+			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
 			(tags ? "tags: " + tags : ""),
 			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
 			"notes count: " + localdata.length,
@@ -1130,7 +1150,7 @@ function loadsettings()
 
 	applystyle();
 
-	if (settings.titlebydefault)
+	if (settings.titlebydefault && title.hidden)
 	{
 		toggletitle();
 	}
@@ -2096,6 +2116,17 @@ function restore()
 	}
 }
 
+function insertheader()
+{
+	if (preview.hidden && !md.value.startsWith("---\n"))
+	{
+		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
+		md.value = headers + md.value;
+		setpos(27);
+	}
+	resize();
+}
+
 function splitshortcut(s)
 {
 	var r = {};
@@ -2210,14 +2241,23 @@ function ontitlechange()
 
 	datachanged();
 	setwindowtitle();
-	toggletitle();
+
+	if (!settings.titlebydefault)
+	{
+		toggletitle();
+	}
+}
+
+function simplifystring(str)
+{
+	return str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, "");
 }
 
 function applyfilter()
 {
 	[...filteredlist.children].forEach(div =>
 	{
-		div.hidden = div.textContent.toLowerCase().indexOf(filter.value.toLowerCase()) < 0;
+		div.hidden = simplifystring(div.textContent).indexOf(simplifystring(filter.value)) < 0;
 	});
 
 	fileindex = 0;

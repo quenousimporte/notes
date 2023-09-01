@@ -328,7 +328,7 @@ var commands = [
 	action: downloadnotewithsubs
 },
 {
-	hint: "Download all notes as flat markdown files",
+	hint: "Download all notes in a zip file",
 	action: downloadnotes
 },
 {
@@ -996,6 +996,11 @@ function sharehtml()
 	}
 }
 
+function getfilename(title)
+{
+	return title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".md";
+}
+
 function download(filename, content)
 {
 	var element = document.createElement('a');
@@ -1010,17 +1015,16 @@ function download(filename, content)
 
 function downloadnotes()
 {
-	var copy = localdata.slice();
-	console.log(copy.length + " notes to download");
-	var id = setInterval(() => 
+	var zip = new JSZip();
+	localdata.forEach(note =>
 	{
-		var note = copy.pop();
-		download(note.title + ".md", note.content);
-		if (copy.length == 0)
-		{
-			clearInterval(id);
-		}
-	}, 500);
+		zip.file(getfilename(note.title), note.content);
+	});
+	zip.generateAsync({type:"blob"})
+	.then(function(content)
+	{
+	    saveAs(content, "notes.zip");
+	});
 }
 
 function inserttodo()
@@ -2002,6 +2006,9 @@ function showhelp()
 	help.push("## Libs");
 	help.push("[Showdown](https://showdownjs.com/)");
 	help.push("[vis-network](https://visjs.org/)");
+	help.push("[openpgpjs](https://openpgpjs.org/)");
+	help.push("[jszip](https://stuk.github.io/jszip/)");
+	help.push("[FileSaver](http://eligrey.com)");
 
 	help.push("## Fonts");
 	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");

@@ -11,9 +11,18 @@ var rl = readline.createInterface({
 
 var settings = JSON.parse(fs.readFileSync("settings.json", { encoding: "utf8", flag: "r" }));
 var pgpkey = fs.readFileSync("key.acs", { encoding: "utf8", flag: "r" });
-var filter = process.argv.length > 2 ? process.argv[2] : "";
+var filter = "";
 var intervalid = null;
 var notes = null;
+var currentnote = null;
+
+function timestamp()
+{
+	var utc = new Date();
+	var loc = new Date(utc - utc.getTimezoneOffset() * 60 * 1000);
+
+	return loc.toISOString().replace("T", " ").replace(/\..*/, "").replace(/:/g, ".");
+}
 
 function simplifystring(str)
 {
@@ -49,6 +58,61 @@ function filteredlist()
 	.filter(n => simplifystring(n.title).includes(simplifystring(filter)));
 }
 
+async function saveifneeded()
+{
+	var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
+	if (currentnote.content != newcontent)
+	{
+		currentnote.content = newcontent;
+
+		notes.splice(notes.indexOf(currentnote), 1);
+		notes.unshift(currentnote);
+
+		console.log("sending data file to server...");
+		var encrypted = await encrypt(JSON.stringify(notes));
+		axios.post(`${settings.url}/handler.php`,
+		{
+			action: "push",
+			password: settings.password,
+			data: encrypted
+		},
+		{
+			headers:
+			{
+				"Content-type": "application/x-www-form-urlencoded"
+			}
+		}).then(res => {
+			console.log("...done.");
+		});
+	}
+	else
+	{
+		console.log("no change.");
+	}
+}
+
+function editnote(index)
+{
+	currentnote = filteredlist()[index];
+	if (currentnote)
+	{
+		// todo: use title instead? To put in data folder?
+		fs.writeFileSync("note.md", currentnote.content);
+
+		cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
+		{
+			clearInterval(intervalid);
+			saveifneeded();
+		});
+		intervalid = setInterval(saveifneeded, 10000);
+	}
+	else
+	{
+		console.log("No note found.");
+	}
+}
+
+// Run part
 axios.post(`${settings.url}/handler.php`,
 {
 	action: "fetch",
@@ -64,86 +128,50 @@ axios.post(`${settings.url}/handler.php`,
 {
 	notes = JSON.parse(await decrypt(res.data));
 
-	filteredlist()
-	.every( (note, i) =>
+	if (process.argv.length > 2 && process.argv[2] === "new")
 	{
-		console.log(`[${i}] ${note.title}`)
-		return Boolean(filter) || i < settings.maxcountifnofilter;
-	});
-
-	// todo: open if only one match. quit if no match
-	rl.prompt();
-	rl.on("line", async function (line)
+		var title = timestamp();
+		currentnote = {
+			title: title,
+			content: ""
+		}
+		notes.unshift(currentnote);
+		console.log("Creating new note: " + title);
+		editnote(0);
+	}
+	else
 	{
-		var note = filteredlist()[line];
-
-		// todo: use title instead? To put in data folder?
-		fs.writeFileSync("note.md", note.content);
-
-		cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
+		if (process.argv.length > 2)
 		{
-			clearInterval(intervalid);
-			var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
-			if (note.content != newcontent)
+			filter = process.argv[2];
+		}
+
+		var matchcount = filteredlist().length;
+		if (matchcount == 1)
+		{
+			editnote(0);
+		}
+		else if (matchcount > 1)
+		{
+			console.log("Select a note or type 'q' to quit:");
+			filteredlist()
+			.every( (note, i) =>
 			{
-				note.content = newcontent;
-
-				notes.splice(notes.indexOf(note), 1);
-				notes.unshift(note);
-
-				console.log("sending data file to server...");
-				var encrypted = await encrypt(JSON.stringify(notes));
-				axios.post(`${settings.url}/handler.php`,
-				{
-					action: "push",
-					password: settings.password,
-					data: encrypted
-				},
-				{
-					headers:
-					{
-						"Content-type": "application/x-www-form-urlencoded"
-					}
-				}).then(res => {
-					console.log("done.");
-				});
-			}
-			else
+				console.log(`[${i}] ${note.title}`)
+				return Boolean(filter) || i < settings.maxcountifnofilter;
+			});
+			rl.prompt();
+			rl.on("line", async function (line)
 			{
-				console.log("no change.");
-			}
-		})
-
-		intervalid = setInterval(async function()
-			{
-				//todo: refactor "save"
-				var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
-				if (note.content != newcontent)
+				if (line == "q")
 				{
-					note.content = newcontent;
-
-					notes.splice(notes.indexOf(note), 1);
-					notes.unshift(note);
-
-					console.log("sending data file to server...");
-					var encrypted = await encrypt(JSON.stringify(notes));
-					axios.post(`${settings.url}/handler.php`,
-					{
-						action: "push",
-						password: settings.password,
-						data: encrypted
-					},
-					{
-						headers:
-						{
-							"Content-type": "application/x-www-form-urlencoded"
-						}
-					}).then(res => {
-						console.log("done.");
-					});
+					rl.close();
 				}
-			}, 10000);
-
-		rl.close();
-	});
+				else
+				{
+					editnote(line);
+				}
+			});
+		}
+	}
 });

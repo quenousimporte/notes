@@ -1087,23 +1087,40 @@ function remotecallfailed(error)
 	}
 }
 
+function gotoline(line)
+{
+	var i = 0;
+	var pos = 0;
+	while (i < line && pos > -1)
+	{
+		pos = currentnote.content.indexOf("\n", pos + 1);
+		i++;
+	}
+	if (pos > -1)
+	{
+		setpos(pos + 1);
+	}
+}
+
 function loadstorage()
 {
 	var item = window.localStorage.getItem(currentvault);
 	localdata = item ? JSON.parse(item) : [];
 
-	var urlparam = (new URLSearchParams(window.location.search)).get("n");
+	var params = new URLSearchParams(window.location.search);
+	var title = params.get("n");
+	var line = params.get("l");
 
 	if (currentnote)
 	{
 		currentnote = getnote(currentnote.title);
 	}
-	else if (urlparam)
+	else if (title)
 	{
-		currentnote = getnote(urlparam);
+		currentnote = getnote(title);
 		if (!currentnote)
 		{
-			currentnote = {title: urlparam, content: ""};
+			currentnote = {title: title, content: ""};
 			localdata.unshift(currentnote);
 		}
 	}
@@ -1111,6 +1128,10 @@ function loadstorage()
 	if (currentnote)
 	{
 		bindfile(currentnote);
+		if (line)
+		{
+			gotoline(line);
+		}
 	}
 	else
 	{
@@ -1646,7 +1667,7 @@ function showgrepresult(grepresult)
 		grepcontent.push("[[" + file + "]]");
 		for (var l in grepresult[file])
 		{
-			grepcontent.push("[" + l + "] " + grepresult[file][l]);
+			grepcontent.push("[<a href=?n=" + encodeURIComponent(file) + "&l=" + l + ">" + l + "</a>] " + grepresult[file][l]);
 		}
 		grepcontent.push("");
 	}

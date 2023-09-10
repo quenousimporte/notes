@@ -1,20 +1,14 @@
 const axios = require("axios");
-const readline = require("readline");
 const fs = require("fs");
 const openpgp = require("openpgp");
 var cp = require("child_process");
 
-var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
 var settings = JSON.parse(fs.readFileSync("settings.json", { encoding: "utf8", flag: "r" }));
 var pgpkey = fs.readFileSync("key.acs", { encoding: "utf8", flag: "r" });
-var filter = "";
 var intervalid = null;
 var notes = null;
 var currentnote = null;
+var command = null;
 
 function timestamp()
 {
@@ -52,12 +46,6 @@ async function encrypt(str)
 		encryptionKeys: publicKey });
 }
 
-function filteredlist()
-{
-	return notes
-	.filter(n => simplifystring(n.title).includes(simplifystring(filter)));
-}
-
 async function saveifneeded()
 {
 	var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
@@ -85,34 +73,34 @@ async function saveifneeded()
 			console.log("...done.");
 		});
 	}
-	else
+	else if (!intervalid)
 	{
 		console.log("no change.");
 	}
 }
 
-function editnote(index)
+function editnote()
 {
-	currentnote = filteredlist()[index];
-	if (currentnote)
+	fs.writeFileSync("note.md", currentnote.content);
+	cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
 	{
-		// todo: use title instead? To put in data folder?
-		fs.writeFileSync("note.md", currentnote.content);
-
-		cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
-		{
-			clearInterval(intervalid);
-			saveifneeded();
-		});
-		intervalid = setInterval(saveifneeded, 10000);
-	}
-	else
-	{
-		console.log("No note found.");
-	}
+		clearInterval(intervalid);
+		intervalid = null;
+		saveifneeded();
+	});
+	intervalid = setInterval(saveifneeded, 10000);
 }
 
 // Run part
+if (process.argv.length <= 2)
+{
+	command = "list";
+}
+else
+{
+	command = process.argv[2];
+}
+
 axios.post(`${settings.url}/handler.php`,
 {
 	action: "fetch",
@@ -128,50 +116,72 @@ axios.post(`${settings.url}/handler.php`,
 {
 	notes = JSON.parse(await decrypt(res.data));
 
-	if (process.argv.length > 2 && process.argv[2] === "new")
+	switch (command)
 	{
-		var title = timestamp();
-		currentnote = {
-			title: title,
-			content: ""
-		}
-		notes.unshift(currentnote);
-		console.log("Creating new note: " + title);
-		editnote(0);
-	}
-	else
-	{
-		if (process.argv.length > 2)
-		{
-			filter = process.argv[2];
-		}
+		case "help":
+		case "-h":
+		case "--help":
+			var appcmd = "notes";
+			console.log(`list notes: ${appcmd} [list]`);
+			console.log(`edit a note: ${appcmd} [open|edit] <title|index>`);
+			console.log(`create a note: ${appcmd} new|create|add [<title>]`);
+			console.log(`display help: ${appcmd} help|-h|--help`);
+			break;
 
-		var matchcount = filteredlist().length;
-		if (matchcount == 1)
-		{
-			editnote(0);
-		}
-		else if (matchcount > 1)
-		{
-			console.log("Select a note or type 'q' to quit:");
-			filteredlist()
-			.every( (note, i) =>
+		case "new":
+		case "create":
+		case "add":
+			var title = timestamp();
+			if (process.argv.length > 3)
 			{
-				console.log(`[${i}] ${note.title}`)
-				return Boolean(filter) || i < settings.maxcountifnofilter;
-			});
-			rl.prompt();
-			rl.on("line", async function (line)
+				title = process.argv[3];
+			}
+			if (notes.find(n => n.title == title))
 			{
-				if (line == "q")
-				{
-					rl.close();
+				console.log(`${title}: already exists`);
+			}
+			else
+			{
+				currentnote = {
+					title: title,
+					content: ""
 				}
-				else
-				{
-					editnote(line);
-				}
-			});
-		}
+				notes.unshift(currentnote);
+				console.log(`Creating new note: ${title}`);
+				editnote();	
+			}
+			break;
+
+		case "list":
+			for (var i = notes.length - 1; i >= 0; i--)
+			{
+				console.log(`[${i}] ${notes[i].title}`);
+			}
+			break;
+		
+		default:
+			var arg = command;
+			if (arg === "open" || arg === "edit")
+			{
+				arg = process.argv[3];
+			}
+			if (isNaN(parseInt(arg)))
+			{
+				currentnote = notes.find(n => n.title == arg);
+			}
+			else
+			{
+				currentnote = notes[parseInt(arg)];
+			}
+			if (currentnote)
+			{
+				console.log(`Editing ${currentnote.title}`);
+				editnote();
+			}
+			else
+			{
+				console.log(`Note ${arg} not found`);
+			}		
+			break;
 	}
 });

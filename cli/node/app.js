@@ -23,30 +23,52 @@ function simplifystring(str)
 	return str.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, "");
 }
 
-async function decrypt(str)
+function decrypt(str)
 {
-	var key = pgpkey.split("-----END PGP PUBLIC KEY BLOCK-----")[1];
-	var privateKey = await openpgp.readKey({ armoredKey: key });
-	var decrypted = await openpgp.decrypt({
-		message: await openpgp.readMessage({ armoredMessage: str }),
-		decryptionKeys: privateKey });
-    const chunks = [];
-    for await (const chunk of decrypted.data) {
-        chunks.push(chunk);
-    }
-    return chunks.join('');
+	var keystring = pgpkey.split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+	var key = null;
+
+	return openpgp.readKey({ armoredKey: keystring })
+	.then(privateKey =>
+	{
+		key = privateKey;
+		return openpgp.readMessage({ armoredMessage: str });
+	})
+	.then(message =>
+	{
+		return openpgp.decrypt({
+		message: message,
+		decryptionKeys: key })
+	})
+	.then(decrypted =>
+	{
+		var chunks = [];
+		for (const chunk of decrypted.data) {
+	        chunks.push(chunk);
+	    }
+	    return chunks.join('');
+	});
 }
 
-async function encrypt(str)
+function encrypt(str)
 {
-	var key = pgpkey.split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
-	var publicKey = await openpgp.readKey({ armoredKey: key });
-	return await openpgp.encrypt({
-		message: await openpgp.createMessage({ text: str }),
-		encryptionKeys: publicKey });
+	var keystring = pgpkey.split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
+	var key = null;
+	return openpgp.readKey({ armoredKey: keystring })
+	.then(publicKey =>
+	{
+		key = publicKey;
+		return openpgp.createMessage({ text: str });
+	})
+	.then(message =>
+	{
+		return openpgp.encrypt({
+			message: message,
+			encryptionKeys: key });
+	})
 }
 
-async function saveifneeded()
+function saveifneeded()
 {
 	var newcontent = fs.readFileSync("note.md", { encoding: "utf8", flag: "r" });
 	if (currentnote.content != newcontent)
@@ -57,19 +79,23 @@ async function saveifneeded()
 		notes.unshift(currentnote);
 
 		console.log("sending data file to server...");
-		var encrypted = await encrypt(JSON.stringify(notes));
-		axios.post(`${settings.url}/handler.php`,
+		encrypt(JSON.stringify(notes))
+		.then(encrypted =>
 		{
-			action: "push",
-			password: settings.password,
-			data: encrypted
-		},
-		{
-			headers:
+			return axios.post(`${settings.url}/handler.php`,
 			{
-				"Content-type": "application/x-www-form-urlencoded"
-			}
-		}).then(res => {
+				action: "push",
+				password: settings.password,
+				data: encrypted
+			},
+			{
+				headers:
+				{
+					"Content-type": "application/x-www-form-urlencoded"
+				}
+			});
+		})
+		.then(res => {
 			console.log("...done.");
 		});
 	}
@@ -82,7 +108,8 @@ async function saveifneeded()
 function editnote()
 {
 	fs.writeFileSync("note.md", currentnote.content);
-	cp.exec(`${settings.command} note.md`, async function (err, stdout, stderr)
+	cp.exec(`${settings.command} note.md`,
+	function (err, stdout, stderr)
 	{
 		clearInterval(intervalid);
 		intervalid = null;
@@ -112,10 +139,13 @@ axios.post(`${settings.url}/handler.php`,
 		"Content-type": "application/x-www-form-urlencoded"
 	}
 })
-.then(async function(res)
+.then(function(res)
 {
-	notes = JSON.parse(await decrypt(res.data));
-
+	return decrypt(res.data);
+})
+.then(json =>
+{
+	notes = JSON.parse(json);
 	switch (command)
 	{
 		case "help":

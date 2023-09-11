@@ -12,11 +12,14 @@ function editnote()
 	file.puts(currentnote.content);
 	file.close();
 
-	os.exec([settings.editor, "data/note.md"]);
+	os.exec(["cp", "data/note.md", "data/backup.md"]);
+	
+	os.exec(settings.editor.concat("data/note.md"));
 
 	var newcontent = std.loadFile("data/note.md");
 	if (currentnote.content != newcontent)
 	{
+		os.exec(["diff", "--color", "data/backup.md", "data/note.md"]);
 		currentnote.content = newcontent;
 
 		notes.splice(notes.indexOf(currentnote), 1);
@@ -26,7 +29,7 @@ function editnote()
 		file.puts(JSON.stringify(notes));
 		file.close();
 
-		os.exec([settings.gpg, "--encrypt", "--yes", "--output", "data/data2.acs", "--armor", "-r", settings.gpguser, "data/data2.json"]);
+		os.exec([settings.gpg, "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data2.acs", "--armor", "-r", settings.gpguser, "data/data2.json"]);
 		var newdata = std.loadFile("data/data2.acs");
 		console.log("sending data file to server...");
 

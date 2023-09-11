@@ -13,7 +13,7 @@ function editnote()
 	file.close();
 
 	os.exec(["cp", "data/note.md", "data/backup.md"]);
-	
+
 	os.exec(settings.editor.concat("data/note.md"));
 
 	var newcontent = std.loadFile("data/note.md");
@@ -38,7 +38,7 @@ function editnote()
 		file.puts(postdata);
 		file.close();
 
-		os.exec(["curl", "-X", "POST", 
+		os.exec(["curl", "-X", "POST",
 			"-d", "@data/postdata",
 			settings.url + "/handler.php"]);
 
@@ -92,7 +92,7 @@ else
 				}
 				notes.unshift(currentnote);
 				console.log(`Creating new note: ${title}`);
-				editnote();	
+				editnote();
 			}
 			break;
 
@@ -102,7 +102,7 @@ else
 				console.log(`[${i}] ${notes[i].title}`);
 			}
 			break;
-		
+
 		default:
 			var arg = command;
 			if (arg === "open" || arg === "edit")
@@ -125,7 +125,7 @@ else
 			else
 			{
 				console.log(`Note ${arg} not found`);
-			}		
+			}
 			break;
 	}
 }

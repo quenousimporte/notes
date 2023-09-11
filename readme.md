@@ -6,7 +6,7 @@ launch index.html from your web server or local computer, or try https://notes.o
 
 your notes are stored in your browser local storage.
 
-## remote mode 
+## remote mode
 
 you can use remote mode with your own php server to access your notes from the cloud.
 

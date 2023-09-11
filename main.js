@@ -150,7 +150,7 @@ var themes =
 		fontsize: "16px",
 		fontcolor: "rgb(78,78,78)",
 		lineheight: "24px",
-		accentcolor: "rgb(54,54,54)"		
+		accentcolor: "rgb(54,54,54)"
 	}
 };
 
@@ -429,7 +429,7 @@ function createsubnote(suggestedtitle)
 	var content = getrangecontent(range);
 	filter.placeholder = "Create subnote...";
 	searchinlist(name)
-	.then(title => 
+	.then(title =>
 	{
 		if (!title)
 		{
@@ -443,7 +443,7 @@ function createsubnote(suggestedtitle)
 		}
 		else
 		{
-			var newnote = 
+			var newnote =
 			{
 				title: title,
 				content: content
@@ -475,7 +475,7 @@ function includesub()
 		if (confirm("Replace [[" + title + "]] by its content?"))
 		{
 			var subnote = getnote(title);
-			md.value = 
+			md.value =
 			md.value.substring(0, range.start)
 			+ subnote.content
 			+ md.value.substring(range.end);
@@ -520,7 +520,7 @@ function showinfo()
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
 		[
-			"vault: " + currentvault,			
+			"vault: " + currentvault,
 			"saved: " + saved,
 			"title: " + currentnote.title,
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
@@ -597,14 +597,14 @@ function switchvault()
 	if (confirm("Switch to " + newvault + "?"))
 	{
 		applyvault(newvault);
-	}	
+	}
 }
 
 function ancestors(note)
 {
 	var list = [note];
 	var result = [];
-	
+
 	while (list.length)
 	{
 		var current = list.shift();
@@ -621,7 +621,7 @@ function descendants(note)
 {
 	var list = [note];
 	var result = [];
-	
+
 	while (list.length)
 	{
 		var current = list.shift();
@@ -652,7 +652,7 @@ function connected(note)
 {
 	var list = [note];
 	var result = [];
-	
+
 	while (list.length)
 	{
 		var current = list.shift();
@@ -680,7 +680,7 @@ function shownotelinks()
 		var edges = [];
 
 		var list = [currentnote];
-		
+
 		while (list.length)
 		{
 			var current = list.shift();
@@ -704,7 +704,7 @@ function shownotelinks()
 							from: id(current),
 							to: id(buddy)
 						});
-					}				
+					}
 				});
 			}
 		}
@@ -714,7 +714,7 @@ function shownotelinks()
 			edges: edges
 		};
 
-		var options = 
+		var options =
 		{
 			nodes:
 			{
@@ -731,7 +731,7 @@ function shownotelinks()
 				}
 			}
 		};
-		
+
 		var graph = new vis.Network(network, data, options);
 		graph.on("click", function(event)
 		{
@@ -765,7 +765,7 @@ function showoutline()
 		else if (line == "---" && index != 0 && index != 3)
 		{
 			var next;
-			if (next = lines.find((current, i) => 
+			if (next = lines.find((current, i) =>
 			{
 				return i > index && current != "";
 			}))
@@ -796,14 +796,14 @@ function linkrangeatpos()
 {
 	var start = md.value.lastIndexOf("[[", md.selectionStart);
 	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return null
-	
+
 	var end = md.value.indexOf("]]", md.selectionStart);
 	if (end == -1 || md.value.substring(md.selectionStart, end).indexOf("\n") != -1) return null;
 
 	return {
 		start: start,
 		end: end + 2
-	};	
+	};
 }
 
 function linkatpos()
@@ -825,7 +825,7 @@ function tagatpos()
 
 	var start = md.value.lastIndexOf(" ", md.selectionStart);
 	if (start == -1 || md.value.substring(start, md.selectionStart).indexOf("\n") != -1) return "";
-	
+
 	var eol = md.value.indexOf("\n", md.selectionStart);
 	var end = md.value.indexOf(",", md.selectionStart);
 
@@ -833,7 +833,7 @@ function tagatpos()
 	{
 		end = eol;
 	}
-	
+
 	return md.value.substring(start + 1, end);
 }
 
@@ -1069,8 +1069,8 @@ function downloadnotewithsubs()
 	var note = withsubs();
 	if (note)
 	{
-		download(note.title + ".md", note.content);	
-	}	
+		download(note.title + ".md", note.content);
+	}
 }
 
 function downloadnote()
@@ -1595,7 +1595,7 @@ function md2html(content)
 	{
 		converter.setOption("openLinksInNewWindow", true);
 	}
-	
+
 	var html = converter.makeHtml(content);
 
 	// internal links
@@ -2094,7 +2094,7 @@ function renamereferences(newname)
 	.forEach(note =>
 	{
 		note.content = note.content.replaceAll("[[" + currentnote.title + "]]", "[[" + newname + "]]");
-	});	
+	});
 }
 
 function rename(newname)
@@ -2410,7 +2410,7 @@ function withsubs()
 {
 	try
 	{
-		descendants(currentnote);	
+		descendants(currentnote);
 	}
 	catch (err)
 	{
@@ -2418,7 +2418,7 @@ function withsubs()
 		return null;
 	}
 
-	var tempnote = 
+	var tempnote =
 	{
 		title: currentnote.title + " (with subnotes)",
 		content: md.value
@@ -2456,8 +2456,8 @@ function togglepreviewwithsubs()
 		{
 			resize();
 			md.focus();
-		}	
-	}	
+		}
+	}
 }
 
 function bindfile(note)
@@ -2475,7 +2475,7 @@ function bindfile(note)
 	if (changed)
 	{
 		md.style.height = "0px";
-	}	
+	}
 	resize();
 
 	// to improve...
@@ -2499,7 +2499,7 @@ function loadnote(name)
 	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
 	{
 		togglepreview();
-	}	
+	}
 }
 
 function sendpassword()

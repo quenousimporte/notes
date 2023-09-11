@@ -37,7 +37,7 @@ else if (isset($_POST['action']))
 			else
 			{
 				echo '{}';
-			}			
+			}
 		break;
 
 		case 'cal':

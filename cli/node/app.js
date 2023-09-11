@@ -148,7 +148,7 @@ axios.post(`${settings.url}/handler.php`,
 				}
 				notes.unshift(currentnote);
 				console.log(`Creating new note: ${title}`);
-				editnote();	
+				editnote();
 			}
 			break;
 
@@ -158,7 +158,7 @@ axios.post(`${settings.url}/handler.php`,
 				console.log(`[${i}] ${notes[i].title}`);
 			}
 			break;
-		
+
 		default:
 			var arg = command;
 			if (arg === "open" || arg === "edit")
@@ -181,7 +181,7 @@ axios.post(`${settings.url}/handler.php`,
 			else
 			{
 				console.log(`Note ${arg} not found`);
-			}		
+			}
 			break;
 	}
 });

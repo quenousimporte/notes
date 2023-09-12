@@ -1,6 +1,6 @@
 {
 	"password": "",
-	"url": "http://localhost:8000",
+	"url": "http://localhost:8000/handler.php",
 	"editor": ["vim"],
 	"gpg": "gpg",
 	"gpguser": ""

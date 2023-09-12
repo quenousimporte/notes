@@ -13,12 +13,12 @@ function editnote()
 	file.close();
 
 	os.exec(["cp", "data/note.md", "data/backup.md"]);
-
 	os.exec(settings.editor.concat("data/note.md"));
 
 	var newcontent = std.loadFile("data/note.md");
 	if (currentnote.content != newcontent)
 	{
+		print("diff:");
 		os.exec(["diff", "--color", "data/backup.md", "data/note.md"]);
 		currentnote.content = newcontent;
 
@@ -29,20 +29,18 @@ function editnote()
 		file.puts(JSON.stringify(notes));
 		file.close();
 
-		os.exec([settings.gpg, "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data2.acs", "--armor", "-r", settings.gpguser, "data/data2.json"]);
+		os.exec([settings.gpg, "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data2.acs", "--armor", "-r", settings.gpguser, "data/data2.json"]);
 		var newdata = std.loadFile("data/data2.acs");
-		console.log("sending data file to server...");
+		console.log("sending data file to server.");
 
 		var postdata = "action=push&password=" + settings.password + "&data=" + encodeURIComponent(newdata);
 		file = std.open("data/postdata", "w");
 		file.puts(postdata);
 		file.close();
 
-		os.exec(["curl", "-X", "POST",
+		os.exec(["curl", "-s", "-X", "POST",
 			"-d", "@data/postdata",
-			settings.url + "/handler.php"]);
-
-		console.log("...done.");
+			settings.url]);
 	}
 	else
 	{
@@ -66,8 +64,8 @@ if (command == "help" || command == "-h" || command == "--help")
 }
 else
 {
-	os.exec(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings.password, "-o", "data/data.acs", settings.url + "/handler.php"]);
-	os.exec([settings.gpg, "--yes", "--output", "data/data.json", "--decrypt", "data/data.acs"]);
+	os.exec(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings.password, "-o", "data/data.acs", settings.url]);
+	os.exec([settings.gpg, "-q", "--yes", "--output", "data/data.json", "--decrypt", "data/data.acs"]);
 	var notes = JSON.parse(std.loadFile("data/data.json"));
 
 	switch (command)

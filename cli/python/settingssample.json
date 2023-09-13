@@ -1,0 +1,10 @@
+{
+	"url": "http://localhost:8000",
+	"password": "",
+	"gpguser": "",
+	"commands":
+	{
+		"editor": ["vim"],
+		"gpg": "gpg"
+	}
+}

@@ -82,9 +82,12 @@ if len(sys.argv) > 1:
 
 while not (command == "quit" or command == "exit" or command == "q"):
 
-	delete = False
+	action = None
 	if command[0:3] == "rm ":
-		delete = True
+		action = "delete"
+		command = command[3:]
+	elif command[0:3] == "mv ":
+		action = "rename"
 		command = command[3:]
 
 	try:
@@ -93,10 +96,16 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	except:
 		note = next((note for note in data if note["title"] == command), None)
 
-	if delete:
+	if action == "delete":
 		if note and ask("delete '" + note["title"] + "'? "):
 			data.remove(note)
 			savedata()
+	elif action == "rename":
+		if note:
+			newname = input("new name: ")
+			if newname:
+				note["title"] = newname
+				savedata()
 	elif note:
 		editnote(note)
 	else:

@@ -36,7 +36,6 @@ def editnote(note):
 
 	if newcontent != content:
 
-		listnotes()
 		subprocess.call(settings["commands"]["diff"] + ["data/backupnote.md", "data/note.md"])
 
 		note["content"] = newcontent
@@ -53,7 +52,6 @@ def editnote(note):
 		else:
 			writetextfile("data/local.json", json.dumps(data))
 	else:
-		listnotes()
 		print("no change")
 
 settings = json.loads(readtextfile("settings.json"))
@@ -80,7 +78,7 @@ while not (command == "quit" or command == "exit" or command == "q"):
 		index = int(command)
 		note = data[index]
 	except:
-		note = next((x for x in data if x["title"] == command), None)
+		note = next((note for note in data if note["title"] == command), None)
 
 	if note:
 		editnote(note)
@@ -96,7 +94,5 @@ while not (command == "quit" or command == "exit" or command == "q"):
 			}
 			data.insert(0, note)
 			editnote(note)
-		else:
-			listnotes()
 
 	command = input("> ")

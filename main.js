@@ -998,7 +998,8 @@ function sharehtml()
 
 function getfilename(title)
 {
-	return title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".md";
+	//return title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".md";
+	return title.replace(/[\?\"<>|\*:\/\\]/g, "_") + ".md";
 }
 
 function download(filename, content)

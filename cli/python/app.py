@@ -6,10 +6,6 @@ import os
 import sys
 import time
 
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
-
 def listnotes(filter = ""):
 	cnt = 0
 	for i in reversed(range(len(data))):
@@ -36,25 +32,33 @@ def editnote(note):
 	newcontent = readtextfile("data/note.md")
 
 	if newcontent != content:
-
 		subprocess.call(settings["commands"]["diff"] + ["data/backupnote.md", "data/note.md"])
-
 		note["content"] = newcontent
 		data.remove(note)
 		data.insert(0, note)
+		savedata()
 
-		if settings["mode"] == "remote":
-			writetextfile("data/data.json", json.dumps(data))
-			subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data.acs", "--armor", "-r", settings["gpguser"], "data/data.json"]);
-			newdata = readtextfile("data/data.acs")
-			postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
-			writetextfile("data/postdata", postdata)
-			subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
-		else:
-			writetextfile("data/local.json", json.dumps(data))
 	else:
 		print("no change")
 
+def savedata():
+	if settings["mode"] == "remote":
+		writetextfile("data/data.json", json.dumps(data))
+		subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data.acs", "--armor", "-r", settings["gpguser"], "data/data.json"]);
+		newdata = readtextfile("data/data.acs")
+		postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
+		writetextfile("data/postdata", postdata)
+		subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
+	else:
+		writetextfile("data/local.json", json.dumps(data))
+
+def ask(question):
+	answer = input(question)
+	return answer == "y" or answer == "yes"
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 settings = json.loads(readtextfile("settings.json"))
 
 if os.path.isfile("data/backupdata.acs"):
@@ -75,25 +79,29 @@ if len(sys.argv) > 1:
 
 while not (command == "quit" or command == "exit" or command == "q"):
 
-	try:
-		index = int(command)
-		note = data[index]
-	except:
-		note = next((note for note in data if note["title"] == command), None)
-
-	if note:
-		editnote(note)
+	if command[0:3] == "rm ":
+		index = int(command[3:])
+		if ask("delete '" + data[index]["title"] + "'? "):
+			data.remove(data[index])
+			savedata()
 	else:
-		cnt = listnotes(command)
 
-	if cnt == 0:
-		answer = input("create '" + command + "'? ")
-		if answer == "y" or answer == "yes":
-			note = {
-				"title": command,
-				"content": "---\ntitle: " + command + "\ndate: " + time.strftime("%Y-%m-%d") + "\ntags: \n---\n\n"
-			}
-			data.insert(0, note)
+		try:
+			index = int(command)
+			note = data[index]
+		except:
+			note = next((note for note in data if note["title"] == command), None)
+
+		if note:
 			editnote(note)
+		else:
+			if listnotes(command) == 0:
+				if ask("create '" + command + "'? "):
+					note = {
+						"title": command,
+						"content": "---\ntitle: " + command + "\ndate: " + time.strftime("%Y-%m-%d") + "\ntags: \n---\n\n"
+					}
+					data.insert(0, note)
+					editnote(note)
 
 	command = input("> ")

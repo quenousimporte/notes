@@ -52,6 +52,14 @@ def savedata():
 	else:
 		writetextfile("data/local.json", json.dumps(data))
 
+def loaddata():
+	if settings["mode"] == "remote":
+		subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
+		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
+		return json.loads(readtextfile("data/backupdata.json"))
+	else:
+		return json.loads(readtextfile("data/local.json"))
+
 def ask(question):
 	answer = input(question)
 	return answer == "y" or answer == "yes"
@@ -64,12 +72,7 @@ settings = json.loads(readtextfile("settings.json"))
 if os.path.isfile("data/backupdata.acs"):
 	os.remove("data/backupdata.acs")
 
-if settings["mode"] == "remote":
-	subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
-	subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
-	data = json.loads(readtextfile("data/backupdata.json"))
-else:
-	data = json.loads(readtextfile("data/local.json"))
+data = loaddata()
 
 command = ""
 if len(sys.argv) > 1:
@@ -79,29 +82,31 @@ if len(sys.argv) > 1:
 
 while not (command == "quit" or command == "exit" or command == "q"):
 
+	delete = False
 	if command[0:3] == "rm ":
-		index = int(command[3:])
-		if ask("delete '" + data[index]["title"] + "'? "):
-			data.remove(data[index])
+		delete = True
+		command = command[3:]
+
+	try:
+		index = int(command)
+		note = data[index]
+	except:
+		note = next((note for note in data if note["title"] == command), None)
+
+	if delete:
+		if note and ask("delete '" + note["title"] + "'? "):
+			data.remove(note)
 			savedata()
+	elif note:
+		editnote(note)
 	else:
-
-		try:
-			index = int(command)
-			note = data[index]
-		except:
-			note = next((note for note in data if note["title"] == command), None)
-
-		if note:
-			editnote(note)
-		else:
-			if listnotes(command) == 0:
-				if ask("create '" + command + "'? "):
-					note = {
-						"title": command,
-						"content": "---\ntitle: " + command + "\ndate: " + time.strftime("%Y-%m-%d") + "\ntags: \n---\n\n"
-					}
-					data.insert(0, note)
-					editnote(note)
+		if listnotes(command) == 0:
+			if ask("create '" + command + "'? "):
+				note = {
+					"title": command,
+					"content": "---\ntitle: " + command + "\ndate: " + time.strftime("%Y-%m-%d") + "\ntags: \n---\n\n"
+				}
+				data.insert(0, note)
+				editnote(note)
 
 	command = input("> ")

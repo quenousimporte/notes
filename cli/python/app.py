@@ -4,6 +4,7 @@ import subprocess
 import urllib.parse
 import os
 import sys
+import time
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -90,7 +91,7 @@ while not (command == "quit" or command == "exit" or command == "q"):
 		if answer == "y" or answer == "yes":
 			note = {
 				"title": command,
-				"content": "---\ntitle: " + command + "\n---\n\n"
+				"content": "---\ntitle: " + command + "\ndate: " + time.strftime("%Y-%m-%d") + "\ntags: \n---\n\n"
 			}
 			data.insert(0, note)
 			editnote(note)

@@ -5,6 +5,7 @@
 	"commands":
 	{
 		"editor": ["vim"],
-		"gpg": "gpg"
+		"gpg": "gpg",
+		"diff": ["diff", "--color"]
 	}
 }

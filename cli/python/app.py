@@ -6,9 +6,12 @@ import os
 import sys
 
 def listnotes(filter = ""):
+	cnt = 0
 	for i in reversed(range(len(data))):
 		if filter in data[i]["title"]:
 			print("[" + str(i) + "]", data[i]["title"])
+			cnt += 1
+	return cnt
 
 def readtextfile(path):
 	with io.open(path, mode = "r", encoding = "utf-8") as f:
@@ -30,7 +33,7 @@ def editnote(note):
 	if newcontent != content:
 
 		listnotes()
-		subprocess.call(["diff", "--color", "data/backupnote.md", "data/note.md"])
+		subprocess.call(settings["commands"]["diff"] + ["data/backupnote.md", "data/note.md"])
 
 		note["content"] = newcontent
 		data.remove(note)
@@ -47,6 +50,7 @@ def editnote(note):
 
 		subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
 	else:
+		listnotes()
 		print("no change")
 
 settings = json.loads(readtextfile("settings.json"))
@@ -59,29 +63,31 @@ subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/b
 
 data = json.loads(readtextfile("data/backupdata.json"))
 
-command = "list"
+command = ""
 if len(sys.argv) > 1:
 	command = sys.argv[1]
 
 while not (command == "quit" or command == "exit" or command == "q"):
 
-	if command == "list":
-		listnotes()
-	elif command.split()[0] == "find":
-		searchstring = command.replace("find ", "")
-		listnotes(searchstring)
+	try:
+		index = int(command)
+		note = data[index]
+	except:
+		note = next((x for x in data if x["title"] == command), None)
+
+	if note:
+		editnote(note)
 	else:
+		cnt = listnotes(command)
 
-		try:
-			index = int(command)
-			note = data[index]
-
-		except:
-			note = next((x for x in data if x["title"] == command), None)
-
-		if note:
+	if cnt == 0:
+		answer = input("create '" + command + "'? ")
+		if answer == "y" or answer == "yes":
+			note = {
+				"title": command,
+				"content": "---\ntitle: " + command + "\n---\n\n"
+			}
+			data.insert(0, note)
 			editnote(note)
-		else:
-			print("unknown command")
 
 	command = input("> ")

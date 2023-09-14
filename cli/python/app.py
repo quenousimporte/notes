@@ -5,6 +5,10 @@ import urllib.parse
 import os
 import sys
 
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 def listnotes(filter = ""):
 	cnt = 0
 	for i in reversed(range(len(data))):
@@ -66,6 +70,9 @@ data = json.loads(readtextfile("data/backupdata.json"))
 command = ""
 if len(sys.argv) > 1:
 	command = sys.argv[1]
+	if command.startswith("notes://"):
+		command = urllib.parse.unquote(command[8:-1])
+
 
 while not (command == "quit" or command == "exit" or command == "q"):
 

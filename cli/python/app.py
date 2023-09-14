@@ -9,7 +9,7 @@ import time
 def listnotes(filter = ""):
 	matching = []
 	for i in reversed(range(len(data))):
-		if filter in data[i]["title"]:
+		if filter.lower() in data[i]["title"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
 			matching.append(data[i])
 	return matching

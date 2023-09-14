@@ -7,5 +7,6 @@
 		"editor": ["vim"],
 		"gpg": "gpg",
 		"diff": ["diff", "--color"]
-	}
+	},
+	"mode": "remote"
 }

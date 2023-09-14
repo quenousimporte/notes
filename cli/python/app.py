@@ -43,16 +43,15 @@ def editnote(note):
 		data.remove(note)
 		data.insert(0, note)
 
-		writetextfile("data/data.json", json.dumps(data))
-
-		subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data.acs", "--armor", "-r", settings["gpguser"], "data/data.json"]);
-		newdata = readtextfile("data/data.acs")
-
-		postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
-
-		writetextfile("data/postdata", postdata)
-
-		subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
+		if settings["mode"] == "remote":
+			writetextfile("data/data.json", json.dumps(data))
+			subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data.acs", "--armor", "-r", settings["gpguser"], "data/data.json"]);
+			newdata = readtextfile("data/data.acs")
+			postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
+			writetextfile("data/postdata", postdata)
+			subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
+		else:
+			writetextfile("data/local.json", json.dumps(data))
 	else:
 		listnotes()
 		print("no change")
@@ -62,17 +61,18 @@ settings = json.loads(readtextfile("settings.json"))
 if os.path.isfile("data/backupdata.acs"):
 	os.remove("data/backupdata.acs")
 
-subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
-subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
-
-data = json.loads(readtextfile("data/backupdata.json"))
+if settings["mode"] == "remote":
+	subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
+	subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
+	data = json.loads(readtextfile("data/backupdata.json"))
+else:
+	data = json.loads(readtextfile("data/local.json"))
 
 command = ""
 if len(sys.argv) > 1:
 	command = sys.argv[1]
 	if command.startswith("notes://"):
 		command = urllib.parse.unquote(command[8:-1])
-
 
 while not (command == "quit" or command == "exit" or command == "q"):
 

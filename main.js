@@ -2204,6 +2204,10 @@ function esc(event)
 	{
 		togglepreview();
 	}
+	else
+	{
+		commandpalette();
+	}
 }
 
 function mainkeydownhandler()

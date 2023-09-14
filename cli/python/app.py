@@ -89,5 +89,7 @@ while not (command == "quit" or command == "exit" or command == "q"):
 			}
 			data.insert(0, note)
 			editnote(note)
+		else:
+			listnotes()
 
 	command = input("> ")

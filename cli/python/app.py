@@ -7,12 +7,12 @@ import sys
 import time
 
 def listnotes(filter = ""):
-	cnt = 0
+	matching = []
 	for i in reversed(range(len(data))):
 		if filter in data[i]["title"]:
 			print("[" + str(i) + "]", data[i]["title"])
-			cnt += 1
-	return cnt
+			matching.append(data[i])
+	return matching
 
 def readtextfile(path):
 	with io.open(path, mode = "r", encoding = "utf-8") as f:
@@ -100,7 +100,8 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif note:
 		editnote(note)
 	else:
-		if listnotes(command) == 0:
+		matching = listnotes(command)
+		if len(matching) == 0:
 			if ask("create '" + command + "'? "):
 				note = {
 					"title": command,
@@ -108,5 +109,7 @@ while not (command == "quit" or command == "exit" or command == "q"):
 				}
 				data.insert(0, note)
 				editnote(note)
+		elif len(matching) == 1:
+			editnote(matching.pop())
 
 	command = input("> ")

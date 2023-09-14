@@ -1347,7 +1347,7 @@ function getorcreate(title, content, putontop)
 	var note = getnote(title);
 	if (!note)
 	{
-		note = {title: title, content: content};
+		note = {title: title, content: content, pos: content.length};
 		localdata.push(note)
 	}
 
@@ -2487,9 +2487,20 @@ function bindfile(note)
 	setpos(note.pos || 0);
 }
 
+function defaultheaders(title)
+{
+	return [
+		"---",
+		"title: " + title,
+		"date: " + timestamp().substr(0,10),
+		"tags: ",
+		"---",
+		"",""].join("\n");
+}
+
 function loadnote(name)
 {
-	var note = getorcreate(name, "", true);
+	var note = getorcreate(name, defaultheaders(name), true);
 	bindfile(note);
 
 	stat.cur.q = 0;

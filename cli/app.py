@@ -14,10 +14,12 @@ def listnotes(filter = "", checkcontent = False):
 			matching.append(data[i])
 		elif checkcontent and filter.lower() in data[i]["content"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
-			for line in data[i]["content"].split("\n"):
+			lines = data[i]["content"].split("\n")
+			for j in range(len(lines)):
+				line = lines[j]
 				if filter.lower() in line.lower():
 					index = line.lower().index(filter.lower())
-					print("\t", line[index:index+30])
+					print("\t" + str(j) + ":", line[:100])
 			matching.append(data[i])
 	return matching
 

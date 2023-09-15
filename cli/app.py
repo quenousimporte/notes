@@ -6,13 +6,13 @@ import os
 import sys
 import time
 
-def listnotes(filter = "", grep = False):
+def listnotes(filter = "", checkcontent = False):
 	matching = []
 	for i in reversed(range(len(data))):
 		if filter.lower() in data[i]["title"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
 			matching.append(data[i])
-		elif grep and filter.lower() in data[i]["content"].lower():
+		elif checkcontent and filter.lower() in data[i]["content"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
 			for line in data[i]["content"].split("\n"):
 				if filter.lower() in line.lower():
@@ -80,8 +80,8 @@ if os.path.isfile("data/backupdata.acs"):
 	os.remove("data/backupdata.acs")
 
 data = loaddata()
-
 command = ""
+
 if len(sys.argv) > 1:
 	command = sys.argv[1]
 	if command.startswith("notes://"):
@@ -102,6 +102,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif command[0:4] == "sms ":
 		action = "sms"
 		command = command[4:]
+	elif command[0:7] == "export ":
+		action = "export"
+		command = command[7:]
 
 	try:
 		index = int(command)
@@ -122,6 +125,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif action == "sms":
 		if note and ask("send '" + note["title"] + "' by sms? "):
 			subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=sms", "-F", "password=" + settings["password"], "-F", "data=" + urllib.parse.quote_plus(note["content"]), settings["url"] + "/handler.php"])
+	elif action == "export":
+		if note:
+			writetextfile("data/" + note["title"] + ".md", note["content"])
 	elif note and not action == "grep":
 		editnote(note)
 	else:

@@ -99,6 +99,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif command[0:5] == "grep ":
 		action = "grep"
 		command = command[5:]
+	elif command[0:4] == "sms ":
+		action = "sms"
+		command = command[4:]
 
 	try:
 		index = int(command)
@@ -116,6 +119,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 			if newname:
 				note["title"] = newname
 				savedata()
+	elif action == "sms":
+		if note and ask("send '" + note["title"] + "' by sms? "):
+			subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=sms", "-F", "password=" + settings["password"], "-F", "data=" + urllib.parse.quote_plus(note["content"]), settings["url"] + "/handler.php"])
 	elif note and not action == "grep":
 		editnote(note)
 	else:

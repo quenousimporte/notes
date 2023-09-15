@@ -6,11 +6,18 @@ import os
 import sys
 import time
 
-def listnotes(filter = ""):
+def listnotes(filter = "", grep = False):
 	matching = []
 	for i in reversed(range(len(data))):
 		if filter.lower() in data[i]["title"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
+			matching.append(data[i])
+		elif grep and filter.lower() in data[i]["content"].lower():
+			print("[" + str(i) + "]", data[i]["title"])
+			for line in data[i]["content"].split("\n"):
+				if filter.lower() in line.lower():
+					index = line.lower().index(filter.lower())
+					print("\t", line[index:index+30])
 			matching.append(data[i])
 	return matching
 
@@ -89,6 +96,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif command[0:3] == "mv ":
 		action = "rename"
 		command = command[3:]
+	elif command[0:5] == "grep ":
+		action = "grep"
+		command = command[5:]
 
 	try:
 		index = int(command)
@@ -106,11 +116,11 @@ while not (command == "quit" or command == "exit" or command == "q"):
 			if newname:
 				note["title"] = newname
 				savedata()
-	elif note:
+	elif note and not action == "grep":
 		editnote(note)
 	else:
-		matching = listnotes(command)
-		if len(matching) == 0:
+		matching = listnotes(command, action == "grep")
+		if len(matching) == 0 and not action == "grep":
 			if ask("create '" + command + "'? "):
 				note = {
 					"title": command,

@@ -57,21 +57,21 @@ def savedata():
 		newdata = readtextfile("data/data.acs")
 		postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
 		writetextfile("data/postdata", postdata)
-		subprocess.call(["curl", "-s", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
+		subprocess.call(["curl", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
 	else:
 		writetextfile("data/local.json", json.dumps(data))
 
 def loaddata():
 	if settings["mode"] == "remote":
-		subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
+		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
 		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
 		return json.loads(readtextfile("data/backupdata.json"))
 	else:
 		return json.loads(readtextfile("data/local.json"))
 
 def ask(question):
-	answer = input(question)
-	return answer == "y" or answer == "yes"
+	answer = input(question + " [Y/n] ")
+	return answer == "y" or answer == "yes" or answer == ""
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -98,9 +98,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif command[0:3] == "mv ":
 		action = "rename"
 		command = command[3:]
-	elif command[0:5] == "grep ":
+	elif command[0:1] == "/":
 		action = "grep"
-		command = command[5:]
+		command = command[1:]
 	elif command[0:4] == "sms ":
 		action = "sms"
 		command = command[4:]
@@ -143,6 +143,8 @@ while not (command == "quit" or command == "exit" or command == "q"):
 				data.insert(0, note)
 				editnote(note)
 		elif len(matching) == 1:
-			editnote(matching.pop())
+			note = matching.pop()
+			if ask("open '" + note["title"] + "'?"):
+				editnote(note)
 
 	command = input("> ")

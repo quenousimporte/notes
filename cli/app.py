@@ -5,13 +5,19 @@ import urllib.parse
 import os
 import sys
 import time
+import re
+
+def filename(note):
+	return re.sub(r'[\?\"<>|\*:\/\\]', '_', note["title"]) + ".md"
 
 def listnotes(filter = "", checkcontent = False):
 	matching = []
 	for i in reversed(range(len(data))):
+
 		if filter.lower() in data[i]["title"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
 			matching.append(data[i])
+
 		elif checkcontent and filter.lower() in data[i]["content"].lower():
 			print("[" + str(i) + "]", data[i]["title"])
 			lines = data[i]["content"].split("\n")
@@ -21,6 +27,7 @@ def listnotes(filter = "", checkcontent = False):
 					index = line.lower().index(filter.lower())
 					print("\t" + str(j) + ":", line[:100])
 			matching.append(data[i])
+
 	return matching
 
 def readtextfile(path):
@@ -34,14 +41,14 @@ def writetextfile(path, content):
 def editnote(note):
 	content = note["content"]
 
-	writetextfile("data/backupnote.md", content)
-	writetextfile("data/note.md", content)
+	writetextfile("data/" + filename(note) + ".bak", content)
+	writetextfile("data/" + filename(note), content)
 
-	subprocess.call(settings["commands"]["editor"] + ["data/note.md"])
-	newcontent = readtextfile("data/note.md")
+	subprocess.call(settings["commands"]["editor"] + ["data/" + filename(note)])
+	newcontent = readtextfile("data/" + filename(note) )
 
 	if newcontent != content:
-		subprocess.call(settings["commands"]["diff"] + ["data/backupnote.md", "data/note.md"])
+		subprocess.call(settings["commands"]["diff"] + ["data/" + filename(note) + ".bak", "data/" + filename(note)])
 		note["content"] = newcontent
 		data.remove(note)
 		data.insert(0, note)
@@ -63,9 +70,9 @@ def savedata():
 
 def loaddata():
 	if settings["mode"] == "remote":
-		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/backupdata.acs", settings["url"] + "/handler.php"])
-		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/backupdata.json", "--decrypt", "data/backupdata.acs"])
-		return json.loads(readtextfile("data/backupdata.json"))
+		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/data.acs.bak", settings["url"] + "/handler.php"])
+		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/data.json.bak", "--decrypt", "data/data.acs.bak"])
+		return json.loads(readtextfile("data/data.json.bak"))
 	else:
 		return json.loads(readtextfile("data/local.json"))
 
@@ -73,15 +80,20 @@ def ask(question):
 	answer = input(question + " [Y/n] ")
 	return answer == "y" or answer == "yes" or answer == ""
 
+def initdatapath():
+	if not os.path.exists("data"):
+	  os.mkdir("data")
+	if os.path.isfile("data/data.acs.bak"):
+		os.remove("data/data.acs.bak")
+
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
+
+initdatapath()
 settings = json.loads(readtextfile("settings.json"))
-
-if os.path.isfile("data/backupdata.acs"):
-	os.remove("data/backupdata.acs")
-
 data = loaddata()
+
 command = ""
 
 if len(sys.argv) > 1:

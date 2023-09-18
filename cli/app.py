@@ -107,6 +107,8 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif command[0:7] == "export ":
 		action = "export"
 		command = command[7:]
+	elif command == "settings":
+		action = "settings"
 
 	try:
 		index = int(command)
@@ -130,6 +132,9 @@ while not (command == "quit" or command == "exit" or command == "q"):
 	elif action == "export":
 		if note:
 			writetextfile("data/" + note["title"] + ".md", note["content"])
+	elif action == "settings":
+		subprocess.call(settings["commands"]["editor"] + ["settings.json"])
+		settings = json.loads(readtextfile("settings.json"))
 	elif note and not action == "grep":
 		editnote(note)
 	else:

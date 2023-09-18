@@ -15,7 +15,7 @@ you can use remote mode with your own php server to access your notes from the c
 * launch command "edit pgp keys" and paste your public and private keys as a single file (passphrase is not supported)
 * switch to remote mode: ctrl+shift+V
 
-your data file will always be pgp encrypted and will never reach the server unencrypted.
+your data file will never reach the server unencrypted.
 
 to protect your data file access by a password, edit settings.php and change `$password` variable.
 
@@ -26,6 +26,13 @@ your password will be sent from browser to server through a post http query with
 * help: f1
 * notes list: ctrl+p
 * command palette: ctrl+shift+p
+
+## cli tool
+
+```
+cd cli
+python3 app.py
+```
 
 ## reclaim your data
 

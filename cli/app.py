@@ -43,14 +43,14 @@ def editnote(note):
 
 	backupfilepath = "history/" + filename(note) + str(time.time())
 	writetextfile(backupfilepath, content)
-	writetextfile("data/" + filename(note), content)
+	writetextfile("session/" + filename(note), content)
 
-	subprocess.call(settings["commands"]["editor"] + ["data/" + filename(note)])
-	newcontent = readtextfile("data/" + filename(note) )
+	subprocess.call(settings["commands"]["editor"] + ["session/" + filename(note)])
+	newcontent = readtextfile("session/" + filename(note) )
 
 	if newcontent != content:
-		subprocess.call(["cp", "data/" + filename(note), "history/" + filename(note) + str(time.time())])
-		subprocess.call(settings["commands"]["diff"] + [backupfilepath, "data/" + filename(note)])
+		subprocess.call(["cp", "session/" + filename(note), "history/" + filename(note) + str(time.time())])
+		subprocess.call(settings["commands"]["diff"] + [backupfilepath, "session/" + filename(note)])
 		note["content"] = newcontent
 		data.remove(note)
 		data.insert(0, note)
@@ -61,44 +61,43 @@ def editnote(note):
 
 def savedata():
 	if settings["mode"] == "remote":
-		writetextfile("data/data.json", json.dumps(data))
-		subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "data/data.acs", "--armor", "-r", settings["gpguser"], "data/data.json"]);
-		newdata = readtextfile("data/data.acs")
+		writetextfile("session/data.json", json.dumps(data))
+		subprocess.call([settings["commands"]["gpg"], "-q", "--encrypt", "--yes", "--trust-model", "always", "--output", "session/data.acs", "--armor", "-r", settings["gpguser"], "session/data.json"]);
+		newdata = readtextfile("session/data.acs")
 		postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
-		writetextfile("data/postdata", postdata)
-		output = subprocess.check_output(["curl", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"]).decode("utf-8")
+		writetextfile("session/postdata", postdata)
+		output = subprocess.check_output(["curl", "-X", "POST", "-d", "@session/postdata", settings["url"] + "/handler.php"]).decode("utf-8")
 		print("curl output: " + output)
 		if output != '{"result": "ok"}':
 			if ask("Save failed. Try again?"):
 				savedata()
 	else:
-		writetextfile("data/local.json", json.dumps(data))
+		writetextfile("session/local.json", json.dumps(data))
 
 def loaddata():
 	if settings["mode"] == "remote":
 		timestamp = str(time.time())
 
 		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "history/data.acs" + timestamp, settings["url"] + "/handler.php"])
-		subprocess.call(["cp", "history/data.acs" + timestamp, "data/data.acs"])
+		subprocess.call(["cp", "history/data.acs" + timestamp, "session/data.acs"])
 
 		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "history/data.json" + timestamp, "--decrypt", "history/data.acs" + timestamp])
-		subprocess.call(["cp", "history/data.json" + timestamp, "data/data.json"])
+		subprocess.call(["cp", "history/data.json" + timestamp, "session/data.json"])
 
-		return json.loads(readtextfile("data/data.json"))
+		return json.loads(readtextfile("session/data.json"))
 	else:
-		return json.loads(readtextfile("data/local.json"))
+		return json.loads(readtextfile("session/local.json"))
 
 def ask(question):
 	answer = input(question + " [Y/n] ")
 	return answer == "y" or answer == "yes" or answer == ""
 
 def initdatapath():
-	if not os.path.exists("data"):
-	  os.mkdir("data")
 	if not os.path.exists("history"):
 	  os.mkdir("history")
-	if os.path.isfile("data/data.acs"):
-		os.remove("data/data.acs")
+	if  os.path.exists("session"):
+		os.rename("session", "history/session" + str(time.time()))
+	os.mkdir("session")
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -157,7 +156,7 @@ while not (command == "quit" or command == "exit" or command == "q"):
 			subprocess.call(["curl", "-s", "-X", "POST", "-F", "action=sms", "-F", "password=" + settings["password"], "-F", "data=" + urllib.parse.quote_plus(note["content"]), settings["url"] + "/handler.php"])
 	elif action == "export":
 		if note:
-			writetextfile("data/" + note["title"] + ".md", note["content"])
+			writetextfile("session/" + note["title"] + ".md", note["content"])
 	elif action == "settings":
 		subprocess.call(settings["commands"]["editor"] + ["settings.json"])
 		settings = json.loads(readtextfile("settings.json"))

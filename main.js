@@ -1542,7 +1542,7 @@ function queryremote(params)
 				var data = {};
 				try
 				{
-					return decryptstring(xhr.responseText)
+					decryptstring(xhr.responseText)
 					.then(decrypted =>
 					{
 						data = JSON.parse(decrypted);
@@ -1577,6 +1577,7 @@ function queryremote(params)
 				}
 			}
 		}
+
 		xhr.send(paramlist.join("&"));
 	});
 }

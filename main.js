@@ -355,8 +355,8 @@ var commands = [
 	action: editpgpkeys
 },
 {
-	hint: "Decrypt text",
-	action: decrypttext
+	hint: "Decrypt note",
+	action: decryptnote
 }];
 
 var snippets = [
@@ -400,6 +400,49 @@ var snippets = [
 	cursor: -4
 }];
 
+function encryptstring(str)
+{
+	var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
+	var publicKey = null;
+	return openpgp.readKey({ armoredKey: key })
+	.then(res =>
+	{
+		publicKey = res;
+		return openpgp.createMessage({ text: str });
+	})
+	.then(message =>
+	{
+		return openpgp.encrypt({
+			message: message,
+			encryptionKeys: publicKey });
+	});
+}
+
+function decryptstring(str)
+{
+	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+	var privateKey = null;
+	return openpgp.readKey({ armoredKey: key })
+	.then(res =>
+	{
+		privateKey = res;
+		return openpgp.readMessage({ armoredMessage: str })
+	})
+	.then(message =>
+	{
+		return openpgp.decrypt({
+			message: message,
+			decryptionKeys: privateKey });
+	})
+	.then(decrypted =>
+	{
+		const chunks = [];
+	    for (const chunk of decrypted.data) {
+	        chunks.push(chunk);
+	    }
+	    return chunks.join('');
+	})
+}
 
 function sms()
 {
@@ -885,19 +928,14 @@ function editsettings()
 	});
 }
 
-async function decrypttext()
+function decryptnote()
 {
-	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
-	var privateKey = await openpgp.readKey({ armoredKey: key });
-	var decrypted = await openpgp.decrypt({
-		message: await openpgp.readMessage({ armoredMessage: md.value }),
-		decryptionKeys: privateKey });
-    const chunks = [];
-    for await (const chunk of decrypted.data) {
-        chunks.push(chunk);
-    }
-    md.value = chunks.join('');
-    resize();
+	decryptstring(md.value)
+	.then(decrypted =>
+	{
+		md.value = decrypted;
+		resize();
+	});
 }
 
 function editpgpkeys()

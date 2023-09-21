@@ -48,6 +48,7 @@ def editnote(note):
 	newcontent = readtextfile("data/" + filename(note) )
 
 	if newcontent != content:
+		subprocess.call(["cp", "data/" + filename(note), "data/" + filename(note) + str(time.time())])
 		subprocess.call(settings["commands"]["diff"] + ["data/" + filename(note) + ".bak", "data/" + filename(note)])
 		note["content"] = newcontent
 		data.remove(note)

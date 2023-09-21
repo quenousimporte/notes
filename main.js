@@ -1176,6 +1176,7 @@ function loadstorage()
 	var params = new URLSearchParams(window.location.search);
 	var title = params.get("n");
 	var line = params.get("l");
+	var tags = params.get("t");
 
 	if (currentnote)
 	{
@@ -1186,7 +1187,7 @@ function loadstorage()
 		currentnote = getnote(title);
 		if (!currentnote)
 		{
-			currentnote = {title: title, content: ""};
+			currentnote = {title: title, content: defaultheaders(title, tags)};
 			localdata.unshift(currentnote);
 		}
 	}
@@ -2201,7 +2202,7 @@ function insertheader()
 {
 	if (preview.hidden && !md.value.startsWith("---\n"))
 	{
-		var headers = "---\ndate: " + (new Date).toISOString().substring(0, 10) + "\ntags: \n---\n\n";
+		var headers = defaultheaders(currentnote.title);
 		md.value = headers + md.value;
 		setpos(27);
 	}
@@ -2544,13 +2545,13 @@ function bindfile(note)
 	setpos(note.pos || 0);
 }
 
-function defaultheaders(title)
+function defaultheaders(title, tags = "")
 {
 	return [
 		"---",
 		"title: " + title,
 		"date: " + timestamp().substr(0,10),
-		"tags: ",
+		"tags: " + (tags || ""),
 		"---",
 		"",""].join("\n");
 }

@@ -34,9 +34,9 @@ cd cli
 python3 app.py
 ```
 
-Requires python3, curl, gpg and a text editor.
+Requires python3, curl, gnupg and a text editor.
 
-## reclaim your data
+## Reclaim your data
 
 Download your notes in a single json file with ctrl+shift+S.
 

@@ -421,6 +421,11 @@ function encryptstring(str)
 
 function decryptstring(str)
 {
+	if (!str.startsWith("-----BEGIN PGP MESSAGE-----"))
+	{
+		console.log("string is not encrypted");
+		return Promise.resolve(str);
+	}
 	console.log("decrypting...");
 	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
 	var privateKey = null;
@@ -1499,7 +1504,7 @@ function checkevents()
 	.catch(remotecallfailed);
 }
 
-async function queryremote(params)
+function queryremote(params)
 {
 	return new Promise( (apply, failed) => {
 
@@ -1526,7 +1531,7 @@ async function queryremote(params)
 			failed("XMLHttpRequest error");
 		}
 
-		xhr.onload = async function()
+		xhr.onload = function()
 		{
 			if (xhr.status !== 200)
 			{
@@ -1537,45 +1542,34 @@ async function queryremote(params)
 				var data = {};
 				try
 				{
-					var response = xhr.responseText;
-					if (localStorage.getItem("pgpkeys") && response.startsWith("-----BEGIN PGP MESSAGE-----"))
+					return decryptstring(xhr.responseText)
+					.then(decrypted =>
 					{
-						console.log("decrypting...");
-						var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
-						var privateKey = await openpgp.readKey({ armoredKey: key });
-						var decrypted = await openpgp.decrypt({
-							message: await openpgp.readMessage({ armoredMessage: response }),
-							decryptionKeys: privateKey });
-					    const chunks = [];
-					    for await (const chunk of decrypted.data) {
-					        chunks.push(chunk);
-					    }
-					    response = chunks.join('');
-					}
-					data = JSON.parse(response);
+						data = JSON.parse(decrypted);
 
-					if (data.error)
-					{
-						if (data.error == "authent")
+						if (data.error)
 						{
-							failed();
-							togglepassword();
+							if (data.error == "authent")
+							{
+								failed();
+								togglepassword();
+							}
+							else
+							{
+								failed("Remote handler returned an error: " + data.error);
+							}
+						}
+						else if (data.warning)
+						{
+							console.warn("Remote warning: " + data.warning);
 						}
 						else
 						{
-							failed("Remote handler returned an error: " + data.error);
+							authentpage.hidden = true;
+							notepage.style.display = "table";
+							apply(data);
 						}
-					}
-					else if (data.warning)
-					{
-						console.warn("Remote warning: " + data.warning);
-					}
-					else
-					{
-						authentpage.hidden = true;
-						notepage.style.display = "table";
-						apply(data);
-					}
+					});
 				}
 				catch(error)
 				{

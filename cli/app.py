@@ -64,7 +64,11 @@ def savedata():
 		newdata = readtextfile("data/data.acs")
 		postdata = "action=push&password=" + settings["password"] + "&data=" + urllib.parse.quote_plus(newdata)
 		writetextfile("data/postdata", postdata)
-		subprocess.call(["curl", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"])
+		output = subprocess.check_output(["curl", "-X", "POST", "-d", "@data/postdata", settings["url"] + "/handler.php"]).decode("utf-8")
+		print("curl output: " + output)
+		if output != '{"result": "ok"}':
+			if ask("Save failed. Try again?"):
+				savedata()
 	else:
 		writetextfile("data/local.json", json.dumps(data))
 

@@ -36,7 +36,7 @@ else if (isset($_POST['action']))
 			}
 			else
 			{
-				echo '{}';
+				echo '{"result": "ok"}';
 			}
 		break;
 

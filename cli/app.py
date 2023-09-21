@@ -41,7 +41,8 @@ def writetextfile(path, content):
 def editnote(note):
 	content = note["content"]
 
-	writetextfile("data/" + filename(note) + ".bak", content)
+	backupfilepath = "history/" + filename(note) + str(time.time())
+	writetextfile(backupfilepath, content)
 	writetextfile("data/" + filename(note), content)
 
 	subprocess.call(settings["commands"]["editor"] + ["data/" + filename(note)])
@@ -49,7 +50,7 @@ def editnote(note):
 
 	if newcontent != content:
 		subprocess.call(["cp", "data/" + filename(note), "history/" + filename(note) + str(time.time())])
-		subprocess.call(settings["commands"]["diff"] + ["data/" + filename(note) + ".bak", "data/" + filename(note)])
+		subprocess.call(settings["commands"]["diff"] + [backupfilepath, "data/" + filename(note)])
 		note["content"] = newcontent
 		data.remove(note)
 		data.insert(0, note)
@@ -75,9 +76,15 @@ def savedata():
 
 def loaddata():
 	if settings["mode"] == "remote":
-		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "data/data.acs.bak", settings["url"] + "/handler.php"])
-		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "data/data.json.bak", "--decrypt", "data/data.acs.bak"])
-		return json.loads(readtextfile("data/data.json.bak"))
+		timestamp = str(time.time())
+
+		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "history/data.acs" + timestamp, settings["url"] + "/handler.php"])
+		subprocess.call(["cp", "history/data.acs" + timestamp, "data/data.acs"])
+
+		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "history/data.json" + timestamp, "--decrypt", "history/data.acs" + timestamp])
+		subprocess.call(["cp", "history/data.json" + timestamp, "data/data.json"])
+
+		return json.loads(readtextfile("data/data.json"))
 	else:
 		return json.loads(readtextfile("data/local.json"))
 
@@ -90,8 +97,8 @@ def initdatapath():
 	  os.mkdir("data")
 	if not os.path.exists("history"):
 	  os.mkdir("history")
-	if os.path.isfile("data/data.acs.bak"):
-		os.remove("data/data.acs.bak")
+	if os.path.isfile("data/data.acs"):
+		os.remove("data/data.acs")
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)

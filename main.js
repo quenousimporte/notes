@@ -2083,7 +2083,7 @@ function toggletitle()
 
 function selectnote()
 {
-	return searchinlist(list()/*, loadnote*/);
+	return searchinlist(list());
 }
 
 function searchautocomplete()

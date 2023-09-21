@@ -353,6 +353,10 @@ var commands = [
 {
 	hint: "Edit pgp keys",
 	action: editpgpkeys
+},
+{
+	hint: "Decrypt text",
+	action: decrypttext
 }];
 
 var snippets = [
@@ -879,6 +883,21 @@ function editsettings()
 		title: "settings.json",
 		content: JSON.stringify(settings, null, "    ")
 	});
+}
+
+async function decrypttext()
+{
+	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
+	var privateKey = await openpgp.readKey({ armoredKey: key });
+	var decrypted = await openpgp.decrypt({
+		message: await openpgp.readMessage({ armoredMessage: md.value }),
+		decryptionKeys: privateKey });
+    const chunks = [];
+    for await (const chunk of decrypted.data) {
+        chunks.push(chunk);
+    }
+    md.value = chunks.join('');
+    resize();
 }
 
 function editpgpkeys()

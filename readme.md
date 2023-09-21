@@ -1,41 +1,43 @@
 # notes
 
-## getting started
+## Getting started
 
-launch index.html from your web server or local computer, or try https://notes.ouvaton.org.
+Launch index.html from your web server or try https://notes.ouvaton.org.
 
-your notes are stored in your browser local storage.
+Your notes are stored in your browser local storage.
 
-## remote mode
+## Remote mode
 
-you can use remote mode with your own php server to access your notes from the cloud.
+You can use remote mode with your own php server to access your notes from the cloud.
 
 * put the source files on your php server
 * browse index.html
 * launch command "edit pgp keys" and paste your public and private keys as a single file (passphrase is not supported)
 * switch to remote mode: ctrl+shift+V
 
-your data file will never reach the server unencrypted.
+Your data file will never reach the server unencrypted.
 
-to protect your data file access by a password, edit settings.php and change `$password` variable.
+To protect your data file access by a password, edit settings.php and change `$password` variable.
 
-your password will be sent from browser to server through a post http query with no more encryption than ssl, if enabled. password is stored unencrypted in your browser local storage and in the settings.php file on server side.
+Your password will be sent from browser to server through a post http query with no more encryption than ssl, if enabled. Password is stored unencrypted in your browser local storage and in the settings.php file on server side.
 
-## usage
+## Usage
 
 * help: f1
 * notes list: ctrl+p
 * command palette: ctrl+shift+p
 
-## cli tool
+## Cli tool
 
 ```
 cd cli
 python3 app.py
 ```
 
+Requires python3, curl, gpg and a text editor.
+
 ## reclaim your data
 
-download your notes in a single json file with ctrl+shift+s.
+Download your notes in a single json file with ctrl+shift+S.
 
-then you can write a moulinette to flatten them as md files.
+Dowload a zip file of your notes as markdown files with command "Download all notes in a zip file"

@@ -402,6 +402,7 @@ var snippets = [
 
 function encryptstring(str)
 {
+	console.log("encrypting...");
 	var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
 	var publicKey = null;
 	return openpgp.readKey({ armoredKey: key })
@@ -420,6 +421,7 @@ function encryptstring(str)
 
 function decryptstring(str)
 {
+	console.log("decrypting...");
 	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
 	var privateKey = null;
 	return openpgp.readKey({ armoredKey: key })
@@ -1940,7 +1942,7 @@ function inactivityalert()
 	alert("Last save was one hour ago. Should you refresh?");
 }
 
-async function save()
+function save()
 {
 	clearTimeout(workerid);
 
@@ -1994,20 +1996,13 @@ async function save()
 	if (isremote())
 	{
 		var datatosend = JSON.stringify(localdata);
-		if (localStorage.getItem("pgpkeys"))
+		encryptstring(datatosend)
+		.then(encrypted =>
 		{
-			console.log("encrypting...");
-			var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
-			var publicKey = await openpgp.readKey({ armoredKey: key });
-			datatosend = await openpgp.encrypt({
-				message: await openpgp.createMessage({ text: datatosend }),
-				encryptionKeys: publicKey });
-		}
-
-		console.log("sending data to php server...");
-
-		pending = true;
-		queryremote({action: "push", data: datatosend})
+			console.log("sending data to php server...");
+			pending = true;
+			return queryremote({action: "push", data: encrypted})
+		})
 		.then(() =>
 		{
 			console.log("...data saved on server");
@@ -2029,7 +2024,6 @@ async function save()
 				console.log("save failed. Data unsaved on server, manual action required.");
 			}
 		});
-
 	}
 	else
 	{

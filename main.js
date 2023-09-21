@@ -423,7 +423,7 @@ function decryptstring(str)
 {
 	if (!str.startsWith("-----BEGIN PGP MESSAGE-----"))
 	{
-		console.log("string is not encrypted");
+		// console.log(str + ": string is not encrypted");
 		return Promise.resolve(str);
 	}
 	console.log("decrypting...");
@@ -1540,41 +1540,39 @@ function queryremote(params)
 			else
 			{
 				var data = {};
-				try
-				{
-					decryptstring(xhr.responseText)
-					.then(decrypted =>
-					{
-						data = JSON.parse(decrypted);
 
-						if (data.error)
+				decryptstring(xhr.responseText)
+				.then(decrypted =>
+				{
+					data = JSON.parse(decrypted);
+
+					if (data.error)
+					{
+						if (data.error == "authent")
 						{
-							if (data.error == "authent")
-							{
-								failed();
-								togglepassword();
-							}
-							else
-							{
-								failed("Remote handler returned an error: " + data.error);
-							}
-						}
-						else if (data.warning)
-						{
-							console.warn("Remote warning: " + data.warning);
+							failed();
+							togglepassword();
 						}
 						else
 						{
-							authentpage.hidden = true;
-							notepage.style.display = "table";
-							apply(data);
+							failed("Remote handler returned an error: " + data.error);
 						}
-					});
-				}
-				catch(error)
+					}
+					else if (data.warning)
+					{
+						console.warn("Remote warning: " + data.warning);
+					}
+					else
+					{
+						authentpage.hidden = true;
+						notepage.style.display = "table";
+						apply(data);
+					}
+				})
+				.catch( error =>
 				{
 					failed("Handler result is not valid. JS error: " + error);
-				}
+				});
 			}
 		}
 

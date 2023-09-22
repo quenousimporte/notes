@@ -76,7 +76,6 @@ def savedata():
 
 def loaddata():
 	if settings["mode"] == "remote":
-		timestamp = str(time.time())
 
 		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "session/data.acs", settings["url"] + "/handler.php"])
 		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "session/data.json", "--decrypt", "session/data.acs"])

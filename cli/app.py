@@ -93,6 +93,8 @@ def initdatapath():
 	if not os.path.exists("history"):
 	  os.mkdir("history")
 	if  os.path.exists("session"):
+		if os.path.exists("session/postdata"):
+			os.remove("session/postdata")
 		shutil.make_archive("history/session" + str(time.time()), "zip", "session")
 		shutil.rmtree("session")
 	os.mkdir("session")

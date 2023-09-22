@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import re
+import shutil
 
 def filename(note):
 	return re.sub(r'[\?\"<>|\*:\/\\]', '_', note["title"]) + ".md"
@@ -41,7 +42,7 @@ def writetextfile(path, content):
 def editnote(note):
 	content = note["content"]
 
-	backupfilepath = "history/" + filename(note) + str(time.time())
+	backupfilepath = "session/" + filename(note) + str(time.time())
 	writetextfile(backupfilepath, content)
 	writetextfile("session/" + filename(note), content)
 
@@ -49,7 +50,6 @@ def editnote(note):
 	newcontent = readtextfile("session/" + filename(note) )
 
 	if newcontent != content:
-		subprocess.call(["cp", "session/" + filename(note), "history/" + filename(note) + str(time.time())])
 		subprocess.call(settings["commands"]["diff"] + [backupfilepath, "session/" + filename(note)])
 		note["content"] = newcontent
 		data.remove(note)
@@ -78,13 +78,11 @@ def loaddata():
 	if settings["mode"] == "remote":
 		timestamp = str(time.time())
 
-		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "history/data.acs" + timestamp, settings["url"] + "/handler.php"])
-		subprocess.call(["cp", "history/data.acs" + timestamp, "session/data.acs"])
-
-		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "history/data.json" + timestamp, "--decrypt", "history/data.acs" + timestamp])
-		subprocess.call(["cp", "history/data.json" + timestamp, "session/data.json"])
+		subprocess.call(["curl", "-X", "POST", "-F", "action=fetch", "-F", "password=" + settings["password"], "-o", "session/data.acs", settings["url"] + "/handler.php"])
+		subprocess.call([settings["commands"]["gpg"], "-q", "--yes", "--output", "session/data.json", "--decrypt", "session/data.acs"])
 
 		return json.loads(readtextfile("session/data.json"))
+
 	else:
 		return json.loads(readtextfile("session/local.json"))
 
@@ -96,7 +94,8 @@ def initdatapath():
 	if not os.path.exists("history"):
 	  os.mkdir("history")
 	if  os.path.exists("session"):
-		os.rename("session", "history/session" + str(time.time()))
+		shutil.make_archive("history/session" + str(time.time()), "zip", "session")
+		shutil.rmtree("session")
 	os.mkdir("session")
 
 abspath = os.path.abspath(__file__)

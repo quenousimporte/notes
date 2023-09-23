@@ -2026,6 +2026,15 @@ function save()
 	}
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+
 function applycolors()
 {
 	if (!settings.colors)
@@ -2039,6 +2048,7 @@ function applycolors()
 	var result = [];
 	lines.every( (line, i) =>
 	{
+		line = escapeHtml(line);
 		if (line.startsWith("#"))
 		{
 			line = line.replace(/(#*)/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
@@ -2076,6 +2086,10 @@ function applycolors()
 		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
 		line = line.replace(/(\*\*.*\*\*)/g, "<b>$1</b>");
 		line = line.replace(/(\*.*\*)/g, "<em>$1</em>");
+
+		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");
+		line = line.replace(/\-\-&gt;/g, "--></span>");
+
 		result.push(line);
 
 		return true;

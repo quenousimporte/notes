@@ -14,7 +14,8 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	linksinnewtab: true
+	linksinnewtab: true,
+	colors: true
 };
 
 //builtin
@@ -1246,6 +1247,11 @@ function loadsettings()
 	{
 		toggletitle();
 	}
+
+	colored.hidden = !settings.colors;
+	md.style.color = settings.colors ? "transparent" : "inherit";
+	md.style.background = settings.colors ? "transparent" : "inherit";
+	applycolors();
 }
 
 function checksaved()
@@ -1615,11 +1621,6 @@ function selectlines()
 	var range = getlinesrange();
 	md.selectionStart = range.start;
 	md.selectionEnd = range.end;
-}
-
-function seteditorcontent(content)
-{
-	md.value = content;
 }
 
 function ontopbarclick()
@@ -2025,8 +2026,66 @@ function save()
 	}
 }
 
+function applycolors()
+{
+	if (!settings.colors)
+	{
+		return;
+	}
+
+	var lines = md.value.split("\n");
+	header = false;
+	code = false;
+	var result = [];
+	lines.every( (line, i) =>
+	{
+		if (line.startsWith("#"))
+		{
+			line = line.replace(/(#*)/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+			line = "<b><span style='color:black'>" + line + "</span></b>";
+		}
+		if (line.startsWith("* "))
+		{
+			line = line.replace(/(\* )/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+		}
+
+		if (i == 0 && line == "---")
+		{
+			header = true;
+		}
+		if (header)
+		{
+			if (i > 0 && line == "---")
+			{
+				header = false;
+			}
+			line = "<span style='color:lightgrey'>" + line + "</span>";
+		}
+
+		if (line == "```" && !code)
+		{
+			code = true;
+			line = "<div style='background:lightgrey'>" + line;
+		}
+		if (line == "```" && code)
+		{
+			code = false;
+			line = line + "</div>";
+		}
+
+		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
+		line = line.replace(/(\*\*.*\*\*)/g, "<b>$1</b>");
+		line = line.replace(/(\*.*\*)/g, "<em>$1</em>");
+		result.push(line);
+
+		return true;
+	});
+	colored.innerHTML = result.join("<br>");
+}
+
 function datachanged()
 {
+	applycolors();
 	resize();
 
 	saved = false;
@@ -2193,7 +2252,7 @@ function restore()
 {
 	if (confirm('restore "' + currentnote.title + '"?'))
 	{
-		seteditorcontent(backup);
+		md.value = backup;
 		datachanged();
 	}
 }
@@ -2527,7 +2586,7 @@ function bindfile(note)
 	title.value = note.title;
 	setwindowtitle();
 
-	seteditorcontent(note.content || "");
+	md.value = note.content || "";
 	preview.innerHTML = md2html(md.value);
 
 	if (changed)
@@ -2543,6 +2602,7 @@ function bindfile(note)
 	}
 
 	setpos(note.pos || 0);
+	applycolors();
 }
 
 function defaultheaders(title, tags = "")

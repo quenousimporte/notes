@@ -55,6 +55,26 @@ body::-webkit-scrollbar-thumb {
 	font-size: inherit;
 	line-height: inherit;
 	background-color: inherit;
+
+	/* coloring */
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0;
+}
+
+#notecontent {
+	position: relative;
+}
+
+#colored {
+	position: absolute;
+	white-space: pre;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	width: 100%;
+	text-wrap: inherit;
 }
 
 #network {

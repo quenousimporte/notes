@@ -261,6 +261,10 @@ var commands = [
 	action: editsettings
 },
 {
+	hint: "Change a setting",
+	action: changesetting
+},
+{
 	hint: "Restore default settings",
 	action: restoresettings
 },
@@ -932,6 +936,21 @@ function editsettings()
 	{
 		title: "settings.json",
 		content: JSON.stringify(settings, null, "    ")
+	});
+}
+
+function changesetting()
+{
+	searchinlist(Object.keys(settings).map(name => name + ": " + settings[name]))
+	.then(setting =>
+	{
+		var name = setting.split(":").shift();
+		if (settings[name])
+		{
+			settings[name] = prompt(name, settings[name]);
+			savesettings();
+			loadsettings();
+		}
 	});
 }
 

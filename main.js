@@ -946,9 +946,22 @@ function changesetting()
 	.then(setting =>
 	{
 		var name = setting.split(":").shift();
-		if (settings[name])
+		if (typeof settings[name] != "undefined")
 		{
-			settings[name] = prompt(name, settings[name]);
+			var value = prompt(name, settings[name]);
+			if (!isNaN(parseInt(value)))
+			{
+				value = parseInt(value)
+			}
+			else if (value === "false")
+			{
+				value = false;
+			}
+			else if (value == "true")
+			{
+				value = true;
+			}
+			settings[name] = value;
 			savesettings();
 			loadsettings();
 		}

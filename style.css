@@ -75,6 +75,7 @@ body::-webkit-scrollbar-thumb {
 	z-index: -1;
 	width: 100%;
 	text-wrap: inherit;
+	white-space: pre-wrap;
 }
 
 #network {

@@ -405,6 +405,12 @@ var snippets = [
 	cursor: -4
 }];
 
+function seteditorcontent(content)
+{
+	md.value = content;
+	applycolors();
+}
+
 function encryptstring(str)
 {
 	console.log("encrypting...");
@@ -509,9 +515,9 @@ function createsubnote(suggestedtitle)
 				content: content
 			}
 			localdata.unshift(newnote);
-			md.value = md.value.substring(0, range.start)
-			+ "[[" + title + "]]"
-			+ md.value.substring(range.end);
+			seteditorcontent(md.value.substring(0, range.start)
+				+ "[[" + title + "]]"
+				+ md.value.substring(range.end));
 			datachanged();
 		}
 	});
@@ -519,11 +525,11 @@ function createsubnote(suggestedtitle)
 
 function comment()
 {
-	md.value = md.value.substring(0, md.selectionStart)
-	+ "<!-- "
-	+ md.value.substring(md.selectionStart, md.selectionEnd)
-	+ " -->"
-	+ md.value.substring(md.selectionEnd);
+	seteditorcontent(md.value.substring(0, md.selectionStart)
+		+ "<!-- "
+		+ md.value.substring(md.selectionStart, md.selectionEnd)
+		+ " -->"
+		+ md.value.substring(md.selectionEnd));
 }
 
 function includesub()
@@ -535,10 +541,9 @@ function includesub()
 		if (confirm("Replace [[" + title + "]] by its content?"))
 		{
 			var subnote = getnote(title);
-			md.value =
-			md.value.substring(0, range.start)
-			+ subnote.content
-			+ md.value.substring(range.end);
+			seteditorcontent(md.value.substring(0, range.start)
+				+ subnote.content
+				+ md.value.substring(range.end));
 
 			if (confirm("Delete '" + title + "'?"))
 			{
@@ -982,7 +987,7 @@ function decryptnote()
 	decryptstring(md.value)
 	.then(decrypted =>
 	{
-		md.value = decrypted;
+		seteditorcontent(decrypted);
 		resize();
 	});
 }
@@ -1653,7 +1658,7 @@ function sortselection()
 
 	var selection = content.substring(range.start, range.end);
 	var sorted = selection.split("\n").sort().join("\n");
-	md.value = content.substring(0, range.start) + sorted + content.substring(range.end);
+	seteditorcontent(content.substring(0, range.start) + sorted + content.substring(range.end));
 	datachanged();
 }
 
@@ -1853,10 +1858,10 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 {
 	var pos = md.selectionStart;
 	var content = md.value;
-	md.value =
-	content.substring(0, pos - nbtodelete)
-	+ text
-	+ content.substring(pos);
+	seteditorcontent(
+		content.substring(0, pos - nbtodelete)
+		+ text
+		+ content.substring(pos));
 	setpos(pos - nbtodelete + text.length + cursoroffset);
 	datachanged();
 }
@@ -2307,7 +2312,7 @@ function restore()
 {
 	if (confirm('restore "' + currentnote.title + '"?'))
 	{
-		md.value = backup;
+		seteditorcontent(backup);
 		datachanged();
 	}
 }
@@ -2317,7 +2322,7 @@ function insertheader()
 	if (preview.hidden && !md.value.startsWith("---\n"))
 	{
 		var headers = defaultheaders(currentnote.title);
-		md.value = headers + md.value;
+		seteditorcontent(headers + md.value);
 		setpos(27);
 	}
 	resize();
@@ -2468,7 +2473,7 @@ function backspace(nb)
 {
 	var pos = getpos();
 	var c = md.value;
-	md.value = c.substring(0, pos - nb) + c.substring(pos);
+	seteditorcontent(c.substring(0, pos - nb) + c.substring(pos));
 	setpos(pos - nb);
 	datachanged();
 }
@@ -2513,9 +2518,9 @@ function editorkeydown()
 		{
 			newtext = selection.replaceAll("\n", "\n    ");
 		}
-		md.value = md.value.substring(0, range.start)
-		+ newtext
-		+ md.value.substring(range.end);
+		seteditorcontent(md.value.substring(0, range.start)
+			+ newtext
+			+ md.value.substring(range.end));
 
 		var shift = 0;
 		if (newtext.length < selection.length)
@@ -2641,7 +2646,7 @@ function bindfile(note)
 	title.value = note.title;
 	setwindowtitle();
 
-	md.value = note.content || "";
+	seteditorcontent(note.content || "");
 	preview.innerHTML = md2html(md.value);
 
 	if (changed)
@@ -2657,7 +2662,6 @@ function bindfile(note)
 	}
 
 	setpos(note.pos || 0);
-	applycolors();
 }
 
 function defaultheaders(title, tags = "")

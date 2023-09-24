@@ -605,6 +605,7 @@ function loadtheme(theme)
 		settings[i] = themes[theme][i];
 	}
 	applystyle();
+	applycolors();
 	resize();
 }
 
@@ -725,12 +726,22 @@ function connected(note)
 	return result;
 }
 
+function toggleeditor(hidden)
+{
+	md.hidden = hidden;
+
+	if (settings.colors)
+	{
+		colored.hidden = hidden;
+	}
+}
+
 function shownotelinks()
 {
 	if (settings.enablenetwork)
 	{
 		networkpage.hidden = false;
-		md.hidden = true;
+		toggleeditor(true);
 		function id(note)
 		{
 			return localdata.indexOf(note);
@@ -796,7 +807,7 @@ function shownotelinks()
 		graph.on("click", function(event)
 		{
 			networkpage.hidden = true;
-			md.hidden = false;
+			toggleeditor(false);
 			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
 		});
 	}
@@ -2099,7 +2110,7 @@ function applycolors()
 			{
 				header = false;
 			}
-			line = "<span style='color:lightgrey'>" + line + "</span>";
+			line = "<em><span style='color:lightgrey'>" + line + "</span></em>";
 		}
 
 		if (line == "```" && !code)
@@ -2355,7 +2366,7 @@ function esc(event)
 	else if (networkpage.hidden == false)
 	{
 		networkpage.hidden = true;
-		md.hidden = false;
+		toggleeditor(false);
 	}
 	else if (preview.hidden == false)
 	{
@@ -2557,7 +2568,7 @@ function insertautocomplete(selectednote)
 function togglepreview()
 {
 	preview.innerHTML = md2html(md.value);
-	md.hidden = !md.hidden;
+	toggleeditor(!md.hidden);
 	preview.hidden = !preview.hidden;
 
 	if (preview.hidden)
@@ -2610,7 +2621,7 @@ function togglepreviewwithsubs()
 	if (note)
 	{
 		preview.innerHTML = md2html(note.content);
-		md.hidden = !md.hidden;
+		toggleeditor(!md.hidden);
 		preview.hidden = !preview.hidden;
 
 		if (preview.hidden)

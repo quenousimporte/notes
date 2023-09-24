@@ -946,20 +946,18 @@ function changesetting()
 	.then(setting =>
 	{
 		var name = setting.split(":").shift();
-		if (typeof settings[name] != "undefined")
+		var value = settings[name];
+		var type = typeof value;
+		if (type != "undefined")
 		{
-			var value = prompt(name, settings[name]);
-			if (!isNaN(parseInt(value)))
+			value = prompt(name, value);
+			if (type == "number")
 			{
-				value = parseInt(value)
+				value = parseInt(value);
 			}
-			else if (value === "false")
+			else if (type == "boolean")
 			{
-				value = false;
-			}
-			else if (value == "true")
-			{
-				value = true;
+				value = value === "true";
 			}
 			settings[name] = value;
 			savesettings();

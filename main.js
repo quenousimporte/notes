@@ -956,7 +956,7 @@ function editsetting(name)
 			{
 				value = value === "true";
 			}
-			settings[name] = value;;
+			settings[name] = value;
 			savesettings();
 			loadsettings();
 		}

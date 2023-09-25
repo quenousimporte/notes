@@ -26,7 +26,6 @@ var codelanguages = ["xml", "js", "sql"];
 var currentnote = null;
 var fileindex = 0;
 var workerid = null;
-var inactivityid = null;
 var backup = "";
 var localdata = null;
 var saved = true;
@@ -1972,11 +1971,6 @@ function postpone()
 	});
 }
 
-function inactivityalert()
-{
-	alert("Last save was one hour ago. Should you refresh?");
-}
-
 function save()
 {
 	clearTimeout(workerid);
@@ -2042,8 +2036,6 @@ function save()
 		{
 			console.log("...data saved on server");
 			saved = true;
-			clearTimeout(inactivityid);
-			inactivityid = setTimeout(inactivityalert, 60 * 60 * 1000);
 		})
 		.catch(remotecallfailed)
 		.finally(() =>

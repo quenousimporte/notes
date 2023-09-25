@@ -2104,15 +2104,13 @@ function applycolors()
 		}
 
 		// lists
-		if (line.startsWith("* "))
+		markerslist.forEach(marker =>
 		{
-			line = line.replace(/(\* )/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
-		}
-		else if (line.startsWith("- "))
-		{
-			line = line.replace(/(\- )/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
-		}
-		// todo: use markerslist
+			if (line.startsWith(marker))
+			{
+				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
+			}
+		});
 
 		// md header
 		if (i == 0 && line == "---")
@@ -2153,7 +2151,7 @@ function applycolors()
 
 		// bold and italics
 		line = line.replace(/(\*\*.*\*\*)/g, "<b>$1</b>");
-		line = line.replace(/(\*.*\*)/g, "<em>$1</em>");
+		line = line.replace(/(^\*\*.*\*)/g, "<em>$1</em>");
 
 		// comments
 		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");

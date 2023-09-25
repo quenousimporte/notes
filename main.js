@@ -943,9 +943,23 @@ function editsetting(name)
 {
 	if (settings[name])
 	{
-		settings[name] = prompt(name, settings[name]);
-		savesettings();
-		loadsettings();
+		var value = settings[name];
+		var type = typeof value;
+		if (type != "undefined")
+		{
+			value = prompt(name, value);
+			if (type == "number")
+			{
+				value = parseInt(value);
+			}
+			else if (type == "boolean")
+			{
+				value = value === "true";
+			}
+			settings[name] = value;;
+			savesettings();
+			loadsettings();
+		}
 	}
 }
 

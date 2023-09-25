@@ -400,7 +400,7 @@ var snippets = [
 	insert: "• "
 },
 {
-	command: "//",
+	command: "/comment",
 	insert: "<!--\n\n-->",
 	cursor: -4
 }];
@@ -2081,6 +2081,11 @@ function escapeHtml(unsafe) {
          .replace(/'/g, "&#039;");
  }
 
+var languagekeywords = {
+	"sql": ["select", "from", "where", "and", "or"],
+	"js": ["var", "for", "if", "else"]
+}
+
 function applycolors()
 {
 	if (!settings.colors)
@@ -2089,8 +2094,9 @@ function applycolors()
 	}
 
 	var lines = md.value.split("\n");
-	header = false;
-	code = false;
+	var header = false;
+	var code = false;
+	var language = "";
 	var result = [];
 	lines.every( (line, i) =>
 	{
@@ -2130,21 +2136,27 @@ function applycolors()
 		if (line.startsWith("```") && !code)
 		{
 			code = true;
-			//lg = line.substring(3);
-			line = "<div style='background:lightgrey'>" + line;
+			language = line.substring(3);
+			line = "<span style='font-family:monospace;color:rgb(70,70,70);'>" + line;
 		}
-		if (line == "```" && code)
+		else if (line == "```" && code)
 		{
 			code = false;
-			line = line + "</div>";
+			language = "";
+			line = line + "</span>";
 		}
-		/*else if (code)
+		else if (code)
 		{
-			line = line.replace(/(select)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
-			line = line.replace(/(from)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
-			line = line.replace(/(where)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
-			/// todo: keywords by language. whole word only. use a loop. etc.
-		}*/
+			if (languagekeywords[language])
+			{
+				var keywords = languagekeywords[language];
+				keywords.forEach(keyword =>
+				{
+					var r = new RegExp("(" + keyword + ")", "ig");
+					line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<b>$1</b>");
+				})
+			}
+		}
 
 		// internal links
 		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
@@ -2156,6 +2168,10 @@ function applycolors()
 		// comments
 		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");
 		line = line.replace(/\-\-&gt;/g, "--></span>");
+		if (line.startsWith("// "))
+		{
+			line = "<span style='color:lightgrey'>" + line + "</span>";
+		}
 
 		result.push(line);
 

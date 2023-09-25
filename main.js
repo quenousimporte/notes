@@ -956,12 +956,10 @@ function editsettings()
 	});
 }
 
-function changesetting()
+function editsetting(name)
 {
-	searchinlist(Object.keys(settings).map(name => name + ": " + settings[name]))
-	.then(setting =>
+	if (settings[name])
 	{
-		var name = setting.split(":").shift();
 		var value = settings[name];
 		var type = typeof value;
 		if (type != "undefined")
@@ -979,6 +977,15 @@ function changesetting()
 			savesettings();
 			loadsettings();
 		}
+	}
+}
+
+function changesetting()
+{
+	searchinlist(Object.keys(settings).map(name => name + ": " + settings[name]))
+	.then(setting =>
+	{
+		editsetting(setting.split(":").shift());
 	});
 }
 
@@ -1825,7 +1832,7 @@ function commandpalette()
 		.map(c => c.hint)
 		.concat(snippets.map(s => "Insert snippet: " + s.hint))
 		.concat(list().map(t => "Open note: " + t))
-		)
+		.concat(Object.keys(settings).map(s => "Edit setting: " + s)))
 	.then(hint =>
 	{
 		var command = commands.find(c => c.hint == hint);
@@ -1844,6 +1851,10 @@ function commandpalette()
 			else if (hint.startsWith("Open note: "))
 			{
 				loadnote(hint.replace("Open note: ", ""));
+			}
+			else if (hint.startsWith("Edit setting: "))
+			{
+				editsetting(hint.replace("Edit setting: ", ""));
 			}
 			else
 			{

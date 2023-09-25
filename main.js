@@ -2095,16 +2095,26 @@ function applycolors()
 	lines.every( (line, i) =>
 	{
 		line = escapeHtml(line);
+
+		// headings
 		if (line.startsWith("#"))
 		{
-			line = line.replace(/(#*)/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
-			line = "<b><span style='color:black'>" + line + "</span></b>";
+			line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
+			line = "<b>" + line + "</b>";
 		}
+
+		// lists
 		if (line.startsWith("* "))
 		{
 			line = line.replace(/(\* )/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
 		}
+		else if (line.startsWith("- "))
+		{
+			line = line.replace(/(\- )/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+		}
+		// todo: use markerslist
 
+		// md header
 		if (i == 0 && line == "---")
 		{
 			header = true;
@@ -2118,9 +2128,11 @@ function applycolors()
 			line = "<em><span style='color:lightgrey'>" + line + "</span></em>";
 		}
 
-		if (line == "```" && !code)
+		// code blocks
+		if (line.startsWith("```") && !code)
 		{
 			code = true;
+			//lg = line.substring(3);
 			line = "<div style='background:lightgrey'>" + line;
 		}
 		if (line == "```" && code)
@@ -2128,11 +2140,22 @@ function applycolors()
 			code = false;
 			line = line + "</div>";
 		}
+		/*else if (code)
+		{
+			line = line.replace(/(select)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
+			line = line.replace(/(from)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
+			line = line.replace(/(where)/ig, "<b style='color:" + settings.accentcolor + "'>$1</b>");
+			/// todo: keywords by language. whole word only. use a loop. etc.
+		}*/
 
+		// internal links
 		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
+
+		// bold and italics
 		line = line.replace(/(\*\*.*\*\*)/g, "<b>$1</b>");
 		line = line.replace(/(\*.*\*)/g, "<em>$1</em>");
 
+		// comments
 		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");
 		line = line.replace(/\-\-&gt;/g, "--></span>");
 

@@ -2315,6 +2315,34 @@ function mainkeydownhandler()
 	{
 		commandpalette();
 	}
+	else if (event.ctrlKey && event.shiftKey && event.keyCode == "40")
+	{
+		var pos = md.selectionStart;
+		var index = (md.value.substr(0, pos).match(/\n/g) || []).length;
+		var lines = md.value.split("\n");
+		if (index < lines.length - 1)
+		{
+			var line = lines.splice(index, 1);
+			lines.splice(index + 1, 0, line);
+			seteditorcontent(lines.join("\n"));
+			setpos(pos + lines[index].length + 1);
+		}
+		event.preventDefault();
+	}
+	else if (event.ctrlKey && event.shiftKey && event.keyCode == "38")
+	{
+		var pos = md.selectionStart;
+		var index = (md.value.substr(0, pos).match(/\n/g) || []).length;
+		var lines = md.value.split("\n");
+		if (index > 0)
+		{
+			var line = lines.splice(index, 1);
+			lines.splice(index - 1, 0, line);
+			seteditorcontent(lines.join("\n"));
+			setpos(pos - lines[index].length - 1);
+		}
+		event.preventDefault();
+	}
 	else
 	{
 		commands.filter(c => c.shortcut)

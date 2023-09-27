@@ -2215,8 +2215,8 @@ function applycolors()
 		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
 
 		// bold and italics
-		line = line.replace(/(\*\*.*\*\*)/g, "<b>$1</b>");
-		line = line.replace(/(^\*\*.*\*)/g, "<em>$1</em>");
+		line = line.replace(/\*\*([^\*]*)\*\*/g, "<b>&#42;&#42;$1&#42;&#42;</b>");
+		line = line.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 		// comments
 		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");

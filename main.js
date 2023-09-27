@@ -363,7 +363,8 @@ var commands = [
 },
 {
 	hint: "Show upcoming events",
-	action: showupcomingevents
+	action: showupcomingevents,
+	remoteonly: true
 }];
 
 var snippets = [

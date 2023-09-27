@@ -114,9 +114,10 @@ body::-webkit-scrollbar-thumb {
 #searchdialog {
 	position: absolute;
 	top:  0;
+	left: 10%;
 	background-color: lightgray;
 	opacity: 1;
-	width: 90%;
+	width: 80%;
 	color: black;
 	z-index: 2;
 }

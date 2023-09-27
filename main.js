@@ -360,6 +360,10 @@ var commands = [
 {
 	hint: "Decrypt note",
 	action: decryptnote
+},
+{
+	hint: "Show upcoming events",
+	action: showupcomingevents
 }];
 
 var snippets = [
@@ -972,6 +976,48 @@ function changesetting()
 	{
 		editsetting(setting.split(":").shift());
 	});
+}
+
+function showupcomingevents()
+{
+	var note = getnote("events.json");
+	if (note)
+	{
+		var upcomingnote = getorcreate("Upcoming events", "---\ntags: preview\n---\n\n");
+		var events = JSON.parse(note.content);
+		var sorted = {};
+		events.forEach(event =>
+		{
+			var date = new Date(event.DTSTART);
+			if (date >= new Date)
+			{
+				event.readabledate = date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+				var month = event.readabledate.split(" ")[2];
+				var year = event.readabledate.split(" ")[3];
+				sorted[year] = sorted[year] || {};
+				sorted[year][month] = sorted[year][month] || [];
+				sorted[year][month].push(event);
+			}
+		});
+
+		upcomingnote.content = "";
+		for (var year in sorted)
+		{
+			upcomingnote.content += "# " + year + "\n";
+			for (var month in sorted[year])
+			{
+				upcomingnote.content += "## " + month.charAt(0).toUpperCase() + month.slice(1) + "\n";
+				for (var i in sorted[year][month])
+				{
+					var event = sorted[year][month][i];
+					upcomingnote.content += event.readabledate.split(" ")[0] + " " + event.readabledate.split(" ")[1] + ": " + event.SUMMARY + "\n";
+				}
+			}
+		}
+
+		bindfile(upcomingnote);
+		togglepreview();
+	}
 }
 
 function decryptnote()

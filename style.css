@@ -55,6 +55,26 @@ body::-webkit-scrollbar-thumb {
 	font-size: inherit;
 	line-height: inherit;
 	background-color: inherit;
+
+	/* coloring */
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0;
+}
+
+#notecontent {
+	position: relative;
+}
+
+#colored {
+	position: absolute;
+	white-space: pre-wrap;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	width: 100%;
+	word-wrap:break-word;
 }
 
 #network {
@@ -94,10 +114,12 @@ body::-webkit-scrollbar-thumb {
 #searchdialog {
 	position: absolute;
 	top:  0;
+	left: 10%;
 	background-color: lightgray;
 	opacity: 1;
-	width: 90%;
+	width: 80%;
 	color: black;
+	z-index: 2;
 }
 
 /* authent */

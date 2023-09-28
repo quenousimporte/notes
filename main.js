@@ -14,7 +14,8 @@ var defaultsettings =
 	titleinaccentcolor: false,
 	enablenetwork: false,
 	titlebydefault: false,
-	linksinnewtab: true
+	linksinnewtab: true,
+	colors: true
 };
 
 //builtin
@@ -403,10 +404,16 @@ var snippets = [
 	insert: "• "
 },
 {
-	command: "//",
+	command: "/comment",
 	insert: "<!--\n\n-->",
 	cursor: -4
 }];
+
+function seteditorcontent(content)
+{
+	md.value = content;
+	applycolors();
+}
 
 function encryptstring(str)
 {
@@ -512,9 +519,9 @@ function createsubnote(suggestedtitle)
 				content: content
 			}
 			localdata.unshift(newnote);
-			md.value = md.value.substring(0, range.start)
-			+ "[[" + title + "]]"
-			+ md.value.substring(range.end);
+			seteditorcontent(md.value.substring(0, range.start)
+				+ "[[" + title + "]]"
+				+ md.value.substring(range.end));
 			datachanged();
 		}
 	});
@@ -522,11 +529,11 @@ function createsubnote(suggestedtitle)
 
 function comment()
 {
-	md.value = md.value.substring(0, md.selectionStart)
-	+ "<!-- "
-	+ md.value.substring(md.selectionStart, md.selectionEnd)
-	+ " -->"
-	+ md.value.substring(md.selectionEnd);
+	seteditorcontent(md.value.substring(0, md.selectionStart)
+		+ "<!-- "
+		+ md.value.substring(md.selectionStart, md.selectionEnd)
+		+ " -->"
+		+ md.value.substring(md.selectionEnd));
 }
 
 function includesub()
@@ -538,10 +545,9 @@ function includesub()
 		if (confirm("Replace [[" + title + "]] by its content?"))
 		{
 			var subnote = getnote(title);
-			md.value =
-			md.value.substring(0, range.start)
-			+ subnote.content
-			+ md.value.substring(range.end);
+			seteditorcontent(md.value.substring(0, range.start)
+				+ subnote.content
+				+ md.value.substring(range.end));
 
 			if (confirm("Delete '" + title + "'?"))
 			{
@@ -608,6 +614,7 @@ function loadtheme(theme)
 		settings[i] = themes[theme][i];
 	}
 	applystyle();
+	applycolors();
 	resize();
 }
 
@@ -728,12 +735,22 @@ function connected(note)
 	return result;
 }
 
+function toggleeditor(hidden)
+{
+	md.hidden = hidden;
+
+	if (settings.colors)
+	{
+		colored.hidden = hidden;
+	}
+}
+
 function shownotelinks()
 {
 	if (settings.enablenetwork)
 	{
 		networkpage.hidden = false;
-		md.hidden = true;
+		toggleeditor(true);
 		function id(note)
 		{
 			return localdata.indexOf(note);
@@ -799,7 +816,7 @@ function shownotelinks()
 		graph.on("click", function(event)
 		{
 			networkpage.hidden = true;
-			md.hidden = false;
+			toggleeditor(false);
 			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
 		});
 	}
@@ -1026,7 +1043,7 @@ function decryptnote()
 	decryptstring(md.value)
 	.then(decrypted =>
 	{
-		md.value = decrypted;
+		seteditorcontent(decrypted);
 		resize();
 	});
 }
@@ -1332,6 +1349,11 @@ function loadsettings()
 	{
 		toggletitle();
 	}
+
+	colored.hidden = !settings.colors;
+	md.style.color = settings.colors ? "transparent" : "inherit";
+	md.style.background = settings.colors ? "transparent" : "inherit";
+	applycolors();
 }
 
 function checksaved()
@@ -1692,7 +1714,7 @@ function sortselection()
 
 	var selection = content.substring(range.start, range.end);
 	var sorted = selection.split("\n").sort().join("\n");
-	md.value = content.substring(0, range.start) + sorted + content.substring(range.end);
+	seteditorcontent(content.substring(0, range.start) + sorted + content.substring(range.end));
 	datachanged();
 }
 
@@ -1701,11 +1723,6 @@ function selectlines()
 	var range = getlinesrange();
 	md.selectionStart = range.start;
 	md.selectionEnd = range.end;
-}
-
-function seteditorcontent(content)
-{
-	md.value = content;
 }
 
 function ontopbarclick()
@@ -1901,10 +1918,10 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 {
 	var pos = md.selectionStart;
 	var content = md.value;
-	md.value =
-	content.substring(0, pos - nbtodelete)
-	+ text
-	+ content.substring(pos);
+	seteditorcontent(
+		content.substring(0, pos - nbtodelete)
+		+ text
+		+ content.substring(pos));
 	setpos(pos - nbtodelete + text.length + cursoroffset);
 	datachanged();
 }
@@ -2108,8 +2125,117 @@ function save()
 	}
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+
+var languagekeywords = {
+	"sql": ["select", "from", "where", "and", "or"],
+	"js": ["var", "for", "if", "else"]
+}
+
+function applycolors()
+{
+	if (!settings.colors)
+	{
+		return;
+	}
+
+	var lines = md.value.split("\n");
+	var header = false;
+	var code = false;
+	var language = "";
+	var result = [];
+	lines.every( (line, i) =>
+	{
+		line = escapeHtml(line);
+
+		// headings
+		if (line.startsWith("#"))
+		{
+			line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
+			line = "<b>" + line + "</b>";
+		}
+
+		// lists
+		markerslist.forEach(marker =>
+		{
+			if (line.startsWith(marker))
+			{
+				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
+			}
+		});
+
+		// md header
+		if (i == 0 && line == "---")
+		{
+			header = true;
+		}
+		if (header)
+		{
+			if (i > 0 && line == "---")
+			{
+				header = false;
+			}
+			line = "<em><span style='color:lightgrey'>" + line + "</span></em>";
+		}
+
+		// code blocks
+		if (line.startsWith("```") && !code)
+		{
+			code = true;
+			language = line.substring(3);
+			line = "<span style='font-family:monospace;color:rgb(70,70,70);'>" + line;
+		}
+		else if (line == "```" && code)
+		{
+			code = false;
+			language = "";
+			line = line + "</span>";
+		}
+		else if (code)
+		{
+			if (languagekeywords[language])
+			{
+				var keywords = languagekeywords[language];
+				keywords.forEach(keyword =>
+				{
+					var r = new RegExp("(" + keyword + ")", "ig");
+					line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<b>$1</b>");
+				})
+			}
+		}
+
+		// internal links
+		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
+
+		// bold and italics
+		line = line.replace(/\*\*([^\*]*)\*\*/g, "<b>&#42;&#42;$1&#42;&#42;</b>");
+		line = line.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+
+		// comments
+		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");
+		line = line.replace(/\-\-&gt;/g, "--></span>");
+		if (line.startsWith("// "))
+		{
+			line = "<span style='color:lightgrey'>" + line + "</span>";
+		}
+
+		result.push(line);
+
+		return true;
+	});
+	colored.innerHTML = result.join("<br>");
+}
+
 function datachanged()
 {
+	applycolors();
 	resize();
 
 	saved = false;
@@ -2286,7 +2412,7 @@ function insertheader()
 	if (preview.hidden && !md.value.startsWith("---\n"))
 	{
 		var headers = defaultheaders(currentnote.title);
-		md.value = headers + md.value;
+		seteditorcontent(headers + md.value);
 		setpos(27);
 	}
 	resize();
@@ -2335,7 +2461,7 @@ function esc(event)
 	else if (networkpage.hidden == false)
 	{
 		networkpage.hidden = true;
-		md.hidden = false;
+		toggleeditor(false);
 	}
 	else if (preview.hidden == false)
 	{
@@ -2465,7 +2591,7 @@ function backspace(nb)
 {
 	var pos = getpos();
 	var c = md.value;
-	md.value = c.substring(0, pos - nb) + c.substring(pos);
+	seteditorcontent(c.substring(0, pos - nb) + c.substring(pos));
 	setpos(pos - nb);
 	datachanged();
 }
@@ -2510,9 +2636,9 @@ function editorkeydown()
 		{
 			newtext = selection.replaceAll("\n", "\n    ");
 		}
-		md.value = md.value.substring(0, range.start)
-		+ newtext
-		+ md.value.substring(range.end);
+		seteditorcontent(md.value.substring(0, range.start)
+			+ newtext
+			+ md.value.substring(range.end));
 
 		var shift = 0;
 		if (newtext.length < selection.length)
@@ -2565,7 +2691,7 @@ function insertautocomplete(selectednote)
 function togglepreview()
 {
 	preview.innerHTML = md2html(md.value);
-	md.hidden = !md.hidden;
+	toggleeditor(!md.hidden);
 	preview.hidden = !preview.hidden;
 
 	if (preview.hidden)
@@ -2618,7 +2744,7 @@ function togglepreviewwithsubs()
 	if (note)
 	{
 		preview.innerHTML = md2html(note.content);
-		md.hidden = !md.hidden;
+		toggleeditor(!md.hidden);
 		preview.hidden = !preview.hidden;
 
 		if (preview.hidden)

@@ -49,7 +49,7 @@ else if (isset($_POST['action']))
 			}
 			else
 			{
-				echo '{"warning": "cannot load ics file"}';
+				echo '{"error": "cannot load ics file"}';
 			}
 		break;
 

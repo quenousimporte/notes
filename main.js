@@ -998,11 +998,19 @@ function changesetting()
 
 function showupcomingevents()
 {
-	var note = getnote("events.json");
-	if (note)
+	queryremote({action: "cal"})
+	.then(data =>
 	{
-		var upcomingnote = getorcreate("Upcoming events", "---\ntags: preview\n---\n\n");
-		var events = JSON.parse(note.content);
+		if (!data.ics)
+		{
+			throw "could not retrieve events";
+		}
+
+		// keep future only
+		var events = ics2json(data.ics)
+		.filter(e => e.DTSTART >= new Date);
+
+		// sort by years and months
 		var sorted = {};
 		events.forEach(event =>
 		{
@@ -1018,24 +1026,31 @@ function showupcomingevents()
 			}
 		});
 
-		upcomingnote.content = "";
+		// build output
+		var content = "";
 		for (var year in sorted)
 		{
-			upcomingnote.content += "# " + year + "\n";
+			content += "# " + year + "\n";
 			for (var month in sorted[year])
 			{
-				upcomingnote.content += "## " + month.charAt(0).toUpperCase() + month.slice(1) + "\n";
+				content += "## " + month.charAt(0).toUpperCase() + month.slice(1) + "\n";
 				for (var i in sorted[year][month])
 				{
 					var event = sorted[year][month][i];
-					upcomingnote.content += event.readabledate.split(" ")[0] + " " + event.readabledate.split(" ")[1] + ": " + event.SUMMARY + "\n";
+					content += event.readabledate.split(" ")[0] + " " + event.readabledate.split(" ")[1] + ": " + event.SUMMARY + "\n";
 				}
 			}
 		}
 
-		bindfile(upcomingnote);
+		bindfile(
+		{
+			title: "Upcoming events",
+			content
+		});
 		togglepreview();
-	}
+
+	})
+	.catch(remotecallfailed);
 }
 
 function decryptnote()
@@ -1434,7 +1449,6 @@ function init()
 			{
 				window.localStorage.setItem("remote", JSON.stringify(data));
 				loadstorage();
-				checkevents();
 			})
 			.catch(remotecallfailed);
 		}
@@ -1532,85 +1546,6 @@ function getorcreate(title, content, putontop)
 		localdata.unshift(note);
 	}
 	return note;
-}
-
-function checkevents()
-{
-	queryremote({action: "cal"})
-	.then(data =>
-	{
-		if (!isremote())
-		{
-			console.log("ignore events because current vault is " + currentvault);
-			return;
-		}
-
-		if (!data.ics)
-		{
-			console.warn("could not retrieve events");
-			return;
-		}
-
-		var note = getorcreate("events.json", "[]", false);
-		var events = ics2json(data.ics);
-		var existing = JSON.parse(note.content).map(e =>
-			{
-				e.DTSTART = new Date(e.DTSTART);
-				return e;
-			});
-
-		// keep future only
-		events = events.filter(e => e.DTSTART >= new Date);
-		existing = existing.filter(e => e.DTSTART >= new Date);
-
-		// check added, deleted, changed
-		var newcontent = [];
-		events.forEach(evt =>
-		{
-			var previous = existing.find(e => e.UID == evt.UID);
-			if (!previous)
-			{
-				newcontent.push("new event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
-			}
-			else if (previous.SUMMARY != evt.SUMMARY)
-			{
-				newcontent.push("changed event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
-			}
-		});
-
-		existing.forEach(evt =>
-		{
-			if (!events.find(e => e.UID == evt.UID))
-			{
-				newcontent.push("deleted event: " + evt.DTSTART.toLocaleString() + " " + evt.SUMMARY);
-			}
-		});
-
-		if (newcontent.length)
-		{
-			showtemporaryinfo("Calendar changes to check");
-			var eventsnotes = getorcreate("events to check", "", true);
-			var idx = 0;
-			if (eventsnotes.content.startsWith("---"))
-			{
-				idx = eventsnotes.content.indexOf("---", 3) + 4;
-			}
-			eventsnotes.content = eventsnotes.content.substring(0, idx)
-			+ newcontent.join("\n")
-			+ "\n---\n"
-			+ eventsnotes.content.substring(idx);
-
-			// reload eventsnotes if open
-			if (currentnote == eventsnotes)
-			{
-				bindfile(eventsnotes);
-			}
-
-			note.content = JSON.stringify(events);
-			datachanged();
-		}
-	})
-	.catch(remotecallfailed);
 }
 
 function queryremote(params)

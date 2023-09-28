@@ -2182,7 +2182,7 @@ function applycolors()
 			{
 				header = false;
 			}
-			line = "<em><span style='color:lightgrey'>" + line + "</span></em>";
+			line = "<span style='color:lightgrey'>" + line + "</span>";
 		}
 
 		// code blocks

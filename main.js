@@ -2309,6 +2309,9 @@ function showhelp()
 	help.push("[Calmly Writer](https://calmlywriter.com/)");
 	help.push("[Cryptee](https://crypt.ee/)");
 
+	help.push("##Sources");
+	help.push("https://github.com/quenousimporte/notes");
+
 	bindfile(
 	{
 		title: "Help",

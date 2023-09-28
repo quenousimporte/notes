@@ -75,8 +75,8 @@ var themes =
 	Default:
 	{
 		bgcolor: "white",
-		fontfamily: "'Inconsolata', 'Consolas', monospace",
-		fontsize: "16px",
+		fontfamily: "monospace",
+		fontsize: "14px",
 		fontcolor: "black",
 		lineheight: "130%",
 	    accentcolor: "#5AA7CE"

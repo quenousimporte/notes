@@ -401,10 +401,12 @@ var snippets = [
 },
 {
 	command: "/*",
+	hint: "Bullet point",
 	insert: "• "
 },
 {
 	command: "/comment",
+	hint: "Comment",
 	insert: "<!--\n\n-->",
 	cursor: -4
 }];

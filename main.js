@@ -2349,7 +2349,7 @@ function restoredeleted()
 			{
 				var title = item.split(" - deleted on ").shift();
 				var stamp = item.split(" - deleted on ").pop();
-				var index = trash.findIndex(n => n.title == title && n.deletiondate == stamp);
+				var index = trash.findIndex(n => n.title == title && (!n.deletiondate || n.deletiondate == stamp));
 				if (index > -1)
 				{
 					var notetorestore = trash.splice(index, 1).pop();

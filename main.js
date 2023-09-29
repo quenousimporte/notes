@@ -214,7 +214,7 @@ var commands = [
 	action: deletecurrentnote
 },
 {
-	hint: "Restore note",
+	hint: "Restore current note",
 	action: restore
 },
 {
@@ -366,6 +366,10 @@ var commands = [
 	hint: "Show upcoming events",
 	action: showupcomingevents,
 	remoteonly: true
+},
+{
+	hint: "Restore deleted note",
+	action: restoredeleted
 }];
 
 var snippets = [
@@ -2331,9 +2335,40 @@ function rename(newname)
 	return "";
 }
 
+function restoredeleted()
+{
+	var trash = window.localStorage.getItem("trash");
+	if (trash)
+	{
+		trash = JSON.parse(window.localStorage.getItem("trash"));
+		searchinlist(trash.map(note => note.title + " - deleted on " + note.deletiondate))
+		.then(item =>
+		{
+			if (confirm("Restore " + item + "?"))
+			{
+				var title = item.split(" - deleted on ").shift();
+				var stamp = item.split(" - deleted on ").pop();
+				var index = trash.findIndex(n => n.title == title && n.deletiondate == stamp);
+				if (index > -1)
+				{
+					var notetorestore = trash.splice(index, 1).pop();
+					window.localStorage.setItem("trash", JSON.stringify(trash));
+
+					notetorestore.title += " - restored on " + timestamp();
+					delete notetorestore.deletiondate;
+					localdata.unshift(notetorestore);
+					loadnote(notetorestore.title);
+					datachanged();
+				}
+			}
+		});
+	}
+}
+
 function deletenote(note)
 {
 	var trash = JSON.parse(window.localStorage.getItem("trash") || "[]");
+	note.deletiondate = timestamp();
 	trash.push(note);
 	window.localStorage.setItem("trash", JSON.stringify(trash));
 

@@ -2099,6 +2099,23 @@ function applycolors()
 			line = "<b>" + line + "</b>";
 		}
 
+		// bold and italics
+		var temp = line;
+		if (line.startsWith("* "))
+		{
+			temp = line.substring(2);
+		}
+		temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<b>&#42;&#42;$1&#42;&#42;</b>");
+		temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+		if (line.startsWith("* "))
+		{
+			line = "* " + temp;
+		}
+		else
+		{
+			line = temp;
+		}
+
 		// lists
 		markerslist.forEach(marker =>
 		{
@@ -2150,10 +2167,6 @@ function applycolors()
 
 		// internal links
 		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
-
-		// bold and italics
-		line = line.replace(/\*\*([^\*]*)\*\*/g, "<b>&#42;&#42;$1&#42;&#42;</b>");
-		line = line.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 		// comments
 		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");

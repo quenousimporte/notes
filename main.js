@@ -350,7 +350,7 @@ var commands = [
 	action: inserttodo
 },
 {
-	hint: "Send by SMS",
+	hint: "Send an SMS",
 	action: sms,
 	remoteonly: true
 },
@@ -470,9 +470,10 @@ function decryptstring(str)
 
 function sms()
 {
-	if (confirm("Send note by SMS?"))
+	var messsage = prompt("Type your message:");
+	if (messsage)
 	{
-		queryremote({action: "sms", data: currentnote.content.replace(/\n/g, " ")})
+		queryremote({action: "sms", data: messsage})
 		.then(data =>
 		{
 			showtemporaryinfo("SMS sent. Result: '" + data.result + "'");

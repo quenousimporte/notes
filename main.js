@@ -352,7 +352,8 @@ var commands = [
 {
 	hint: "Send an SMS",
 	action: sms,
-	remoteonly: true
+	remoteonly: true,
+	allowunsaved: true
 },
 {
 	hint: "Edit pgp keys",

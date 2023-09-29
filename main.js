@@ -2353,13 +2353,12 @@ function restoredeleted()
 				if (index > -1)
 				{
 					var notetorestore = trash.splice(index, 1).pop();
-					window.localStorage.setItem("trash", JSON.stringify(trash));
-
 					notetorestore.title += " - restored on " + timestamp();
 					delete notetorestore.deletiondate;
 					localdata.unshift(notetorestore);
 					loadnote(notetorestore.title);
 					datachanged();
+					window.localStorage.setItem("trash", JSON.stringify(trash));
 				}
 			}
 		});

@@ -2332,7 +2332,7 @@ function rename(newname)
 
 function deletenote(note)
 {
-	var trash = JSON.parse(window.localStorage.getItem("trash")) || [];
+	var trash = JSON.parse(window.localStorage.getItem("trash") || "[]");
 	trash.push(note);
 	window.localStorage.setItem("trash", JSON.stringify(trash));
 

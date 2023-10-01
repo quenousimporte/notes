@@ -371,6 +371,10 @@ var commands = [
 {
 	hint: "Restore deleted note",
 	action: restoredeleted
+},
+{
+	hint: "Notes by size",
+	action: notesbysize
 }];
 
 var snippets = [
@@ -2307,6 +2311,19 @@ function searchautocomplete()
 function searchandloadnote()
 {
 	selectnote().then(loadnote);
+}
+
+function notesbysize()
+{
+	var sortedtitles = localdata.sort( (n1,n2) => { return n2.content.length - n1.content.length})
+	.map(n => n.title + ": " + formatsize(n.content.length));
+
+	searchinlist(sortedtitles)
+	.then(titlewithsize =>
+	{
+		var title = titlewithsize.substring(0, titlewithsize.lastIndexOf(": "));
+		loadnote(title);
+	});
 }
 
 function renamereferences(newname)

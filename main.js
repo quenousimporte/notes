@@ -1321,7 +1321,8 @@ function loadstorage()
 		currentnote = getnote(title);
 		if (!currentnote)
 		{
-			currentnote = {title: title, content: defaultheaders(title, tags)};
+			var newcontent = defaultheaders(title, tags);
+			currentnote = {title: title, content: newcontent, pos: newcontent.length};
 			localdata.unshift(currentnote);
 		}
 	}

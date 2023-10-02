@@ -2173,14 +2173,15 @@ function applycolors()
 		}
 		else if (code)
 		{
+			line = line.replace(/(\d+)/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
 			if (languagekeywords[language])
 			{
 				var keywords = languagekeywords[language];
 				keywords.forEach(keyword =>
 				{
 					var r = new RegExp("(" + keyword + ")", "ig");
-					line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<b>$1</b>");
-				})
+					line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='color:" + settings.accentcolor + "'><b>$1</b></span>");
+				});
 			}
 		}
 

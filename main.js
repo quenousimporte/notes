@@ -1989,6 +1989,11 @@ function postpone()
 	});
 }
 
+function setsaved()
+{
+	saved = true;
+}
+
 function save()
 {
 	clearTimeout(workerid);
@@ -1998,13 +2003,13 @@ function save()
 		settings = JSON.parse(md.value);
 		savesettings();
 		loadsettings();
-		saved = true;
+		setsaved();
 		return;
 	}
 	else if (currentnote.title == "pgpkeys")
 	{
 		localStorage.setItem("pgpkeys", md.value);
-		saved = true;
+		setsaved();
 		return;
 	}
 
@@ -2053,7 +2058,7 @@ function save()
 		.then(() =>
 		{
 			console.log("...data saved on server");
-			saved = true;
+			setsaved();
 		})
 		.catch(remotecallfailed)
 		.finally(() =>
@@ -2072,7 +2077,7 @@ function save()
 	}
 	else
 	{
-		saved = true;
+		setsaved();
 	}
 }
 

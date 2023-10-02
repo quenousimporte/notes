@@ -1049,6 +1049,10 @@ function showupcomingevents()
 				for (var i in sorted[year][month])
 				{
 					var event = sorted[year][month][i];
+					if (i > 0 && event.DTSTART.getDate() != sorted[year][month][i-1].DTSTART.getDate() && event.DTSTART.getDay() <= sorted[year][month][i-1].DTSTART.getDay())
+					{
+						content += "\n\n";
+					}
 					content += event.readabledate.split(" ")[0] + " " + event.readabledate.split(" ")[1] + ": " + event.SUMMARY + "\n";
 				}
 			}

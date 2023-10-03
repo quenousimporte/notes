@@ -1345,7 +1345,6 @@ function loadstorage()
 	{
 		loadlast();
 	}
-	initshortcuts();
 }
 
 function applystyle()
@@ -1423,27 +1422,6 @@ function initsnippets()
 function initvault()
 {
 	currentvault = window.localStorage.getItem("vault") || "local";
-}
-
-function initshortcuts()
-{
-	localdata
-	.filter(n => n.content.includes("shortcut: "))
-	.forEach(n => {
-		var hint = "Open " + n.title;
-		if (!commands.find(c => c.hint == hint))
-		{
-			var shortcut = n.content.match(/shortcut: (.*)/)[1];
-			commands.push({
-				hint: hint,
-				shortcut: shortcut,
-				action: function()
-				{
-					loadnote(n.title);
-				}
-			});
-		}
-	});
 }
 
 function addfakehistory()
@@ -2465,6 +2443,12 @@ function splitshortcut(s)
 	return r;
 }
 
+function shortcutmatches(event, shortcut)
+{
+	var s = splitshortcut(shortcut);
+	return (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
+}
+
 function executecommand(command)
 {
 	if (!command.allowunsaved && !saved)
@@ -2557,18 +2541,34 @@ function mainkeydownhandler()
 	}
 	else
 	{
-		commands.filter(c => c.shortcut)
-		.every(command =>
+		// notes shortcuts
+		var note = localdata.find(n =>
 		{
-			var s = splitshortcut(command.shortcut);
-			if (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
+			var shortcut = n.content.match(/shortcut: (.*)/);
+			if (shortcut)
 			{
-				event.preventDefault();
-				executecommand(command);
-				return false;
+				console.log("Loading note '" + n.title + "' from header shortcut " + shortcut[1]);
+				loadnote(n.title);
+				return shortcutmatches(event, shortcut[1]);
 			}
-			return true;
+			return false;
 		});
+
+		// commands shortcuts
+		if (!note)
+		{
+			commands.filter(c => c.shortcut)
+			.every(command =>
+			{
+				if (shortcutmatches(event, command.shortcut))
+				{
+					event.preventDefault();
+					executecommand(command);
+					return false;
+				}
+				return true;
+			});
+		}
 	}
 }
 

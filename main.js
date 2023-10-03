@@ -366,7 +366,8 @@ var commands = [
 {
 	hint: "Show upcoming events",
 	action: showupcomingevents,
-	remoteonly: true
+	remoteonly: true,
+	shortcut: "ctrl+e"
 },
 {
 	hint: "Restore deleted note",

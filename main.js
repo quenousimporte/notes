@@ -2174,7 +2174,7 @@ function applycolors()
 		}
 		else if (code)
 		{
-			line = line.replace(/(\d+)/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+			line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
 			if (languagekeywords[language])
 			{
 				var keywords = languagekeywords[language];

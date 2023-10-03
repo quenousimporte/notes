@@ -2539,7 +2539,7 @@ function mainkeydownhandler()
 		}
 		event.preventDefault();
 	}
-	else
+	else if (event.ctrlKey || event.altKey)
 	{
 		// notes shortcuts
 		var note = localdata.find(n =>

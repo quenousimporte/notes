@@ -940,6 +940,7 @@ function clickeditor()
 	{
 		var link = linkatpos();
 		var tag = tagatpos();
+		var word =  wordatpos();
 		if (link)
 		{
 			loadnote(link);
@@ -949,6 +950,10 @@ function clickeditor()
 			tagslist();
 			searchinlist(tags[tag.toLowerCase()])
 			.then(loadnote);
+		}
+		else if (word.startsWith("https://"))
+		{
+			window.open(word, '_blank');
 		}
 	}
 }
@@ -1675,6 +1680,19 @@ function selectlines()
 	var range = getlinesrange();
 	md.selectionStart = range.start;
 	md.selectionEnd = range.end;
+}
+
+function wordatpos()
+{
+	var words = md.value.split(/\s/);
+    var i = 0;
+    var word = "";
+	while (i < md.selectionStart)
+    {
+		word = words.shift();
+        i += word.length + 1;
+	}
+	return word;
 }
 
 function ontopbarclick()

@@ -2545,11 +2545,12 @@ function mainkeydownhandler()
 		var note = localdata.find(n =>
 		{
 			var shortcut = n.content.match(/shortcut: (.*)/);
-			if (shortcut)
+			if (shortcut && shortcutmatches(event, shortcut[1]))
 			{
 				console.log("Loading note '" + n.title + "' from header shortcut " + shortcut[1]);
+				event.preventDefault();
 				loadnote(n.title);
-				return shortcutmatches(event, shortcut[1]);
+				return true;
 			}
 			return false;
 		});

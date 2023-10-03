@@ -980,7 +980,7 @@ function editsettings()
 
 function editsetting(name)
 {
-	if (settings[name])
+	if (typeof settings[name] != "undefined")
 	{
 		var value = settings[name];
 		var type = typeof value;

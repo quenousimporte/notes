@@ -2237,7 +2237,11 @@ function timestamp()
 
 function startnewnote()
 {
-	loadnote(timestamp());
+	var title = prompt("Note title: ", timestamp());
+	if (title)
+	{
+		loadnote(title);
+	}
 }
 
 function showhelp()

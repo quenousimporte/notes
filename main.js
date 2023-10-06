@@ -2138,7 +2138,7 @@ function applycolors()
 		{
 			if (line.startsWith(marker))
 			{
-				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
+				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", "•") + "</span>");
 			}
 		});
 

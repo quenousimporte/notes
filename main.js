@@ -2108,10 +2108,12 @@ function applycolors()
 	var lines = md.value.split("\n");
 	var header = false;
 	var code = false;
+	var comment = false;
 	var language = "";
-	var result = [];
+	var resulthtml = "";
 	lines.every( (line, i) =>
 	{
+		resulthtml += "<div id='line" + i + "'>";
 		line = escapeHtml(line);
 
 		// headings
@@ -2190,21 +2192,40 @@ function applycolors()
 		}
 
 		// internal links
-		line = line.replace(/(\[\[.*\]\])/g, "<u><span style='cursor:pointer'>$1</span></u>");
+		line = line.replace(/(\[\[.*\]\])/g, "<u>$1</u>");
 
 		// comments
-		line = line.replace(/&lt;\!/g, "<span style='color:lightgrey'>&lt;!");
-		line = line.replace(/\-\-&gt;/g, "--></span>");
+		line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
+
+		if (line.includes("&lt;!--") && !line.includes("--&gt;"))
+		{
+			comment = true;
+		}
+		else if (comment)
+		{
+			console.log("comment: " + line);
+			line = "<span style='color:lightgrey'>" + line
+			if (line.includes("--&gt;"))
+			{
+				comment = false;
+			}
+			else
+			{
+				line += "</span>";
+			}
+		}
+
+		line = line.replace(/\-\-&gt;/g, "--&gt;</span>");
+
 		if (line.startsWith("// "))
 		{
 			line = "<span style='color:lightgrey'>" + line + "</span>";
 		}
-
-		result.push(line);
+		resulthtml += (line || "&nbsp;") + "</div>";
 
 		return true;
 	});
-	colored.innerHTML = result.join("<br>");
+	colored.innerHTML = resulthtml;
 }
 
 function datachanged()

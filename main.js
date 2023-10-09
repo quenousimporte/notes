@@ -2241,6 +2241,7 @@ function startnewnote()
 	if (title)
 	{
 		loadnote(title);
+		datachanged();
 	}
 }
 

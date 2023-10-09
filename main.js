@@ -219,7 +219,6 @@ var commands = [
 	action: restore
 },
 {
-	shortcut: "ctrl+h",
 	hint: "Insert markdown header",
 	action: insertheader,
 	allowunsaved: true
@@ -377,6 +376,11 @@ var commands = [
 {
 	hint: "Notes by size",
 	action: notesbysize
+},
+{
+	hint: "Replace",
+	shortcut: "ctrl+h",
+	action: searchandreplace
 }];
 
 var snippets = [
@@ -2319,6 +2323,30 @@ function searchautocomplete()
 function searchandloadnote()
 {
 	selectnote().then(loadnote);
+}
+
+function searchandreplace()
+{
+	var oldvalue = prompt("Search:");
+	if (!oldvalue)
+	{
+		return;
+	}
+
+	var newvalue = prompt("Replace by:");
+	if (!newvalue)
+	{
+		return;
+	}
+
+	var doit = confirm(`Replace '${oldvalue}' by '${newvalue}'?`);
+	if (!doit)
+	{
+		return;
+	}
+
+	seteditorcontent(md.value.replaceAll(oldvalue, newvalue));
+	datachanged();
 }
 
 function notesbysize()

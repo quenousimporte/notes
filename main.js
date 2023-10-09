@@ -15,7 +15,8 @@ var defaultsettings =
 	enablenetwork: false,
 	titlebydefault: false,
 	linksinnewtab: true,
-	colors: true
+	colors: true,
+	bulletrendering: "•"
 };
 
 //builtin
@@ -408,11 +409,6 @@ var snippets = [
 	hint: "Dialog mark",
 	insert: "— ",
 	cursor: 0
-},
-{
-	command: "/*",
-	hint: "Bullet point",
-	insert: "• "
 },
 {
 	command: "/comment",
@@ -2138,7 +2134,7 @@ function applycolors()
 		{
 			if (line.startsWith(marker))
 			{
-				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", "•") + "</span>");
+				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", settings.bulletrendering) + "</span>");
 			}
 		});
 

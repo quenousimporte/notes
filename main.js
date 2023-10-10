@@ -2206,6 +2206,7 @@ function applycolors()
 		}
 		else if (comment)
 		{
+			line = line || "&nbsp;";
 			line = "<span style='color:lightgrey'>" + line
 			if (line.includes("--&gt;"))
 			{

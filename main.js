@@ -1812,15 +1812,6 @@ function showgrep()
 			showgrepresult(grep(filter.value));
 		}
 	}
-
-	// live search
-	/*filter.oninput = function()
-	{
-		if (filter.value.length > 1)
-		{
-			showgrepresult(grep(filter.value));
-		}
-	}*/
 }
 
 function commandpalette()
@@ -2101,9 +2092,6 @@ function applycolors()
 	}
 
 	var boldstyle = "-webkit-text-stroke-width: 0.5px;";
-	//var boldstyle = "font-weight: bold; letter-spacing: 0;";
-	//var boldstyle = "font-weight: bold;";
-	//var boldstyle = "text-shadow: 0 0 0.01px black;";
 
 	var lines = md.value.split("\n");
 	var header = false;
@@ -2203,7 +2191,6 @@ function applycolors()
 		}
 		else if (comment)
 		{
-			console.log("comment: " + line);
 			line = "<span style='color:lightgrey'>" + line
 			if (line.includes("--&gt;"))
 			{

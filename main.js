@@ -1,18 +1,17 @@
 var defaultsettings =
 {
 	bgcolor: "white",
-	fontfamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
-	fontsize: "16px",
-	fontcolor: "rgb(55,53,47)",
-	lineheight: "24px",
-	accentcolor: "rgb(55,53,47)",
-	margins: "7%",
-
+	fontfamily: "monospace",
+	fontsize: "14px",
+	fontcolor: "black",
+	lineheight: "130%",
+	accentcolor: "#5AA7CE",
+	margins: "20%",
 	savedelay: 2000,
 	defaultpreviewinsplit: false,
 	tagautocomplete: false,
 	titleinaccentcolor: false,
-	enablenetwork: false,
+	enablenetwork: true,
 	titlebydefault: false,
 	linksinnewtab: true,
 	colors: true,
@@ -52,109 +51,6 @@ var stat =
 		d: 0
 	}
 }
-
-var themes =
-{
-	mingwdark:
-	{
-	    bgcolor: "rgb(46,52,64)",
-	    fontfamily: "Lucida console",
-	    fontsize: "14px",
-	    fontcolor: "rgb(191,191,191)",
-	    lineheight: "120%",
-	    accentcolor: "rgb(177,54,186)"
-	},
-	mingw64:
-	{
-		bgcolor: "white",
-		fontfamily: "Lucida console",
-		fontsize: "13px",
-		fontcolor: "black",
-		lineheight: "110%",
-	    accentcolor: "rgb(177,54,186)"
-	},
-	Default:
-	{
-		bgcolor: "white",
-		fontfamily: "monospace",
-		fontsize: "14px",
-		fontcolor: "black",
-		lineheight: "130%",
-	    accentcolor: "#5AA7CE"
-	},
-	Notion:
-	{
-		bgcolor: "white",
-	    fontfamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
-	    fontsize: "16px",
-	    fontcolor: "rgb(55,53,47)",
-	    lineheight: "24px",
-	    accentcolor: "rgb(55,53,47)"
-	},
-	Monkey:
-	{
-		bgcolor: "rgb(227,227,227)",
-		fontfamily: "'Hack', 'Consolas', monospace",
-		fontsize: "14px",
-		fontcolor: "rgb(55,55,55)",
-		lineheight: "24px",
-		accentcolor: "#5AA7CE"
-	},
-	"White monkey":
-	{
-		bgcolor: "white",
-		fontfamily: "'Inconsolata', 'Consolas', monospace",
-		fontsize: "18px",
-		fontcolor: "black",
-		lineheight: "150%",
-		accentcolor: "#5AA7CE"
-	},
-	Mariana:
-	{
-		bgcolor: "rgb(48,56,65)",
-		fontfamily: "'Consolas', monospace",
-		fontsize: "16px",
-		fontcolor: "rgb(216,222,233)",
-		lineheight: "120%",
-		accentcolor: "rgb(249,174,88)"
-	},
-	"Plus plus":
-	{
-		bgcolor: "white",
-		fontfamily: "'Consolas', 'Courier New', monospace",
-		fontsize: "15px",
-		fontcolor: "black",
-		lineheight: "110%",
-		accentcolor: "rgb(128,0,255)"
-	},
-	Calmly:
-	{
-		bgcolor: "rgb(250,250,250)",
-		fontfamily: "'Droid Serif', serif",
-		fontsize: "19px",
-		fontcolor: "rgb(60,60,60)",
-		lineheight: "28.5px",
-		accentcolor: "rgb(60,60,60)"
-	},
-	Breakers:
-	{
-		bgcolor: "rgb(252,253,253)",
-		fontfamily: "'Consolas', monospace",
-		fontsize: "16px",
-		fontcolor: "rgb(50,50,50)",
-		lineheight: "120%",
-		accentcolor: "rgb(95,180,180)"
-	},
-	Cryptee:
-	{
-		bgcolor: "white",
-		fontfamily: "'Josefin Sans', sans-serif",
-		fontsize: "16px",
-		fontcolor: "rgb(78,78,78)",
-		lineheight: "24px",
-		accentcolor: "rgb(54,54,54)"
-	}
-};
 
 var commands = [
 {
@@ -288,11 +184,6 @@ var commands = [
 	hint: "Add tag filter",
 	action: addtagfilter,
 	shortcut: "ctrl+shift+F",
-},
-{
-	hint: "Select theme",
-	action: selecttheme,
-	allowunsaved: true
 },
 {
 	hint: "Show info",
@@ -620,31 +511,11 @@ function showinfo()
 		].join("\n"));
 }
 
-function loadtheme(theme)
-{
-	for (var i in themes[theme])
-	{
-		settings[i] = themes[theme][i];
-	}
-	applystyle();
-	applycolors();
-	resize();
-}
-
 function savesettings()
 {
 	window.localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-function selecttheme()
-{
-	searchinlist(Object.keys(themes), loadtheme)
-	.then(t =>
-		{
-			loadtheme(t);
-			savesettings();
-		});
-}
 
 function addtagfilter()
 {
@@ -2106,8 +1977,7 @@ function applycolors()
 		return;
 	}
 
-	var boldstyle = "-webkit-text-stroke-width: 0.5px;";
-
+	var boldstyle = "font-weight: bold;";
 	var lines = md.value.split("\n");
 	var header = false;
 	var code = false;
@@ -2318,12 +2188,6 @@ function showhelp()
 	help.push("[openpgpjs](https://openpgpjs.org/)");
 	help.push("[jszip](https://stuk.github.io/jszip/)");
 	help.push("[FileSaver](http://eligrey.com)");
-
-	help.push("## Fonts");
-	help.push("[Inconsolata](https://levien.com/type/myfonts/inconsolata.html)");
-	help.push("[Hack](https://sourcefoundry.org/hack/)");
-	help.push("[Droid Serif](https://fonts.adobe.com/fonts/droid-serif)");
-	help.push("[Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans)");
 
 	help.push("## Inspiration");
 	help.push("[rwtxt](https://rwtxt.com)");

@@ -2100,6 +2100,11 @@ function applycolors()
 		return;
 	}
 
+	var boldstyle = "-webkit-text-stroke-width: 0.5px;";
+	//var boldstyle = "font-weight: bold; letter-spacing: 0;";
+	//var boldstyle = "font-weight: bold;";
+	//var boldstyle = "text-shadow: 0 0 0.01px black;";
+
 	var lines = md.value.split("\n");
 	var header = false;
 	var code = false;
@@ -2113,7 +2118,7 @@ function applycolors()
 		if (line.startsWith("#"))
 		{
 			line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
-			line = "<b>" + line + "</b>";
+			line = "<span style='" + boldstyle + "'>" + line + "</span>";
 		}
 
 		// bold and italics
@@ -2122,8 +2127,9 @@ function applycolors()
 		{
 			temp = line.substring(2);
 		}
-		temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<b>&#42;&#42;$1&#42;&#42;</b>");
+		temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='" + boldstyle + "'>&#42;&#42;$1&#42;&#42;</span>");
 		temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+
 		if (line.startsWith("* "))
 		{
 			line = "* " + temp;

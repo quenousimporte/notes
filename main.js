@@ -2084,6 +2084,16 @@ var languagekeywords = {
 	"js": ["var", "for", "if", "else"]
 }
 
+function currentline()
+{
+	return (md.value.substring(0, md.selectionStart).match(/\n/g) || []).length;
+}
+
+function getrawline(index)
+{
+	return md.value.split("\n")[index];
+}
+
 function applycolors()
 {
 	if (!settings.colors)

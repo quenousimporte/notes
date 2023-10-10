@@ -2089,7 +2089,12 @@ function currentline()
 	return (md.value.substring(0, md.selectionStart).match(/\n/g) || []).length;
 }
 
-function getrawline(index)
+function currentcol()
+{
+	return md.selectionStart - Math.max(0, md.value.lastIndexOf("\n", md.selectionStart - 1)) - 1;
+}
+
+function rawline(index)
 {
 	return md.value.split("\n")[index];
 }
@@ -2218,6 +2223,28 @@ function applycolors()
 		{
 			line = "<span style='color:lightgrey'>" + line + "</span>";
 		}
+
+		// autocomplete snippets
+		if (i == currentline())
+		{
+			var raw = rawline(i);
+			var pos = currentcol();
+			var slashpos = raw.substring(0, pos).lastIndexOf("/");
+			if (slashpos > -1)
+			{
+				var spacepos = raw.substring(0, pos).lastIndexOf(" ");
+				if (slashpos > spacepos)
+				{
+					var snippetpart = raw.substring(slashpos);
+					var snippet = snippets.find(s => s.command.startsWith(snippetpart));
+					if (snippet)
+					{
+						line += "<span style='color:lightgrey'>" + snippet.command.substr(pos - slashpos) + "</span>";
+					}
+				}
+			}
+		}
+
 		resulthtml += (line || "&nbsp;") + "</div>";
 
 		return true;

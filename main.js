@@ -315,8 +315,6 @@ var snippets = [
 function seteditorcontent(content, silent)
 {
 	md.value = content;
-	applycolors();
-
 	if (!silent)
 	{
 		datachanged();
@@ -1236,6 +1234,7 @@ function applystyle()
 	{
 		title.style.color = settings.accentcolor;
 	}
+	applycolors();
 }
 
 function loadsettings()
@@ -1264,7 +1263,6 @@ function loadsettings()
 	colored.hidden = !settings.colors;
 	md.style.color = settings.colors ? "transparent" : "inherit";
 	md.style.background = settings.colors ? "transparent" : "inherit";
-	applycolors();
 }
 
 function checksaved()
@@ -2132,6 +2130,7 @@ function applycolors()
 
 function datachanged()
 {
+	applycolors();
 	resize();
 
 	saved = false;
@@ -2743,6 +2742,7 @@ function bindfile(note)
 	setwindowtitle();
 
 	seteditorcontent(note.content || "", true);
+	applycolors();
 	preview.innerHTML = md2html(md.value);
 
 	if (changed)

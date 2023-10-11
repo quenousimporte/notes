@@ -312,10 +312,15 @@ var snippets = [
 	cursor: -4
 }];
 
-function seteditorcontent(content)
+function seteditorcontent(content, silent)
 {
 	md.value = content;
 	applycolors();
+
+	if (!silent)
+	{
+		datachanged();
+	}
 }
 
 function encryptstring(str)
@@ -426,7 +431,6 @@ function createsubnote(suggestedtitle)
 			seteditorcontent(md.value.substring(0, range.start)
 				+ "[[" + title + "]]"
 				+ md.value.substring(range.end));
-			datachanged();
 		}
 	});
 }
@@ -456,7 +460,6 @@ function includesub()
 			if (confirm("Delete '" + title + "'?"))
 			{
 				deletenote(subnote);
-				datachanged();
 			}
 		}
 	}
@@ -1522,7 +1525,6 @@ function sortselection()
 	var selection = content.substring(range.start, range.end);
 	var sorted = selection.split("\n").sort().join("\n");
 	seteditorcontent(content.substring(0, range.start) + sorted + content.substring(range.end));
-	datachanged();
 }
 
 function selectlines()
@@ -1734,7 +1736,6 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 		+ text
 		+ content.substring(pos));
 	setpos(pos - nbtodelete + text.length + cursoroffset);
-	datachanged();
 }
 
 function searchinlist(list, customevent, index)
@@ -2268,7 +2269,6 @@ function searchandreplace()
 	}
 
 	seteditorcontent(md.value.replaceAll(oldvalue, newvalue));
-	datachanged();
 }
 
 function notesbysize()
@@ -2350,6 +2350,7 @@ function deletenote(note)
 	localdata = localdata.filter(n => n != note);
 
 	renamereferences(note.title + " (deleted)");
+	datachanged();
 }
 
 function deletecurrentnote()
@@ -2358,7 +2359,6 @@ function deletecurrentnote()
 	{
 		deletenote(currentnote);
 		loadlast();
-		datachanged();
 	}
 }
 
@@ -2367,7 +2367,6 @@ function restore()
 	if (confirm('restore "' + currentnote.title + '"?'))
 	{
 		seteditorcontent(backup);
-		datachanged();
 	}
 }
 
@@ -2476,7 +2475,6 @@ function mainkeydownhandler()
 			var block = lines.splice(start, end - start + 1);
 			lines.splice(start + direction, 0, ...block);
 			seteditorcontent(lines.join("\n"));
-			datachanged();
 			var posshift = direction > 0 ? lines[start].length + 1 :  - 1 - lines[end].length;
 			md.setSelectionRange(pos.start + posshift, pos.end + posshift);
 
@@ -2574,7 +2572,6 @@ function backspace(nb)
 	var c = md.value;
 	seteditorcontent(c.substring(0, pos - nb) + c.substring(pos));
 	setpos(pos - nb);
-	datachanged();
 }
 
 function editorkeydown()
@@ -2745,7 +2742,7 @@ function bindfile(note)
 	title.value = note.title;
 	setwindowtitle();
 
-	seteditorcontent(note.content || "");
+	seteditorcontent(note.content || "", true);
 	preview.innerHTML = md2html(md.value);
 
 	if (changed)

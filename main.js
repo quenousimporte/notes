@@ -1960,6 +1960,11 @@ function currentline()
 	return (md.value.substring(0, md.selectionStart).match(/\n/g) || []).length;
 }
 
+function lineatpos(pos)
+{
+	return (md.value.substring(0, pos).match(/\n/g) || []).length;
+}
+
 function currentcol()
 {
 	return md.selectionStart - Math.max(0, md.value.lastIndexOf("\n", md.selectionStart - 1)) - 1;
@@ -2034,6 +2039,7 @@ function applycolors()
 			{
 				header = false;
 			}
+			line = line || "&nbsp;";
 			line = "<span style='color:lightgrey'>" + line + "</span>";
 		}
 
@@ -2125,7 +2131,6 @@ function applycolors()
 
 function datachanged()
 {
-	applycolors();
 	resize();
 
 	saved = false;
@@ -2456,31 +2461,25 @@ function mainkeydownhandler()
 	{
 		commandpalette();
 	}
-	else if (event.ctrlKey && event.shiftKey && event.keyCode == "40")
+	else if (event.ctrlKey && event.shiftKey && (event.keyCode == "40" || event.keyCode == "38"))
 	{
-		var pos = md.selectionStart;
-		var index = (md.value.substr(0, pos).match(/\n/g) || []).length;
+		var pos = {
+			start: md.selectionStart,
+			end: md.selectionEnd
+		};
+		var direction = event.keyCode == "40" ? 1 : -1;
+		var start = lineatpos(md.selectionStart);
+		var end = lineatpos(md.selectionEnd);
 		var lines = md.value.split("\n");
-		if (index < lines.length - 1)
+		if (direction > 0 && end < lines.length || direction < 0 && start > 0)
 		{
-			var line = lines.splice(index, 1);
-			lines.splice(index + 1, 0, line);
+			var block = lines.splice(start, end - start + 1);
+			lines.splice(start + direction, 0, ...block);
 			seteditorcontent(lines.join("\n"));
-			setpos(pos + lines[index].length + 1);
-		}
-		event.preventDefault();
-	}
-	else if (event.ctrlKey && event.shiftKey && event.keyCode == "38")
-	{
-		var pos = md.selectionStart;
-		var index = (md.value.substr(0, pos).match(/\n/g) || []).length;
-		var lines = md.value.split("\n");
-		if (index > 0)
-		{
-			var line = lines.splice(index, 1);
-			lines.splice(index - 1, 0, line);
-			seteditorcontent(lines.join("\n"));
-			setpos(pos - lines[index].length - 1);
+			datachanged();
+			var posshift = direction > 0 ? lines[start].length + 1 :  - 1 - lines[end].length;
+			md.setSelectionRange(pos.start + posshift, pos.end + posshift);
+
 		}
 		event.preventDefault();
 	}

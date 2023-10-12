@@ -2137,11 +2137,8 @@ function applycolors(currentonly)
 		console.log("redrawing all colored div");
 		var lines = md.value.split("\n");
 		var i = 0;
-		var line = null;
 		for (; i < lines.length; i++)
 		{
-			line = applycolorsonline(lines[i], i, options);
-
 			var linediv = document.getElementById("line" + i);
 			if (!linediv)
 			{
@@ -2150,7 +2147,7 @@ function applycolors(currentonly)
 			}
 			linediv.setAttribute("id", "line" + i);
 			linediv.setAttribute("tag", JSON.stringify(options));
-			linediv.innerHTML = line || "&nbsp;";
+			linediv.innerHTML = applycolorsonline(lines[i], i, options) || "&nbsp;";
 		};
 
 		// remove remanining
@@ -2165,8 +2162,7 @@ function applycolors(currentonly)
 
 function editorinput()
 {
-	// criteria to improve
-	// or redraw only after?
+	// criteria to improve. Or redraw only after?
 	var multiline = md.value.substring(md.selectionStart, md.selectionEnd).includes("\n");
 	applycolors(!multiline && event.data && (event.inputType == "insertText" || event.inputType == "deleteContentBackward" || event.inputType == "deleteContentForward"));
 	datachanged();

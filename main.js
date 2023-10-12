@@ -315,6 +315,7 @@ var snippets = [
 function seteditorcontent(content, silent)
 {
 	md.value = content;
+	applycolors();
 	if (!silent)
 	{
 		datachanged();
@@ -1234,7 +1235,6 @@ function applystyle()
 	{
 		title.style.color = settings.accentcolor;
 	}
-	applycolors();
 }
 
 function loadsettings()
@@ -1974,163 +1974,207 @@ function rawline(index)
 	return md.value.split("\n")[index];
 }
 
-function applycolors()
+function applycolorsonline(line, index, options)
+{
+	line = escapeHtml(line);
+
+	// headings
+	if (line.startsWith("#"))
+	{
+		line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
+		line = "<span style='" + boldstyle + "'>" + line + "</span>";
+	}
+
+	// bold and italics
+	var temp = line;
+	if (line.startsWith("* "))
+	{
+		temp = line.substring(2);
+	}
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='" + boldstyle + "'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+
+	if (line.startsWith("* "))
+	{
+		line = "* " + temp;
+	}
+	else
+	{
+		line = temp;
+	}
+
+	// lists
+	markerslist.forEach(marker =>
+	{
+		if (line.startsWith(marker))
+		{
+			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", settings.bulletrendering) + "</span>");
+		}
+	});
+
+	// md header
+	if (index == 0 && line == "---")
+	{
+		options.header = true;
+	}
+	if (options.header)
+	{
+		if (index > 0 && line == "---")
+		{
+			options.header = false;
+		}
+		line = line || "&nbsp;";
+		line = "<span style='color:lightgrey'>" + line + "</span>";
+	}
+
+	// code blocks
+	if (line.startsWith("```") && !options.code)
+	{
+		options.code = true;
+		options.language = line.substring(3);
+		line = "<span style='font-family:monospace;color:rgb(70,70,70);'>" + line;
+	}
+	else if (line == "```" && options.code)
+	{
+		options.code = false;
+		options.language = "";
+		line = line + "</span>";
+	}
+	else if (options.code)
+	{
+		line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+		if (languagekeywords[options.language])
+		{
+			var keywords = languagekeywords[options.language];
+			keywords.forEach(keyword =>
+			{
+				var r = new RegExp("(" + keyword + ")", "ig");
+				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='color:" + settings.accentcolor + "'><b>$1</b></span>");
+			});
+		}
+	}
+
+	// internal links
+	line = line.replace(/(\[\[.*\]\])/g, "<u>$1</u>");
+
+	// comments
+	line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
+
+	if (line.includes("&lt;!--") && !line.includes("--&gt;"))
+	{
+		options.comment = true;
+	}
+	else if (options.comment)
+	{
+		line = line || "&nbsp;";
+		line = "<span style='color:lightgrey'>" + line
+		if (line.includes("--&gt;"))
+		{
+			options.comment = false;
+		}
+		else
+		{
+			line += "</span>";
+		}
+	}
+
+	line = line.replace(/\-\-&gt;/g, "--&gt;</span>");
+
+	if (line.startsWith("// "))
+	{
+		line = "<span style='color:lightgrey'>" + line + "</span>";
+	}
+
+	// autocomplete snippets
+	if (index == currentline())
+	{
+		var raw = rawline(index);
+		var pos = currentcol();
+		var slashpos = raw.substring(0, pos).lastIndexOf("/");
+		if (slashpos > -1)
+		{
+			var spacepos = raw.substring(0, pos).lastIndexOf(" ");
+			if (slashpos > spacepos)
+			{
+				var snippetpart = raw.substring(slashpos);
+				var snippet = snippets.find(s => s.command.startsWith(snippetpart));
+				if (snippet)
+				{
+					line += "<span style='color:lightgrey'>" + snippet.command.substr(pos - slashpos) + "</span>";
+				}
+			}
+		}
+	}
+	return line;
+}
+
+var boldstyle = "font-weight: bold;";
+function applycolors(currentonly)
 {
 	if (!settings.colors)
 	{
 		return;
 	}
 
-	var boldstyle = "font-weight: bold;";
-	var lines = md.value.split("\n");
-	var header = false;
-	var code = false;
-	var comment = false;
-	var language = "";
-	var resulthtml = "";
-	lines.every( (line, i) =>
+	var options =
 	{
-		resulthtml += "<div id='line" + i + "'>";
-		line = escapeHtml(line);
+		header: false,
+		code: false,
+		comment: false,
+		language: ""
+	};
 
-		// headings
-		if (line.startsWith("#"))
+	if (currentonly)
+	{
+		var index = currentline();
+		var linediv = document.getElementById("line" + index);
+		options = JSON.parse(linediv.getAttribute("tag"));
+		var line = rawline(index);
+		line = applycolorsonline(line, index, options);
+		linediv.innerHTML = line || "&nbsp;";
+	}
+	else
+	{
+		console.log("redrawing all colored div");
+		var lines = md.value.split("\n");
+		var i = 0;
+		var line = null;
+		for (; i < lines.length; i++)
 		{
-			line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
-			line = "<span style='" + boldstyle + "'>" + line + "</span>";
-		}
+			line = applycolorsonline(lines[i], i, options);
 
-		// bold and italics
-		var temp = line;
-		if (line.startsWith("* "))
-		{
-			temp = line.substring(2);
-		}
-		temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='" + boldstyle + "'>&#42;&#42;$1&#42;&#42;</span>");
-		temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
-
-		if (line.startsWith("* "))
-		{
-			line = "* " + temp;
-		}
-		else
-		{
-			line = temp;
-		}
-
-		// lists
-		markerslist.forEach(marker =>
-		{
-			if (line.startsWith(marker))
+			var linediv = document.getElementById("line" + i);
+			if (!linediv)
 			{
-				line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", settings.bulletrendering) + "</span>");
+				linediv = document.createElement("div");
+				colored.appendChild(linediv);
 			}
-		});
+			linediv.setAttribute("id", "line" + i);
+			linediv.setAttribute("tag", JSON.stringify(options));
+			linediv.innerHTML = line || "&nbsp;";
+		};
 
-		// md header
-		if (i == 0 && line == "---")
+		// remove remanining
+		linediv = document.getElementById("line" + (i++));
+		while (linediv)
 		{
-			header = true;
+			colored.removeChild(linediv);
+			linediv = document.getElementById("line" + (i++));
 		}
-		if (header)
-		{
-			if (i > 0 && line == "---")
-			{
-				header = false;
-			}
-			line = line || "&nbsp;";
-			line = "<span style='color:lightgrey'>" + line + "</span>";
-		}
+	}
+}
 
-		// code blocks
-		if (line.startsWith("```") && !code)
-		{
-			code = true;
-			language = line.substring(3);
-			line = "<span style='font-family:monospace;color:rgb(70,70,70);'>" + line;
-		}
-		else if (line == "```" && code)
-		{
-			code = false;
-			language = "";
-			line = line + "</span>";
-		}
-		else if (code)
-		{
-			line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
-			if (languagekeywords[language])
-			{
-				var keywords = languagekeywords[language];
-				keywords.forEach(keyword =>
-				{
-					var r = new RegExp("(" + keyword + ")", "ig");
-					line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='color:" + settings.accentcolor + "'><b>$1</b></span>");
-				});
-			}
-		}
-
-		// internal links
-		line = line.replace(/(\[\[.*\]\])/g, "<u>$1</u>");
-
-		// comments
-		line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
-
-		if (line.includes("&lt;!--") && !line.includes("--&gt;"))
-		{
-			comment = true;
-		}
-		else if (comment)
-		{
-			line = line || "&nbsp;";
-			line = "<span style='color:lightgrey'>" + line
-			if (line.includes("--&gt;"))
-			{
-				comment = false;
-			}
-			else
-			{
-				line += "</span>";
-			}
-		}
-
-		line = line.replace(/\-\-&gt;/g, "--&gt;</span>");
-
-		if (line.startsWith("// "))
-		{
-			line = "<span style='color:lightgrey'>" + line + "</span>";
-		}
-
-		// autocomplete snippets
-		if (i == currentline())
-		{
-			var raw = rawline(i);
-			var pos = currentcol();
-			var slashpos = raw.substring(0, pos).lastIndexOf("/");
-			if (slashpos > -1)
-			{
-				var spacepos = raw.substring(0, pos).lastIndexOf(" ");
-				if (slashpos > spacepos)
-				{
-					var snippetpart = raw.substring(slashpos);
-					var snippet = snippets.find(s => s.command.startsWith(snippetpart));
-					if (snippet)
-					{
-						line += "<span style='color:lightgrey'>" + snippet.command.substr(pos - slashpos) + "</span>";
-					}
-				}
-			}
-		}
-
-		resulthtml += (line || "&nbsp;") + "</div>";
-
-		return true;
-	});
-	colored.innerHTML = resulthtml;
+function editorinput()
+{
+	// criteria to improve
+	// or redraw only after?
+	var multiline = md.value.substring(md.selectionStart, md.selectionEnd).includes("\n");
+	applycolors(!multiline && event.data && (event.inputType == "insertText" || event.inputType == "deleteContentBackward" || event.inputType == "deleteContentForward"));
+	datachanged();
 }
 
 function datachanged()
 {
-	applycolors();
 	resize();
 
 	saved = false;
@@ -2742,8 +2786,6 @@ function bindfile(note)
 	setwindowtitle();
 
 	seteditorcontent(note.content || "", true);
-	applycolors();
-	preview.innerHTML = md2html(md.value);
 
 	if (changed)
 	{

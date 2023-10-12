@@ -1982,7 +1982,7 @@ function applycolorsonline(line, index, options)
 	if (line.startsWith("#"))
 	{
 		line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
-		line = "<span style='" + boldstyle + "'>" + line + "</span>";
+		line = "<span style='font-weight: bold;'>" + line + "</span>";
 	}
 
 	// bold and italics
@@ -1991,7 +1991,7 @@ function applycolorsonline(line, index, options)
 	{
 		temp = line.substring(2);
 	}
-	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='" + boldstyle + "'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='font-weight: bold;'>&#42;&#42;$1&#42;&#42;</span>");
 	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 	if (line.startsWith("* "))
@@ -2108,7 +2108,6 @@ function applycolorsonline(line, index, options)
 	return line;
 }
 
-var boldstyle = "font-weight: bold;";
 function applycolors(currentonly)
 {
 	if (!settings.colors)

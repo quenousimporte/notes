@@ -2097,11 +2097,13 @@ function applycolorsonline(line, index, options)
 			if (slashpos > spacepos)
 			{
 				var snippetpart = raw.substring(slashpos);
-				var snippet = snippets.find(s => s.command.startsWith(snippetpart));
-				if (snippet)
-				{
-					line += "<span style='color:lightgrey'>" + snippet.command.substr(pos - slashpos) + "</span>";
-				}
+				var matching = snippets
+				.filter(s => s.command.startsWith(snippetpart))
+				.map(s => s.command.substring(1));
+
+				line += "<span style='color:lightgrey'>";
+				line += matching.join().substr(pos - slashpos - 1);
+				line += "</span>";
 			}
 		}
 	}

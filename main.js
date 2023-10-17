@@ -1101,7 +1101,7 @@ function downloadnotes()
 	zip.generateAsync({type:"blob"})
 	.then(function(content)
 	{
-	    saveAs(content, "notes.zip");
+	    saveAs(content, "notes " + timestamp() + " " + currentvault + ".zip");
 	});
 }
 
@@ -2516,7 +2516,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = currentnote.title;
+	document.title = (currenttag ? currenttag + "\\": "") + currentnote.title;
 }
 
 function ontitlechange()

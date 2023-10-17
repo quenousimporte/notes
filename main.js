@@ -2766,7 +2766,7 @@ function defaultheaders(title, tags = "")
 		"---",
 		"title: " + title,
 		"date: " + timestamp().substr(0,10),
-		"tags: " + (tags || ""),
+		"tags: " + (tags || currenttag || ""),
 		"---",
 		"",""].join("\n");
 }

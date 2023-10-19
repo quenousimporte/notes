@@ -1157,6 +1157,10 @@ function remotecallfailed(error)
 		console.warn(error);
 		showtemporaryinfo("Error: " + error);
 	}
+	else
+	{
+		console.warn("remotecallfailed without details");
+	}
 }
 
 function gotoline(line)
@@ -1287,11 +1291,6 @@ function initsnippets()
 function initvault()
 {
 	currentvault = window.localStorage.getItem("vault") || "local";
-}
-
-function addfakehistory()
-{
-	history.pushState({}, '', '.');
 }
 
 function init()

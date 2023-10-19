@@ -120,7 +120,6 @@ var commands = [
 	allowunsaved: true
 },
 {
-	shortcut: "F1",
 	hint: "Show help",
 	action: showhelp
 },
@@ -2459,9 +2458,10 @@ function mainkeydownhandler()
 		fileindex = Math.max(fileindex, 0);
 		applyfileindex();
 	}
-	else if (event.ctrlKey && event.key == " " || event.key == "F2")
+	else if (event.ctrlKey && event.key == " " || event.key == "F1")
 	{
 		commandpalette();
+		event.preventDefault();
 	}
 	else if (event.ctrlKey && event.shiftKey && (event.keyCode == "40" || event.keyCode == "38"))
 	{

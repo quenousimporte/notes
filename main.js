@@ -1106,22 +1106,16 @@ function downloadnotes()
 
 function inserttodo()
 {
-	filter.placeholder = "Text...";
-	filter.value = "";
-	filteredlist.hidden = true;
-	searchdialog.hidden = false;
-	filter.focus();
-	filter.select();
-
-	filter.onkeydown = function()
+	var text = prompt("Text:");
+	if (text)
 	{
-		if (event.key === "Enter")
+		var todo = getnote("todo");
+		todo.content += "\n" + text;
+		if (todo == currentnote)
 		{
-			event.preventDefault();
-			searchdialog.hidden = true;
-			getnote("todo").content += "\n" + filter.value;
-			datachanged();
+			seteditorcontent(todo.content, true);
 		}
+		datachanged();
 	}
 }
 

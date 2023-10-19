@@ -2041,7 +2041,8 @@ function applycolorsonline(line, index, options)
 	}
 	else if (options.code)
 	{
-		line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+		//breaks html escape
+		//line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
 		if (languagekeywords[options.language])
 		{
 			var keywords = languagekeywords[options.language];

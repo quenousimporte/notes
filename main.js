@@ -1966,45 +1966,16 @@ function rawline(index)
 	return md.value.split("\n")[index];
 }
 
-function applycolorsonline(line, linediv, index, options)
+function applycolorsonline(line, index, options)
 {
 	line = escapeHtml(line);
-
-	while (linediv.hasChildNodes())
-	{
-    	linediv.removeChild(linediv.lastChild);
-	}
 
 	// headings
 	if (line.startsWith("#"))
 	{
-		var level = line.indexOf(" ");
-		if (level == -1)
-		{
-			level = line.length;
-		}
-
-		var span = document.createElement("span");
-		span.setAttribute("style", `font-weight: bold;color:${settings.accentcolor};`);
-		span.appendChild(document.createTextNode("#".repeat(level)));
-		linediv.appendChild(span);
-
-		if (level < line.length)
-		{
-			var headingtext = line.substring(level);
-			span = document.createElement("span");
-			span.setAttribute("style", "font-weight: bold;");
-			span.appendChild(document.createTextNode(headingtext));
-			linediv.appendChild(span);
-		}
-		return;
+		line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
+		line = "<span style='font-weight: bold;'>" + line + "</span>";
 	}
-
-	// fallback
-	//linediv.appendChild(document.createTextNode(line || " "));
-	//return;
-
-	/* -----TODO------ */
 
 	// bold and italics
 	var temp = line;
@@ -2129,8 +2100,7 @@ function applycolorsonline(line, linediv, index, options)
 			}
 		}
 	}
-
-	linediv.innerHTML = line || "&nbsp;";
+	return line;
 }
 
 function applycolors(currentonly)
@@ -2153,7 +2123,9 @@ function applycolors(currentonly)
 		var index = currentline();
 		var linediv = document.getElementById("line" + index);
 		options = JSON.parse(linediv.getAttribute("tag"));
-		applycolorsonline(rawline(index), linediv, index, options);
+		var line = rawline(index);
+		line = applycolorsonline(line, index, options);
+		linediv.innerHTML = line || "&nbsp;";
 	}
 	else
 	{
@@ -2170,7 +2142,7 @@ function applycolors(currentonly)
 			}
 			linediv.setAttribute("id", "line" + i);
 			linediv.setAttribute("tag", JSON.stringify(options));
-			applycolorsonline(lines[i], linediv, i, options);
+			linediv.innerHTML = applycolorsonline(lines[i], i, options) || "&nbsp;";
 		};
 
 		// remove remanining

@@ -20,7 +20,6 @@ var defaultsettings =
 
 //builtin
 var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• ", "- [ ]"];
-var sectionmarks = ["---", "### ", "## ", "# ", "```"];
 var codelanguages = ["xml", "js", "sql"];
 
 // globals
@@ -365,10 +364,10 @@ function decryptstring(str)
 	.then(decrypted =>
 	{
 		const chunks = [];
-	    for (const chunk of decrypted.data) {
-	        chunks.push(chunk);
-	    }
-	    return chunks.join('');
+		for (const chunk of decrypted.data) {
+			chunks.push(chunk);
+		}
+		return chunks.join('');
 	})
 }
 
@@ -481,7 +480,7 @@ function formatsize(size)
 		size /= 1024;
 		unit = "mb";
 	}
- 	return size.toFixed(2) + " " + unit;
+	return size.toFixed(2) + " " + unit;
 }
 
 function pospercent()
@@ -630,16 +629,17 @@ function toggleeditor(hidden)
 	}
 }
 
+function id(note)
+{
+	return localdata.indexOf(note);
+}
+
 function shownotelinks()
 {
 	if (settings.enablenetwork)
 	{
 		networkpage.hidden = false;
 		toggleeditor(true);
-		function id(note)
-		{
-			return localdata.indexOf(note);
-		}
 
 		var nodes = [];
 		var edges = [];
@@ -1062,13 +1062,13 @@ function sharehtml()
 		var file = new File(['<html><body>' + md2html(md.value) + '</body></html>'],
 			currentnote.title + ".html",
 			{
-		  		type: "text/html",
+				type: "text/html",
 			});
 
 		navigator.share(
 		{
-		    title: currentnote.title,
-		    files: [file]
+			title: currentnote.title,
+			files: [file]
 		});
 	}
 }
@@ -1101,7 +1101,7 @@ function downloadnotes()
 	zip.generateAsync({type:"blob"})
 	.then(function(content)
 	{
-	    saveAs(content, "notes " + timestamp() + " " + currentvault + ".zip");
+		saveAs(content, "notes " + timestamp() + " " + currentvault + ".zip");
 	});
 }
 
@@ -1527,12 +1527,12 @@ function selectlines()
 function wordatpos()
 {
 	var words = md.value.split(/\s/);
-    var i = 0;
-    var word = "";
+	var i = 0;
+	var word = "";
 	while (i < md.selectionStart)
-    {
+	{
 		word = words.shift();
-        i += word.length + 1;
+		i += word.length + 1;
 	}
 	return word;
 }
@@ -1933,12 +1933,12 @@ function save()
 }
 
 function escapeHtml(unsafe) {
-    return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
  }
 
 var languagekeywords = {

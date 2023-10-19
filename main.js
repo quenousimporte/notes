@@ -1997,12 +1997,27 @@ function applycolorsonline(line, linediv, index, options)
 			span.appendChild(document.createTextNode(headingtext));
 			linediv.appendChild(span);
 		}
-		return;
+	}
+	else if (markerslist.every(marker =>
+		{
+			if (line.startsWith(marker))
+			{
+				var span = document.createElement("span");
+				span.setAttribute("style", `color:${settings.accentcolor};`);
+				span.appendChild(document.createTextNode(marker.replaceAll("*", settings.bulletrendering)));
+				linediv.appendChild(span);
+				linediv.appendChild(document.createTextNode(line.substring(marker.length)));
+				return false;
+			}
+			return true;
+		}))
+	{
+		// fallback
+		linediv.appendChild(document.createTextNode(line || " "));
 	}
 
-	// fallback
-	//linediv.appendChild(document.createTextNode(line || " "));
-	//return;
+
+	return;
 
 	/* -----TODO------ */
 
@@ -2024,14 +2039,7 @@ function applycolorsonline(line, linediv, index, options)
 		line = temp;
 	}
 
-	// lists
-	markerslist.forEach(marker =>
-	{
-		if (line.startsWith(marker))
-		{
-			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", settings.bulletrendering) + "</span>");
-		}
-	});
+
 
 	// md header
 	if (index == 0 && line == "---")

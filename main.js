@@ -1952,8 +1952,8 @@ function rawline2html(line, index, options)
 	{
 		temp = line.substring(2);
 	}
-	temp = temp.replace(/**([^\*]*)\*\*/g, "<span style='font-weight: bold;'>&#42;&#42;$1&#42;&#42;</span>");
-	temp = temp.replace(/*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='font-weight: bold;'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 	if (line.startsWith("* "))
 	{
@@ -2019,7 +2019,7 @@ function rawline2html(line, index, options)
 	line = line.replace(/(\[\[.*\]\])/g, "<u>$1</u>");
 
 	// comments
-	line = line.replace(/&lt;!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
+	line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
 
 	if (line.includes("&lt;!--") && !line.includes("--&gt;"))
 	{
@@ -2039,7 +2039,7 @@ function rawline2html(line, index, options)
 		}
 	}
 
-	line = line.replace(/--&gt;/g, "--&gt;</span>");
+	line = line.replace(/\-\-&gt;/g, "--&gt;</span>");
 
 	if (line.startsWith("// "))
 	{

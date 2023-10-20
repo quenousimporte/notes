@@ -712,11 +712,11 @@ function showoutline()
 		}
 		else if (line == "---" && index != 0 && index != 3)
 		{
-			var next;
-			if (next = lines.find((current, i) =>
+			var next = lines.find((current, i) =>
 			{
 				return i > index && current != "";
-			}))
+			});
+			if (next)
 			{
 				var nbcar = 80;
 				next = next.length < nbcar ? next : next.substring(0, nbcar) + "...";
@@ -1058,8 +1058,7 @@ function sharehtml()
 
 function getfilename(title)
 {
-	//return title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".md";
-	return title.replace(/[\?\"<>|\*:\/\\]/g, "_") + ".md";
+	title.replace(/[?"<>|*:/\\]/g, "_") + ".md";
 }
 
 function download(filename, content)
@@ -2094,10 +2093,11 @@ function applycolors(currentonly)
 		language: ""
 	};
 
+	var linediv = null;
 	if (currentonly)
 	{
 		var index = currentline();
-		var linediv = document.getElementById("line" + index);
+		linediv = document.getElementById("line" + index);
 		options = JSON.parse(linediv.getAttribute("tag"));
 		var line = rawline(index);
 		line = rawline2html(line, index, options);
@@ -2110,7 +2110,7 @@ function applycolors(currentonly)
 		var i = 0;
 		for (; i < lines.length; i++)
 		{
-			var linediv = document.getElementById("line" + i);
+			linediv = document.getElementById("line" + i);
 			if (!linediv)
 			{
 				linediv = document.createElement("div");
@@ -2119,7 +2119,7 @@ function applycolors(currentonly)
 			linediv.setAttribute("id", "line" + i);
 			linediv.setAttribute("tag", JSON.stringify(options));
 			linediv.innerHTML = rawline2html(lines[i], i, options) || emptyline;
-		};
+		}
 
 		// remove remanining
 		linediv = document.getElementById("line" + (i++));
@@ -2500,8 +2500,6 @@ function setwindowtitle()
 
 function ontitlechange()
 {
-	var oldname = currentnote.title;
-
 	if (localdata.find(n => n.title == title.value))
 	{
 		showtemporaryinfo(title.value + " alreday exists");

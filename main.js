@@ -1522,13 +1522,6 @@ function ontopbarclick()
 
 function md2html(content)
 {
-	// dumb fallback for offline mode
-	if (typeof showdown == "undefined") return content
-		.replace(/\*\*([^\*]*)\*\*/g, "<strong>$1</strong>")
-		.replace(/\*([^\*]*)\*/g, "<em>$1</em>")
-		.replace(/\## (.*)/g, "<h2>$1</h2>")
-		.replace(/\# (.*)/g, "<h1>$1</h1>")
-		.replace(/\n/g, "<br>");
 	var converter = new showdown.Converter();
 	converter.setOption("simplifiedAutoLink", true);
 	converter.setOption("simpleLineBreaks", true);

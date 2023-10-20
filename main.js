@@ -554,23 +554,6 @@ function switchvault()
 	}
 }
 
-function ancestors(note)
-{
-	var list = [note];
-	var result = [];
-
-	while (list.length)
-	{
-		var current = list.shift();
-		if (result.indexOf(current) == -1)
-		{
-			result.push(current);
-			list = list.concat(parents(current));
-		}
-	}
-	return result;
-}
-
 function descendants(note)
 {
 	var list = [note];
@@ -1517,13 +1500,6 @@ function sortselection()
 	seteditorcontent(content.substring(0, range.start) + sorted + content.substring(range.end));
 }
 
-function selectlines()
-{
-	var range = getlinesrange();
-	md.selectionStart = range.start;
-	md.selectionEnd = range.end;
-}
-
 function wordatpos()
 {
 	var words = md.value.split(/\s/);
@@ -2042,7 +2018,6 @@ function rawline2html(line, index, options)
 			var keywords = languagekeywords[options.language];
 			keywords.forEach(keyword =>
 			{
-				var r = new RegExp("(" + keyword + ")", "ig");
 				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='color:" + settings.accentcolor + "'><b>$1</b></span>");
 			});
 		}
@@ -2172,21 +2147,6 @@ function datachanged()
 
 	postpone()
 	.then(save);
-}
-
-function loadtodo()
-{
-	loadnote("todo");
-}
-
-function loadreview()
-{
-	loadnote("press review");
-}
-
-function loadquicknote()
-{
-	loadnote("Quick note");
 }
 
 function timestamp()
@@ -2326,23 +2286,6 @@ function renamereferences(newname)
 	{
 		note.content = note.content.replaceAll("[[" + currentnote.title + "]]", "[[" + newname + "]]");
 	});
-}
-
-function rename(newname)
-{
-	if (localdata.find(n => n.title == newname))
-	{
-		var error = newname + " alreday exists";
-		console.warn(error);
-		return error;
-	}
-
-	renamereferences(newname);
-
-	currentnote.title = newname;
-
-	datachanged();
-	return "";
 }
 
 function restoredeleted()

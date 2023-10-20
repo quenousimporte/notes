@@ -1966,7 +1966,8 @@ function rawline(index)
 	return md.value.split("\n")[index];
 }
 
-function applycolorsonline(line, index, options)
+var emptyline = "<br>";
+function rawline2html(line, index, options)
 {
 	line = escapeHtml(line);
 
@@ -2015,7 +2016,7 @@ function applycolorsonline(line, index, options)
 		{
 			options.header = false;
 		}
-		line = line || "&nbsp;";
+		line = line || "<br>";
 		line = "<span style='color:lightgrey'>" + line + "</span>";
 	}
 
@@ -2059,7 +2060,7 @@ function applycolorsonline(line, index, options)
 	}
 	else if (options.comment)
 	{
-		line = line || "&nbsp;";
+		line = line || emptyline;
 		line = "<span style='color:lightgrey'>" + line
 		if (line.includes("--&gt;"))
 		{
@@ -2124,8 +2125,8 @@ function applycolors(currentonly)
 		var linediv = document.getElementById("line" + index);
 		options = JSON.parse(linediv.getAttribute("tag"));
 		var line = rawline(index);
-		line = applycolorsonline(line, index, options);
-		linediv.innerHTML = line || "&nbsp;";
+		line = rawline2html(line, index, options);
+		linediv.innerHTML = line || emptyline;
 	}
 	else
 	{
@@ -2142,7 +2143,7 @@ function applycolors(currentonly)
 			}
 			linediv.setAttribute("id", "line" + i);
 			linediv.setAttribute("tag", JSON.stringify(options));
-			linediv.innerHTML = applycolorsonline(lines[i], i, options) || "&nbsp;";
+			linediv.innerHTML = rawline2html(lines[i], i, options) || emptyline;
 		};
 
 		// remove remanining

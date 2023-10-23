@@ -2080,6 +2080,21 @@ function rawline2html(line, index, options)
 			}
 		}
 	}
+
+	// todo.txt
+	if (currentnote.title.includes("todo") || gettags(currentnote).includes("todo"))
+	{
+		if (line.startsWith("x "))
+		{
+			line = "<del style='color:lightgrey'>" + line + "</del>";
+		}
+		else
+		{
+			line = line.replace(/(\(\w\))/g, "<span style='font-weight:bold; color:" + settings.accentcolor + "'>$1</span>");
+			line = line.replace(/(@\w*)/g, "<b style='color:grey'>$1</b>");
+			line = line.replace(/(\+\w*)/g, "<span style='color:grey'>$1</span>");
+		}
+	}
 	return line;
 }
 

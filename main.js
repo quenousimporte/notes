@@ -223,12 +223,12 @@ var commands = [
 },
 {
 	hint: "Download all notes in a zip file",
-	action: downloadnotes
+	action: downloadnotes,
+	shortcut: "ctrl+shift+S"
 },
 {
 	hint: "Download current vault",
-	action: downloadvault,
-	shortcut: "ctrl+shift+S"
+	action: downloadvault
 },
 {
 	hint: "Download all vaults",

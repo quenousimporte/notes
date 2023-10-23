@@ -1087,13 +1087,34 @@ function downloadnotes()
 	});
 }
 
+function headerandtext(note)
+{
+	var content = note.content;
+	var result =
+	{
+		header: "",
+		text: content
+	};
+	if (content.startsWith("---\n"))
+	{
+		var end = content.indexOf("---\n", 4);
+		if (end > -1)
+		{
+			result.header = content.substring(0, end + 4);
+			result.text = content.substring(end + 4);
+		}
+	}
+	return result;
+}
+
 function inserttodo()
 {
 	var text = prompt("Text:");
 	if (text)
 	{
 		var todo = getnote("todo");
-		todo.content += "\n" + text;
+		var split = headerandtext(todo);
+		todo.content = split.header + "* " + text + "\n" + split.text;
 		if (todo == currentnote)
 		{
 			seteditorcontent(todo.content, true);

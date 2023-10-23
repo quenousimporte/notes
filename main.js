@@ -1650,19 +1650,10 @@ function showgrepresult(grepresult)
 
 function showgrep()
 {
-	filteredlist.hidden = true;
-	searchdialog.hidden = false;
-	filter.focus();
-	filter.select();
-
-	filter.onkeydown = function()
+	var text = prompt("Search:");
+	if (text)
 	{
-		if (event.key === "Enter")
-		{
-			event.preventDefault();
-			searchdialog.hidden = true;
-			showgrepresult(grep(filter.value));
-		}
+		showgrepresult(grep(text));
 	}
 }
 

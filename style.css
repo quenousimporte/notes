@@ -104,13 +104,13 @@ body::-webkit-scrollbar-thumb {
 /* search file dialog */
 
 #filter {
-	color: white;
-	background-color: black;
+	color: black;
+	background-color: lightgray;
 }
 
 #searchdialog {
-	color: white;
-	background-color: black;
+	color: black;
+	background-color: lightgray;
 	position: absolute;
 	top:  0;
 	left: 10%;
@@ -119,6 +119,18 @@ body::-webkit-scrollbar-thumb {
 	min-width: 500px;
 	z-index: 2;
 	font-family: "Segoe UI";
+	font-size: 14px;
+}
+
+.searchitem {
+	cursor: pointer;
+	margin: 2px 2px 2px 2px;
+}
+
+.selected {
+	cursor: pointer;
+	background-color: darkgray;
+	margin: 2px 2px 2px 2px;
 }
 
 /* authent */
@@ -126,15 +138,4 @@ body::-webkit-scrollbar-thumb {
 #bigtitle {
 	font-size: 50px;
 	line-height: 100%;
-}
-
-.searchitem {
-	cursor: pointer;
-	margin: 5px 5px 5px 5px;
-}
-
-.selected {
-	background-color: rgb(38, 38, 38);
-	cursor: pointer;
-	margin: 5px 5px 5px 5px;
 }

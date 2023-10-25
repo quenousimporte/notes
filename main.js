@@ -1762,7 +1762,7 @@ function applyfileindex()
 	{
 		if (child.nodeName == "DIV")
 		{
-			child.className = "";
+			child.className = "searchitem";
 			if(!child.hidden)
 			{
 				if (i++ == fileindex)

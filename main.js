@@ -270,6 +270,10 @@ var commands = [
 	hint: "Replace",
 	shortcut: "ctrl+h",
 	action: searchandreplace
+},
+{
+	hint: "Sort todo.txt list",
+	action: sorttodotxt
 }];
 
 var snippets = [
@@ -2082,7 +2086,7 @@ function rawline2html(line, index, options)
 	}
 
 	// todo.txt
-	if (currentnote.title.includes("todo") || gettags(currentnote).includes("todo"))
+	if (currentistodo())
 	{
 		if (line.startsWith("x "))
 		{
@@ -2260,6 +2264,43 @@ function searchautocomplete()
 function searchandloadnote()
 {
 	selectnote().then(loadnote);
+}
+
+function currentistodo()
+{
+	return currentnote.title.includes("todo") || gettags(currentnote).includes("todo");
+}
+
+function sorttodotxt()
+{
+	if (currentistodo())
+	{
+		var hat = headerandtext(currentnote);
+		var olditems = hat.text.split("\n");
+		var prio = [];
+		var std = [];
+		var done = [];
+		olditems.forEach(item =>
+		{
+			if (item)
+			{
+				if (item.startsWith("("))
+				{
+					prio.push(item);
+				}
+				else if (item.startsWith("x "))
+				{
+					done.push(item);
+				}
+				else
+				{
+					std.push(item);
+				}
+			}
+		});
+		var all = prio.sort((a,b) => a.localeCompare(b)).concat(std).concat(done.sort((a,b) => a.localeCompare(b)));
+		seteditorcontent(hat.header + all.join("\n"));
+	}
 }
 
 function searchandreplace()

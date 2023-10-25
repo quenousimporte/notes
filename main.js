@@ -2286,7 +2286,9 @@ function sorttodotxt()
 			{
 				if (item.startsWith("("))
 				{
-					prio.push(item);
+					item = item.substring(4);
+					var priority = String.fromCharCode(65 + prio.length);
+					prio.push(`(${priority}) ${item}`);
 				}
 				else if (item.startsWith("x "))
 				{
@@ -2298,7 +2300,10 @@ function sorttodotxt()
 				}
 			}
 		});
-		var all = prio.sort((a,b) => a.localeCompare(b)).concat(std).concat(done.sort((a,b) => a.localeCompare(b)));
+
+		prio = prio.sort((a,b) => a.localeCompare(b));
+		done = done.sort((a,b) => a.localeCompare(b));
+		var all = prio.concat(std).concat(done);
 		seteditorcontent(hat.header + all.join("\n"));
 	}
 }

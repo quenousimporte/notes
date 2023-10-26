@@ -580,6 +580,7 @@ function children(note)
 	return (note.content
 		.match(/\[\[([^\]]*)\]\]/g) || [])
 		.map(l => l.replace("[[", "").replace("]]", ""))
+		.filter(l => !l.includes("(deleted)"))
 		.map(l => getnote(l));
 }
 

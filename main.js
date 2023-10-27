@@ -29,6 +29,7 @@ var workerid = null;
 var backup = "";
 var localdata = null;
 var saved = true;
+var lastsaved = "";
 var pending = false;
 var settings = null;
 var tags = null;
@@ -498,20 +499,21 @@ function showinfo()
 	showtemporaryinfo(
 		[
 			"vault: " + currentvault,
-			"saved: " + saved,
 			"title: " + currentnote.title,
+			"saved: " + saved + " (" + lastsaved + ")",
+			"line count: " + md.value.split("\n").length,
+			"word count: " + getwords(),
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
 			(tags ? "tags: " + tags : ""),
-			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled",
-			"notes count: " + localdata.length,
-			"word count: " + getwords(),
 			"current filter: " + currenttag || "",
 			"current note start: " + stat.cur.t,
 			"current note queries: " + stat.cur.q,
 			"current note data sent: " + formatsize(stat.cur.d),
 			"session start: " + stat.ses.t,
 			"session queries: " + stat.ses.q,
-			"session data sent: " + formatsize(stat.ses.d)
+			"session data sent: " + formatsize(stat.ses.d),
+			"notes count: " + localdata.length,
+			"spell check: " + (md.spellcheck ? "en" : "dis") + "abled"
 		].join("\n"));
 }
 
@@ -1828,6 +1830,7 @@ function postpone()
 function setsaved()
 {
 	saved = true;
+	lastsaved = timestamp();
 }
 
 function save()
@@ -2033,7 +2036,7 @@ function rawline2html(line, index, options)
 	}
 
 	// internal links
-	line = line.replace(/(\[\[.*\]\])/g, "<u>$1</u>");
+	line = line.replace(/\[\[(.*)\]\]/g, "[[<u>$1</u>]]");
 
 	// comments
 	line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");

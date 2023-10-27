@@ -132,10 +132,3 @@ body::-webkit-scrollbar-thumb {
 	background-color: darkgray;
 	margin: 2px 2px 2px 2px;
 }
-
-/* authent */
-
-#bigtitle {
-	font-size: 50px;
-	line-height: 100%;
-}

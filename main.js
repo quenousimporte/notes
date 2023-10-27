@@ -15,7 +15,8 @@ var defaultsettings =
 	titlebydefault: false,
 	linksinnewtab: true,
 	colors: true,
-	bulletrendering: "•"
+	bulletrendering: "•",
+	password: ""
 };
 
 //builtin
@@ -127,10 +128,6 @@ var commands = [
 	hint: "Search tags",
 	action: searchtags,
 	shortcut: "ctrl+shift+T"
-},
-{
-	hint: "Log out",
-	action: logout,
 },
 {
 	hint: "Toggle split view",
@@ -993,15 +990,6 @@ function isremote()
 	return currentvault == "remote";
 }
 
-function logout()
-{
-	if (isremote())
-	{
-		window.localStorage.removeItem("password");
-		togglepassword();
-	}
-}
-
 function tagslist()
 {
 	tags = {};
@@ -1340,7 +1328,12 @@ function init()
 				window.localStorage.setItem("remote", JSON.stringify(data));
 				loadstorage();
 			})
-			.catch(remotecallfailed);
+			.catch(err =>
+				{
+					settings.password = prompt("Password: ", settings.password);
+					savesettings();
+					init();
+				});
 		}
 		else
 		{
@@ -1365,15 +1358,6 @@ function init()
 			md.focus();
 		}
 	}
-}
-
-function togglepassword()
-{
-	password.value = "";
-	authentpage.hidden = false;
-	notepage.style.display = "none";
-	document.title = "notes";
-	password.focus();
 }
 
 function cvdt(text)
@@ -1445,7 +1429,7 @@ function queryremote(params)
 		stat.cur.q++;
 		stat.ses.q++;
 
-		params.password = window.localStorage.getItem("password");
+		params.password = settings.password;
 
 		var paramlist = [];
 		for (var i in params)
@@ -1484,8 +1468,7 @@ function queryremote(params)
 					{
 						if (data.error == "authent")
 						{
-							failed();
-							togglepassword();
+							failed("Authent failed");
 						}
 						else
 						{
@@ -1498,7 +1481,6 @@ function queryremote(params)
 					}
 					else
 					{
-						authentpage.hidden = true;
 						notepage.style.display = "table";
 						apply(data);
 					}
@@ -2843,16 +2825,6 @@ function loadnote(name)
 	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
 	{
 		togglepreview();
-	}
-}
-
-function sendpassword()
-{
-	if (!authentpage.hidden && (event.type == "blur" || event.key == "Enter"))
-	{
-		event.preventDefault();
-		window.localStorage.setItem("password", password.value);
-		init();
 	}
 }
 

@@ -275,6 +275,11 @@ var commands = [
 {
 	hint: "Sort todo.txt list",
 	action: sorttodotxt
+},
+{
+	hint: "Download encrypted data",
+	remoteonly: true,
+	action: downloadencrypted
 }];
 
 var snippets = [
@@ -1144,6 +1149,16 @@ function downloadallvaults()
 function downloadvault()
 {
 	download("notes " + timestamp() + " " + currentvault + ".json", window.localStorage.getItem(currentvault));
+}
+
+
+function downloadencrypted()
+{
+	encryptstring(JSON.stringify(localdata))
+	.then(encrypted =>
+	{
+		download("encrypted notes " + timestamp() + " " + currentvault + ".acs", encrypted);
+	});
 }
 
 function downloadnotewithsubs()

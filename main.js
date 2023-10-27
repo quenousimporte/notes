@@ -16,7 +16,8 @@ var defaultsettings =
 	linksinnewtab: true,
 	colors: true,
 	bulletrendering: "•",
-	password: ""
+	password: "",
+	sync: false
 };
 
 //builtin
@@ -34,7 +35,6 @@ var lastsaved = "";
 var pending = false;
 var settings = null;
 var tags = null;
-var currentvault = "";
 var currenttag = "";
 
 var stat =
@@ -172,11 +172,6 @@ var commands = [
 	shortcut: "ctrl+l"
 },
 {
-	hint: "Switch local/remote vault",
-	action: switchvault,
-	shortcut: "ctrl+shift+V"
-},
-{
 	hint: "Add tag filter",
 	action: addtagfilter,
 	shortcut: "ctrl+shift+F",
@@ -220,17 +215,18 @@ var commands = [
 	action: downloadnotewithsubs
 },
 {
-	hint: "Download all notes in a zip file",
+	hint: "Download all notes (zip file)",
 	action: downloadnotes,
 	shortcut: "ctrl+shift+S"
 },
 {
-	hint: "Download current vault",
-	action: downloadvault
+	hint: "Download all notes (json file)",
+	action: downloadnotesjson
 },
 {
-	hint: "Download all vaults",
-	action: downloadallvaults
+	hint: "Download all notes (encrypted json file)",
+	action: downloadencrypted,
+	remoteonly: true
 },
 {
 	hint: "Insert text in todo",
@@ -272,11 +268,6 @@ var commands = [
 {
 	hint: "Sort todo.txt list",
 	action: sorttodotxt
-},
-{
-	hint: "Download encrypted data",
-	remoteonly: true,
-	action: downloadencrypted
 }];
 
 var snippets = [
@@ -500,7 +491,7 @@ function showinfo()
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
 		[
-			"vault: " + currentvault,
+			"sync: " + (settings.sync ? "en" : "dis") + "abled",
 			"title: " + currentnote.title,
 			"saved: " + saved + " (" + lastsaved + ")",
 			"line count: " + md.value.split("\n").length,
@@ -544,21 +535,6 @@ function addtagfilter()
 		currenttag = "";
 		command.hint = "Add tag filter";
 		setwindowtitle();
-	}
-}
-
-function applyvault(vault)
-{
-	window.localStorage.setItem("vault", vault);
-	init();
-}
-
-function switchvault()
-{
-	var newvault = currentvault == "local" ? "remote" : "local";
-	if (confirm("Switch to " + newvault + "?"))
-	{
-		applyvault(newvault);
 	}
 }
 
@@ -954,7 +930,7 @@ function editpgpkeys()
 	bindfile(
 	{
 		title: "pgpkeys",
-		content: localStorage.getItem("pgpkeys")
+		content: localStorage.getItem("pgpkeys") || ""
 	});
 }
 
@@ -987,7 +963,7 @@ function togglesplit()
 
 function isremote()
 {
-	return currentvault == "remote";
+	return settings.sync;
 }
 
 function tagslist()
@@ -1083,7 +1059,7 @@ function downloadnotes()
 	zip.generateAsync({type:"blob"})
 	.then(function(content)
 	{
-		saveAs(content, "notes " + timestamp() + " " + currentvault + ".zip");
+		saveAs(content, "notes-" + timestamp() + ".zip");
 	});
 }
 
@@ -1123,29 +1099,17 @@ function inserttodo()
 	}
 }
 
-function downloadallvaults()
+function downloadnotesjson()
 {
-	var data =
-	{
-		local: JSON.parse(window.localStorage.getItem("local")),
-		remote: JSON.parse(window.localStorage.getItem("remote")),
-		trash: JSON.parse(window.localStorage.getItem("trash")),
-	};
-	download("notes " + timestamp() + ".json", JSON.stringify(data));
+	download("notes-" + timestamp() + ".json", window.localStorage.getItem("data"));
 }
-
-function downloadvault()
-{
-	download("notes " + timestamp() + " " + currentvault + ".json", window.localStorage.getItem(currentvault));
-}
-
 
 function downloadencrypted()
 {
 	encryptstring(JSON.stringify(localdata))
 	.then(encrypted =>
 	{
-		download("encrypted notes " + timestamp() + " " + currentvault + ".acs", encrypted);
+		download("notes-encrypted-" + timestamp() + ".acs", encrypted);
 	});
 }
 
@@ -1193,7 +1157,7 @@ function gotoline(line)
 
 function loadstorage()
 {
-	var item = window.localStorage.getItem(currentvault);
+	var item = window.localStorage.getItem("data");
 	localdata = item ? JSON.parse(item) : [];
 
 	var params = new URLSearchParams(window.location.search);
@@ -1301,15 +1265,9 @@ function initsnippets()
 	});
 }
 
-function initvault()
-{
-	currentvault = window.localStorage.getItem("vault") || "local";
-}
-
 function init()
 {
 	loadsettings();
-	initvault();
 
 	window.onbeforeunload = checksaved;
 	window.onclick = focuseditor;
@@ -1325,7 +1283,7 @@ function init()
 			queryremote({action: "fetch"})
 			.then(data =>
 			{
-				window.localStorage.setItem("remote", JSON.stringify(data));
+				window.localStorage.setItem("data", JSON.stringify(data));
 				loadstorage();
 			})
 			.catch(err =>
@@ -1337,9 +1295,9 @@ function init()
 		}
 		else
 		{
-			showtemporaryinfo("Pgp key empty or invalid. Switching to local.");
-			currentvault = "local";
 			loadstorage();
+			editpgpkeys();
+			showtemporaryinfo("Pgp key empty or invalid. Enter PGP keys and refresh.");
 		}
 	}
 	else
@@ -1878,7 +1836,7 @@ function save()
 	currentnote.content = content;
 	putontop();
 
-	window.localStorage.setItem(currentvault, JSON.stringify(localdata));
+	window.localStorage.setItem("data", JSON.stringify(localdata));
 	console.log("data serialized in local storage")
 
 	if (isremote())

@@ -104,6 +104,7 @@ body::-webkit-scrollbar-thumb {
 /* search file dialog */
 
 #filter {
+	width: 100%;
 	color: black;
 	background-color: lightgray;
 }

@@ -1283,8 +1283,11 @@ function init()
 			queryremote({action: "fetch"})
 			.then(data =>
 			{
-				window.localStorage.setItem("data", JSON.stringify(data));
-				loadstorage();
+				if (data.length)
+				{
+					window.localStorage.setItem("data", JSON.stringify(data));
+					loadstorage();
+				}
 			})
 			.catch(err =>
 				{

@@ -104,7 +104,6 @@ body::-webkit-scrollbar-thumb {
 /* search file dialog */
 
 #filter {
-	width: 100%;
 	color: black;
 	background-color: lightgray;
 }
@@ -117,7 +116,6 @@ body::-webkit-scrollbar-thumb {
 	left: 10%;
 	opacity: 1;
 	width: 80%;
-	min-width: 500px;
 	z-index: 2;
 	font-family: "Segoe UI";
 	font-size: 14px;

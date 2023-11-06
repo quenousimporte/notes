@@ -17,7 +17,8 @@ var defaultsettings =
 	colors: true,
 	bulletrendering: "•",
 	password: "",
-	sync: false
+	sync: false,
+	tagsinpalette: true
 };
 
 //builtin
@@ -997,7 +998,10 @@ function gettags(note)
 	if (i > -1)
 	{
 		var j = note.content.indexOf("\n", i);
-		return note.content.substring(i + 6, j).split(",").map(t => t.toLowerCase().trim());
+		return note.content.substring(i + 6, j)
+			.split(",")
+			.map(t => t.toLowerCase().trim())
+			.filter(t => t.length);
 	}
 	return [];
 }
@@ -1628,7 +1632,19 @@ function commandpalette()
 		.filter(c => !c.excludepalette)
 		.map(c => c.hint)
 		.concat(snippets.map(s => "Insert snippet: " + s.hint))
-		.concat(list().map(t => "Open note: " + t))
+		.concat(localdata.map(n =>
+			{
+				var entry = "Open note: " + n.title;
+				if (settings.tagsinpalette)
+				{
+					var tags = gettags(n);
+					if (tags.length)
+					{
+						entry += " - tags: " + tags.join();
+					}
+				}
+				return entry;
+			}))
 		.concat(Object.keys(settings).map(s => "Edit setting: " + s)))
 	.then(hint =>
 	{
@@ -1647,7 +1663,7 @@ function commandpalette()
 			}
 			else if (hint.startsWith("Open note: "))
 			{
-				loadnote(hint.replace("Open note: ", ""));
+				loadnote(hint.replace("Open note: ", "").replace(/ - tags:.*/, ""));
 			}
 			else if (hint.startsWith("Edit setting: "))
 			{

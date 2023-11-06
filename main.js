@@ -216,9 +216,13 @@ var commands = [
 	action: downloadnotewithsubs
 },
 {
-	hint: "Download all notes (zip file)",
+	hint: "Download all notes (md files in zip archive)",
 	action: downloadnotes,
 	shortcut: "ctrl+shift+S"
+},
+{
+	hint: "Download all notes (html files in zip archive)",
+	action: downloadhtmlnotes
 },
 {
 	hint: "Download all notes (json file)",
@@ -1064,6 +1068,20 @@ function downloadnotes()
 	.then(function(content)
 	{
 		saveAs(content, "notes-" + timestamp() + ".zip");
+	});
+}
+
+function downloadhtmlnotes()
+{
+	var zip = new JSZip();
+	localdata.forEach(note =>
+	{
+		zip.file(getfilename(note.title).replace(".md", ".html"), md2html(note.content));
+	});
+	zip.generateAsync({type:"blob"})
+	.then(function(content)
+	{
+		saveAs(content, "notes-html-" + timestamp() + ".zip");
 	});
 }
 

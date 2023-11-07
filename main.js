@@ -18,7 +18,8 @@ var defaultsettings =
 	bulletrendering: "•",
 	password: "",
 	sync: false,
-	tagsinlists: true
+	tagsinlists: true,
+	tagfilter: ""
 };
 
 //builtin
@@ -36,7 +37,6 @@ var lastsaved = "";
 var pending = false;
 var settings = null;
 var tags = null;
-var currenttag = "";
 
 var stat =
 {
@@ -501,7 +501,7 @@ function showinfo()
 			"word count: " + getwords(),
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
 			(tags ? "tags: " + tags : ""),
-			"current filter: " + currenttag || "",
+			"current filter: " + settings.tagfilter || "",
 			"current note start: " + stat.cur.t,
 			"current note queries: " + stat.cur.q,
 			"current note data sent: " + formatsize(stat.cur.d),
@@ -523,19 +523,21 @@ function addtagfilter()
 {
 	var command = commands.find(c => c.action == addtagfilter);
 
-	if (!currenttag)
+	if (!settings.tagfilter)
 	{
 		tagslist()
 		.then(t =>
 			{
-				currenttag = t;
-				command.hint = "Remove tag filter '" + currenttag + "'";
+				settings.tagfilter = t;
+				savesettings();
+				command.hint = "Remove tag filter '" + settings.tagfilter + "'";
 				setwindowtitle();
 			});
 	}
 	else
 	{
-		currenttag = "";
+		settings.tagfilter = "";
+		savesettings();
 		command.hint = "Add tag filter";
 		setwindowtitle();
 	}
@@ -1294,8 +1296,6 @@ function init()
 
 	initsnippets();
 
-	currenttag = "";
-
 	if (isremote())
 	{
 		if (localStorage.getItem("pgpkeys") && localStorage.getItem("pgpkeys").startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"))
@@ -1551,7 +1551,7 @@ function md2html(content)
 function list()
 {
 	return localdata
-	.filter(n => currenttag == "" || gettags(n).includes(currenttag))
+	.filter(n => settings.tagfilter == "" || gettags(n).includes(settings.tagfilter))
 	.map(n => n.title);
 }
 
@@ -2576,7 +2576,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = (currenttag ? "🏷" + currenttag + " | " : "") + currentnote.title;
+	document.title = (settings.tagfilter ? "🏷" + settings.tagfilter + " | " : "") + currentnote.title;
 }
 
 function ontitlechange()
@@ -2822,7 +2822,7 @@ function defaultheaders(title, tags = "")
 		"---",
 		"title: " + title,
 		"date: " + timestamp().substr(0,10),
-		"tags: " + (tags || currenttag || ""),
+		"tags: " + (tags || settings.tagfilter || ""),
 		"---",
 		"",""].join("\n");
 }

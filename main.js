@@ -665,7 +665,7 @@ function shownotelinks()
 				{
 					color: settings.fontcolor,
 					size: 16,
-					face: settings.fontfamily
+					face: "Segoe UI"
 				}
 			}
 		};

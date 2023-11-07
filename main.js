@@ -1251,6 +1251,11 @@ function loadsettings()
 
 	applystyle();
 
+	if (settings.tagfilter)
+	{
+		commands.find(c  => c.hint == "Add tag filter").hint = "Remove tag filter '" + settings.tagfilter + "'";
+	}
+
 	if (settings.titlebydefault && title.hidden)
 	{
 		toggletitle();

@@ -18,7 +18,7 @@ var defaultsettings =
 	bulletrendering: "•",
 	password: "",
 	sync: false,
-	tagsinpalette: true
+	tagsinlists: true
 };
 
 //builtin
@@ -1653,12 +1653,12 @@ function commandpalette()
 		.concat(localdata.map(n =>
 			{
 				var entry = "Open note: " + n.title;
-				if (settings.tagsinpalette)
+				if (settings.tagsinlists)
 				{
 					var tags = gettags(n);
 					if (tags.length)
 					{
-						entry += " - tags: " + tags.join();
+						entry += " 🏷" + tags.join(" 🏷");
 					}
 				}
 				return entry;
@@ -1681,7 +1681,7 @@ function commandpalette()
 			}
 			else if (hint.startsWith("Open note: "))
 			{
-				loadnote(hint.replace("Open note: ", "").replace(/ - tags:.*/, ""));
+				loadnote(hint.replace("Open note: ", "").replace(/ 🏷.*/, ""));
 			}
 			else if (hint.startsWith("Edit setting: "))
 			{
@@ -2249,17 +2249,38 @@ function toggletitle()
 
 function selectnote()
 {
-	return searchinlist(list());
+	return searchinlist(
+		list()
+		.map(title =>
+		{
+			if (settings.tagsinlists)
+			{
+				var tags = gettags(getnote(title));
+				if (tags.length)
+				{
+					return title += " 🏷" + tags.join(" 🏷");
+				}
+			}
+			return title;
+		}));
 }
 
 function searchautocomplete()
 {
-	selectnote().then(insertautocomplete);
+	selectnote().then(selected =>
+	{
+		selected = selected.replace(/ 🏷.*/, "");
+		insertautocomplete(selected);
+	});
 }
 
 function searchandloadnote()
 {
-	selectnote().then(loadnote);
+	selectnote().then(selected =>
+	{
+		selected = selected.replace(/ 🏷.*/, "");
+		loadnote(selected);
+	});
 }
 
 function currentistodo()
@@ -2557,7 +2578,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = (currenttag ? currenttag + "\\": "") + currentnote.title;
+	document.title = (currenttag ? "🏷" + currenttag + " | " : "") + currentnote.title;
 }
 
 function ontitlechange()

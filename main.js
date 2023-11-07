@@ -397,43 +397,41 @@ function getrangecontent(range)
 	return md.value.substring(range.start, range.end);
 }
 
-function createsubnote(suggestedtitle)
+function createsubnote()
 {
-	var name = [];
-	if (suggestedtitle)
+	var title = prompt("Subnote tite:");
+	if (!title)
 	{
-		name.push(suggestedtitle);
+		showtemporaryinfo("No title provided");
+		setpos(md.selectionStart);
+		md.focus();
 	}
-	var range = getlinesrange();
-	var content = getrangecontent(range);
-	filter.placeholder = "Create subnote...";
-	searchinlist(name)
-	.then(title =>
+	else if (getnote(title))
 	{
-		if (!title)
+		showtemporaryinfo("'" + title + "' already exists");
+		setpos(md.selectionStart);
+		md.focus();
+	}
+	else
+	{
+		var range =
 		{
-			showtemporaryinfo("No title provided");
-			setpos(md.selectionStart);
+			start: md.selectionStart,
+			end: md.selectionEnd
 		}
-		else if (getnote(title))
+		var content = getrangecontent(range);
+		var newnote =
 		{
-			showtemporaryinfo("'" + title + "' already exists");
-			setpos(md.selectionStart);
+			title: title,
+			content: content
 		}
-		else
-		{
-			var newnote =
-			{
-				title: title,
-				content: content
-			}
-			localdata.unshift(newnote);
-			seteditorcontent(md.value.substring(0, range.start)
-				+ "[[" + title + "]]"
-				+ md.value.substring(range.end));
-		}
-	});
+		localdata.unshift(newnote);
+		seteditorcontent(md.value.substring(0, range.start)
+			+ "[[" + title + "]]"
+			+ md.value.substring(range.end));
+	}
 }
+
 
 function comment()
 {

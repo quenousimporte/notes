@@ -1952,13 +1952,14 @@ function rawline(index)
 var emptyline = "<br>";
 function rawline2html(line, index, options)
 {
+	var shadow = "0.75px 0 0";
 	line = escapeHtml(line);
 
 	// headings
 	if (line.startsWith("#"))
 	{
 		line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
-		line = "<span style='text-shadow: 1px 0 0;'>" + line + "</span>";
+		line = "<span style='text-shadow: " + shadow + ";'>" + line + "</span>";
 	}
 
 	// bold and italics
@@ -1967,7 +1968,7 @@ function rawline2html(line, index, options)
 	{
 		temp = line.substring(2);
 	}
-	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='text-shadow: 1px 0 0;'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='text-shadow: " + shadow + ";'>&#42;&#42;$1&#42;&#42;</span>");
 	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 	if (line.startsWith("* "))
@@ -2093,8 +2094,8 @@ function rawline2html(line, index, options)
 		}
 		else
 		{
-			line = line.replace(/(\(\w\))/g, "<span style='text-shadow: 1px 0 0; color:" + settings.accentcolor + "'>$1</span>");
-			line = line.replace(/(@\w*)/g, "<span style='text-shadow: 1px 0 0; color:grey'>$1</span>");
+			line = line.replace(/(\(\w\))/g, "<span style='text-shadow: " + shadow + "; color:" + settings.accentcolor + "'>$1</span>");
+			line = line.replace(/(@\w*)/g, "<span style='text-shadow: " + shadow + "; color:grey'>$1</span>");
 			line = line.replace(/(\s\+\w*)/g, "<span style='color:grey'>$1</span>");
 		}
 	}

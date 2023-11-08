@@ -1315,11 +1315,12 @@ function init()
 				if (data.length)
 				{
 					window.localStorage.setItem("data", JSON.stringify(data));
-					loadstorage();
 				}
+				loadstorage();
 			})
 			.catch(err =>
 				{
+					console.log(err);
 					settings.password = prompt("Password: ", settings.password);
 					savesettings();
 					init();

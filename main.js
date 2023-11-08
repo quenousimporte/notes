@@ -518,6 +518,10 @@ function savesettings()
 	window.localStorage.setItem("settings", JSON.stringify(settings));
 }
 
+function removetaghint()
+{
+	return "Remove tag filter 🏷" + settings.tagfilter;
+}
 
 function addtagfilter()
 {
@@ -530,7 +534,7 @@ function addtagfilter()
 			{
 				settings.tagfilter = t;
 				savesettings();
-				command.hint = "Remove tag filter '" + settings.tagfilter + "'";
+				command.hint = removetaghint();
 				setwindowtitle();
 			});
 	}
@@ -1253,7 +1257,7 @@ function loadsettings()
 
 	if (settings.tagfilter)
 	{
-		commands.find(c  => c.hint == "Add tag filter").hint = "Remove tag filter '" + settings.tagfilter + "'";
+		commands.find(c  => c.hint == "Add tag filter").hint = removetaghint();
 	}
 
 	if (settings.titlebydefault && title.hidden)
@@ -1553,16 +1557,9 @@ function md2html(content)
 	return html;
 }
 
-function list()
-{
-	return localdata
-	.filter(n => settings.tagfilter == "" || gettags(n).includes(settings.tagfilter))
-	.map(n => n.title);
-}
-
 function loadlast()
 {
-	loadnote(list().shift() || timestamp());
+	loadnote(localdata.length ? localdata[0].title : timestamp());
 }
 
 function loadprevious()
@@ -1647,25 +1644,27 @@ function showgrep()
 	}
 }
 
+function titlewithtags(note)
+{
+	var text = note.title;
+	if (settings.tagsinlists)
+	{
+		var tags = gettags(note);
+		if (tags.length)
+		{
+			text += " 🏷" + tags.join(" 🏷");
+		}
+	}
+	return text;
+}
+
 function commandpalette()
 {
 	searchinlist(commands
 		.filter(c => !c.excludepalette)
 		.map(c => c.hint)
 		.concat(snippets.map(s => "Insert snippet: " + s.hint))
-		.concat(localdata.map(n =>
-			{
-				var entry = "Open note: " + n.title;
-				if (settings.tagsinlists)
-				{
-					var tags = gettags(n);
-					if (tags.length)
-					{
-						entry += " 🏷" + tags.join(" 🏷");
-					}
-				}
-				return entry;
-			}))
+		.concat(localdata.map(n => "Open note: " + titlewithtags(n)))
 		.concat(Object.keys(settings).map(s => "Edit setting: " + s)))
 	.then(hint =>
 	{
@@ -2253,19 +2252,9 @@ function toggletitle()
 function selectnote()
 {
 	return searchinlist(
-		list()
-		.map(title =>
-		{
-			if (settings.tagsinlists)
-			{
-				var tags = gettags(getnote(title));
-				if (tags.length)
-				{
-					return title += " 🏷" + tags.join(" 🏷");
-				}
-			}
-			return title;
-		}));
+		localdata
+		.map(n => titlewithtags(n))
+		.filter(text => !settings.tagfilter || text.includes("🏷" + settings.tagfilter)));
 }
 
 function searchautocomplete()

@@ -1,10 +1,10 @@
 var defaultsettings =
 {
 	bgcolor: "white",
-	fontfamily: "monospace",
-	fontsize: "14px",
-	fontcolor: "black",
-	lineheight: "130%",
+	fontfamily: "system-ui",
+	fontsize: "16px",
+	fontcolor: "rgb(55, 53, 47)",
+	lineheight: "24px",
 	accentcolor: "#5AA7CE",
 	margins: "20%",
 	savedelay: 2000,

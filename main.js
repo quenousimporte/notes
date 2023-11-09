@@ -25,6 +25,7 @@ var defaultsettings =
 //builtin
 var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• ", "- [ ]"];
 var codelanguages = ["xml", "js", "sql"];
+var tagmark = "+";
 
 // globals
 var currentnote = null;
@@ -520,7 +521,7 @@ function savesettings()
 
 function removetaghint()
 {
-	return "Remove tag filter 🏷" + settings.tagfilter;
+	return "Remove tag filter " + tagmark + settings.tagfilter;
 }
 
 function addtagfilter()
@@ -1648,7 +1649,7 @@ function titlewithtags(note)
 		var tags = gettags(note);
 		if (tags.length)
 		{
-			text += " 🏷" + tags.join(" 🏷");
+			text += " " + tagmark + tags.join(" " + tagmark);
 		}
 	}
 	return text;
@@ -1679,7 +1680,7 @@ function commandpalette()
 			}
 			else if (hint.startsWith("Open note: "))
 			{
-				loadnote(hint.replace("Open note: ", "").replace(/ 🏷.*/, ""));
+				loadnote(hint.replace("Open note: ", "").replace(new RegExp(" " + tagmark + ".*"), ""));
 			}
 			else if (hint.startsWith("Edit setting: "))
 			{
@@ -2251,14 +2252,14 @@ function selectnote()
 	return searchinlist(
 		localdata
 		.map(n => titlewithtags(n))
-		.filter(text => !settings.tagfilter || text.includes("🏷" + settings.tagfilter)));
+		.filter(text => !settings.tagfilter || text.includes(tagmark + settings.tagfilter)));
 }
 
 function searchautocomplete()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(/ 🏷.*/, "");
+		selected = selected.replace(new RegExp(" " + tagmark + ".*"), "");
 		insertautocomplete(selected);
 	});
 }
@@ -2267,7 +2268,7 @@ function searchandloadnote()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(/ 🏷.*/, "");
+		selected = selected.replace(new RegExp(" " + tagmark + ".*"), "");
 		loadnote(selected);
 	});
 }
@@ -2567,7 +2568,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = (settings.tagfilter ? "🏷" + settings.tagfilter + " | " : "") + currentnote.title;
+	document.title = (settings.tagfilter ? settings.tagfilter + " | " : "") + currentnote.title;
 }
 
 function ontitlechange()

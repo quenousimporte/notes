@@ -145,11 +145,6 @@ var commands = [
 	shortcut: "ctrl+shift+B"
 },
 {
-	hint: "Sort text",
-	action: sortselection,
-	allowunsaved: true
-},
-{
 	hint: "Settings",
 	action: editsettings
 },
@@ -178,7 +173,7 @@ var commands = [
 	shortcut: "ctrl+shift+F",
 },
 {
-	hint: "Show info",
+	hint: "Show stats",
 	action: showinfo,
 	shortcut: "ctrl+w",
 	allowunsaved: true
@@ -273,6 +268,11 @@ var commands = [
 {
 	hint: "Sort todo.txt list",
 	action: sorttodotxt
+},
+{
+	hint: "Sort text",
+	action: sortselection,
+	allowunsaved: true
 }];
 
 var snippets = [
@@ -496,7 +496,7 @@ function showinfo()
 		[
 			"sync: " + (settings.sync ? "en" : "dis") + "abled",
 			"title: " + currentnote.title,
-			"saved: " + saved + " (" + lastsaved + ")",
+			"saved: " + saved + (lastsaved? " (" + lastsaved + ")": ""),
 			"line count: " + md.value.split("\n").length,
 			"word count: " + getwords(),
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
@@ -970,11 +970,6 @@ function togglesplit()
 	}
 }
 
-function isremote()
-{
-	return settings.sync;
-}
-
 function tagslist()
 {
 	tags = {};
@@ -1305,7 +1300,7 @@ function init()
 
 	initsnippets();
 
-	if (isremote())
+	if (settings.sync)
 	{
 		if (localStorage.getItem("pgpkeys") && localStorage.getItem("pgpkeys").startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"))
 		{
@@ -1879,7 +1874,7 @@ function save()
 	window.localStorage.setItem("data", JSON.stringify(localdata));
 	console.log("data serialized in local storage")
 
-	if (isremote())
+	if (settings.sync)
 	{
 		var datatosend = JSON.stringify(localdata);
 		encryptstring(datatosend)
@@ -2458,7 +2453,7 @@ function executecommand(command)
 	{
 		showtemporaryinfo("Cannot perform '" + command.hint + "' because current note is not saved.");
 	}
-	else if (command.remoteonly && !isremote())
+	else if (command.remoteonly && !settings.sync)
 	{
 		showtemporaryinfo(command.hint + " is not available in local mode.");
 	}

@@ -104,7 +104,6 @@ body::-webkit-scrollbar-thumb {
 /* preview */
 
 #preview {
-	font-family: system-ui;
 	font-size: 16px;
 	line-height: 150%;
 }
@@ -125,7 +124,6 @@ body::-webkit-scrollbar-thumb {
 	opacity: 1;
 	width: 80%;
 	z-index: 2;
-	font-family: system-ui;
 	font-size: 14px;
 }
 

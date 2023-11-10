@@ -1,7 +1,7 @@
 var defaultsettings =
 {
 	bgcolor: "white",
-	fontfamily: "system-ui",
+	fontfamily: "helvetica",
 	fontsize: "16px",
 	fontcolor: "rgb(55, 53, 47)",
 	lineheight: "24px",
@@ -669,8 +669,7 @@ function shownotelinks()
 				font:
 				{
 					color: settings.fontcolor,
-					size: 16,
-					face: "system-ui"
+					size: 16
 				}
 			}
 		};

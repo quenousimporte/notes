@@ -1679,7 +1679,7 @@ function commandpalette()
 			}
 			else if (hint.startsWith("Open note: "))
 			{
-				loadnote(hint.replace("Open note: ", "").replace(new RegExp(" " + tagmark + ".*"), ""));
+				loadnote(hint.replace("Open note: ", "").replace(new RegExp(" \\" + tagmark + ".*"), ""));
 			}
 			else if (hint.startsWith("Edit setting: "))
 			{
@@ -2258,7 +2258,7 @@ function searchautocomplete()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(new RegExp(" " + tagmark + ".*"), "");
+		selected = selected.replace(new RegExp(" \\" + tagmark + ".*"), "");
 		insertautocomplete(selected);
 	});
 }
@@ -2267,7 +2267,7 @@ function searchandloadnote()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(new RegExp(" " + tagmark + ".*"), "");
+		selected = selected.replace(new RegExp(" \\" + tagmark + ".*"), "");
 		loadnote(selected);
 	});
 }

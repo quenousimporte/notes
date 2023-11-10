@@ -1256,7 +1256,11 @@ function loadsettings()
 
 	if (settings.tagfilter)
 	{
-		commands.find(c  => c.hint == "Add tag filter").hint = removetaghint();
+		var command = commands.find(c  => c.hint == "Add tag filter");
+		if (command)
+		{
+			command.hint = removetaghint();
+		}
 	}
 
 	if (settings.titlebydefault && title.hidden)

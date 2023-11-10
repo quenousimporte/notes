@@ -1925,7 +1925,8 @@ function escapeHtml(unsafe) {
 
 var languagekeywords = {
 	"sql": ["select", "from", "where", "and", "or"],
-	"js": ["var", "for", "if", "else"]
+	"js": ["var", "for", "if", "else"],
+	"zsh": ["sudo"]
 }
 
 function currentline()

@@ -681,6 +681,10 @@ function shownotelinks()
 			toggleeditor(false);
 			loadnote(nodes.find(n => n.id == event.nodes[0]).label);
 		});
+		graph.setSelection(
+		{
+			nodes : [id(currentnote)]
+		});
 	}
 	else
 	{

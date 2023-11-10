@@ -2008,24 +2008,23 @@ function rawline2html(line, index, options)
 	{
 		options.code = true;
 		options.language = line.substring(3);
-		line = "<span style='font-family:monospace;color:rgb(70,70,70);'>" + line;
+		line = "<div style='color:white;background-color:black;'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
 	}
 	else if (line == "```" && options.code)
 	{
 		options.code = false;
 		options.language = "";
-		line = line + "</span>";
+		line = "<div style='color:white;background-color:black;'>" + line + "</div>";
 	}
 	else if (options.code)
 	{
-		//breaks html escape
-		//line = line.replace(/\b(\d+)\b/g, "<span style='color:" + settings.accentcolor + "'>$1</span>");
+		line = "<div style='color:white;background-color:black;'>" + (line || emptyline) + "</div>";
 		if (languagekeywords[options.language])
 		{
 			var keywords = languagekeywords[options.language];
 			keywords.forEach(keyword =>
 			{
-				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='color:" + settings.accentcolor + "'><b>$1</b></span>");
+				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + "'>$1</span>");
 			});
 		}
 	}

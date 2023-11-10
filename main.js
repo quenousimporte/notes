@@ -19,7 +19,8 @@ var defaultsettings =
 	password: "",
 	sync: false,
 	tagsinlists: true,
-	tagfilter: ""
+	tagfilter: "",
+	darkcode: true
 };
 
 //builtin
@@ -2013,17 +2014,26 @@ function rawline2html(line, index, options)
 	{
 		options.code = true;
 		options.language = line.substring(3);
-		line = "<div style='color:white;background-color:black;'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
+		if (settings.darkcode)
+		{
+			line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
+		}
 	}
 	else if (line == "```" && options.code)
 	{
 		options.code = false;
 		options.language = "";
-		line = "<div style='color:white;background-color:black;'>" + line + "</div>";
+		if (settings.darkcode)
+		{
+			line = "<div class='color-code'>" + line + "</div>";
+		}
 	}
 	else if (options.code)
 	{
-		line = "<div style='color:white;background-color:black;'>" + (line || emptyline) + "</div>";
+		if (settings.darkcode)
+		{
+			line = "<div class='color-code'>" + (line || emptyline) + "</div>";
+		}
 		if (languagekeywords[options.language])
 		{
 			var keywords = languagekeywords[options.language];

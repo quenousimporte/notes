@@ -137,3 +137,9 @@ body::-webkit-scrollbar-thumb {
 	background-color: darkgray;
 	margin: 2px 2px 2px 2px;
 }
+
+/* colors */
+.color-code {
+	color:white;
+	background-color:black;
+}

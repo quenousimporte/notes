@@ -60,9 +60,27 @@ var commands = [
 	hint: "Close menu"
 },
 {
+	shortcut: "ctrl+shift+P",
+	hint: "Command palette",
+	allowunsaved: true,
+	action: commandpalette,
+	excludepalette: true
+},
+{
 	shortcut: "ctrl+p",
 	hint: "Show notes list",
 	action: searchandloadnote
+},
+{
+	shortcut: "ctrl+n",
+	hint: "New note",
+	action: startnewnote
+},
+{
+	hint: "Force save",
+	action: save,
+	shortcut: "ctrl+s",
+	allowunsaved: true
 },
 {
 	hint: "Share note",
@@ -72,18 +90,6 @@ var commands = [
 {
 	hint: "Share note (html)",
 	action: sharehtml
-},
-{
-	shortcut: "ctrl+n",
-	hint: "New note",
-	action: startnewnote
-},
-{
-	shortcut: "ctrl+shift+P",
-	hint: "Command palette",
-	allowunsaved: true,
-	action: commandpalette,
-	excludepalette: true
 },
 {
 	shortcut: "ctrl+g",
@@ -177,12 +183,6 @@ var commands = [
 	hint: "Show stats",
 	action: showinfo,
 	shortcut: "ctrl+w",
-	allowunsaved: true
-},
-{
-	hint: "Force save",
-	action: save,
-	shortcut: "ctrl+s",
 	allowunsaved: true
 },
 {

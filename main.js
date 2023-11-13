@@ -275,6 +275,10 @@ var commands = [
 	hint: "Sort text",
 	action: sortselection,
 	allowunsaved: true
+},
+{
+	hint: "Show backlinks",
+	action: backlinks
 }];
 
 var snippets = [
@@ -1562,6 +1566,14 @@ function getlinesrange()
 		start: start,
 		end: end
 	};
+}
+
+function backlinks()
+{
+	searchinlist(localdata
+		.filter(n => n.content.includes("[[" + currentnote.title + "]]"))
+		.map(n => n.title))
+	.then(loadnote);
 }
 
 function sortselection()

@@ -2047,7 +2047,7 @@ function rawline2html(line, index, options)
 	// lists
 	markerslist.forEach(marker =>
 	{
-		if (line.startsWith(marker))
+		if (line.startsWith(marker) && marker.trim())
 		{
 			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
 		}
@@ -2089,11 +2089,17 @@ function rawline2html(line, index, options)
 	}
 	else if (options.code)
 	{
+		var comment = false;
+		if (line.match(/^\s*\/\//))
+		{
+			line = "<span style='color:grey'>" + line + "</span>";
+			comment = true;
+		}
 		if (settings.darkcode)
 		{
 			line = "<div class='color-code'>" + (line || emptyline) + "</div>";
 		}
-		if (languagekeywords[options.language])
+		if (!comment && languagekeywords[options.language])
 		{
 			var keywords = languagekeywords[options.language];
 			keywords.forEach(keyword =>

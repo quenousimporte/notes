@@ -112,7 +112,7 @@ body::-webkit-scrollbar-thumb {
 
 #filter {
 	color: black;
-	background-color: lightgray;
+	width:  100%;
 }
 
 #searchdialog {
@@ -125,6 +125,7 @@ body::-webkit-scrollbar-thumb {
 	width: 80%;
 	z-index: 2;
 	font-size: 14px;
+	min-width:  500px;
 }
 
 .searchitem {

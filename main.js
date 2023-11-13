@@ -19,7 +19,8 @@ var defaultsettings =
 	sync: false,
 	tagsinlists: true,
 	tagfilter: "",
-	darkcode: true
+	darkcode: true,
+	uselinkpopup: true
 };
 
 //builtin
@@ -783,6 +784,47 @@ function tagatpos()
 	return md.value.substring(start + 1, end);
 }
 
+function removelinkdialog()
+{
+	if (typeof linkdialog != "undefined")
+	{
+		notepage.removeChild(linkdialog);
+	}
+}
+
+function showlinkdialog(link)
+{
+	var div = document.createElement("div");
+	div.setAttribute("style", "top:" + event.pageY + "px;left:" + event.pageX + "px");
+	div.setAttribute("id", "linkdialog");
+
+	var a = document.createElement("a");
+	a.setAttribute("id", "linkelt");
+
+	if (link.startsWith("https://"))
+	{
+		a.setAttribute("href", link);
+		a.setAttribute("target", "_blank");
+		a.innerText = link;
+		div.onclick = removelinkdialog;
+	}
+	else
+	{
+		a.setAttribute("href", "#");
+		a.innerText = link;
+		div.onclick = function()
+		{
+			removelinkdialog();
+			loadnote(link);
+		};
+	}
+
+	div.appendChild(a);
+
+	setTimeout(removelinkdialog, 3000);
+	notepage.appendChild(div);
+}
+
 function clickeditor()
 {
 	if (!saved)
@@ -790,6 +832,7 @@ function clickeditor()
 		console.log("Not saved, ctrl+click ignored.");
 		return;
 	}
+
 	if (event.ctrlKey)
 	{
 		var link = linkatpos();
@@ -808,6 +851,23 @@ function clickeditor()
 		else if (word.startsWith("https://"))
 		{
 			window.open(word, '_blank');
+		}
+	}
+	else if (settings.uselinkpopup)
+	{
+		removelinkdialog();
+		var link = linkatpos();
+		if (link)
+		{
+			showlinkdialog(link);
+		}
+		else
+		{
+			var word =  wordatpos();
+			if (word.startsWith("https://"))
+			{
+				showlinkdialog(word);
+			}
 		}
 	}
 }

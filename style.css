@@ -142,5 +142,18 @@ body::-webkit-scrollbar-thumb {
 /* colors */
 .color-code {
 	color:white;
-	background-color:black;
+	background-color:rgb(55, 53, 47);
+}
+
+/* link dialog */
+#linkdialog {
+	border-radius: 3px;
+	opacity:1;
+	color: white;
+	background-color:rgb(55, 53, 47);
+	position:absolute;
+}
+
+#linkelt {
+	margin: 5px 7px 5px 7px;
 }

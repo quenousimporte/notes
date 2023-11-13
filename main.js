@@ -15,7 +15,6 @@ var defaultsettings =
 	titlebydefault: false,
 	linksinnewtab: true,
 	colors: true,
-	bulletrendering: "•",
 	password: "",
 	sync: false,
 	tagsinlists: true,
@@ -1990,7 +1989,7 @@ function rawline2html(line, index, options)
 	{
 		if (line.startsWith(marker))
 		{
-			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker.replaceAll("*", settings.bulletrendering) + "</span>");
+			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
 		}
 	});
 

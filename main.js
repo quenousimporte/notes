@@ -1,7 +1,7 @@
 var defaultsettings =
 {
 	bgcolor: "white",
-	fontfamily: "helvetica",
+	fontfamily: "system-ui",
 	fontsize: "16px",
 	fontcolor: "rgb(55, 53, 47)",
 	lineheight: "24px",

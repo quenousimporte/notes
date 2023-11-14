@@ -53,6 +53,17 @@ else if (isset($_POST['action']))
 			}
 		break;
 
+		case 'title':
+			$result = array();
+			$str = file_get_contents($_POST['data']);
+			if(strlen($str) > 0)
+			{
+				preg_match("/\<title\>(.*)\<\/title\>/", $str, $title);
+				$result['title'] = $title[1];
+			}
+			echo json_encode($result);
+		break;
+
 		default:
 			echo '{"error": "unknown action ' . $action . '"}';
 		break;

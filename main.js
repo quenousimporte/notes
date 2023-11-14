@@ -40,6 +40,7 @@ var pending = false;
 var settings = null;
 var tags = null;
 var linkpopupid = null;
+var titlemap = {};
 
 var stat =
 {
@@ -806,12 +807,36 @@ function showlinkdialog(link)
 	var a = document.createElement("a");
 	a.setAttribute("id", "linkelt");
 
-	if (link.startsWith("https://"))
+	if (link.startsWith("http"))
 	{
 		a.setAttribute("href", link);
 		a.setAttribute("target", "_blank");
-		a.innerText = link;
 		div.onclick = removelinkdialog;
+
+		if (settings.sync)
+		{
+			if (titlemap[link])
+			{
+				a.innerText = titlemap[link];
+			}
+			else
+			{
+				a.innerText = link;
+				queryremote({action: "title", data: link})
+				.then(res =>
+				{
+					if (res.title)
+					{
+						a.innerText = res.title;
+						titlemap[link] = res.title;
+					}
+				});
+			}
+		}
+		else
+		{
+			a.innerText = link;
+		}
 	}
 	else
 	{
@@ -854,7 +879,7 @@ function clickeditor()
 			searchinlist(tags[tag.toLowerCase()])
 			.then(loadnote);
 		}
-		else if (word.startsWith("https://"))
+		else if (word.startsWith("http"))
 		{
 			window.open(word, '_blank');
 		}
@@ -870,7 +895,7 @@ function clickeditor()
 		else
 		{
 			var word =  wordatpos();
-			if (word.startsWith("https://"))
+			if (word.startsWith("http"))
 			{
 				showlinkdialog(word);
 			}
@@ -2568,6 +2593,10 @@ function esc(event)
 		searchdialog.hidden = true;
 		filter.placeholder = "Search...";
 		md.focus();
+	}
+	else if (settings.uselinkpopup && typeof linkdialog != "undefined")
+	{
+		removelinkdialog();
 	}
 	else if (currentnote.title == "Help" || currentnote.title == "Search result")
 	{

@@ -817,7 +817,7 @@ function showlinkdialog(link)
 		{
 			if (titlemap[link])
 			{
-				a.innerText = titlemap[link];
+				a.innerHTML = titlemap[link];
 			}
 			else
 			{
@@ -827,7 +827,7 @@ function showlinkdialog(link)
 				{
 					if (res.title)
 					{
-						a.innerText = res.title;
+						a.innerHTML = res.title;
 						titlemap[link] = res.title;
 					}
 				});

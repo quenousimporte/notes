@@ -829,6 +829,7 @@ function showlinkdialog(link)
 					{
 						a.innerHTML = res.title;
 						titlemap[link] = res.title;
+						localStorage.setItem("titlemap", JSON.stringify(titlemap));
 					}
 				});
 			}
@@ -1401,6 +1402,7 @@ function init()
 
 	if (settings.sync)
 	{
+		titlemap = JSON.parse(localStorage.getItem("titlemap")) || {};
 		if (localStorage.getItem("pgpkeys") && localStorage.getItem("pgpkeys").startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"))
 		{
 			queryremote({action: "fetch"})

@@ -141,7 +141,7 @@ body::-webkit-scrollbar-thumb {
 
 /* colors */
 .color-code {
-	color:white;
+	color:lightgray;
 	background-color:rgb(55, 53, 47);
 }
 

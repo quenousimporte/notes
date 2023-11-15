@@ -80,6 +80,11 @@ var commands = [
 	action: startnewnote
 },
 {
+	shortcut: "ctrl+shift+N",
+	hint: "Quick new note",
+	action: quicknewnote
+},
+{
 	hint: "Force save",
 	action: save,
 	shortcut: "ctrl+s",

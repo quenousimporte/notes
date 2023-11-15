@@ -1656,9 +1656,9 @@ function grep(needle)
 	return result;
 }
 
-function showgrepresult(grepresult)
+function showgrepresult(needle, grepresult)
 {
-	var grepcontent = ["# Search results: \"" + filter.value + "\""];
+	var grepcontent = ["# Search results: \"" + needle + "\""];
 	for (var file in grepresult)
 	{
 		grepcontent.push("[[" + file + "]]");
@@ -1691,7 +1691,7 @@ function showgrep()
 	var text = prompt("Search:");
 	if (text)
 	{
-		showgrepresult(grep(text));
+		showgrepresult(text, grep(text));
 	}
 }
 

@@ -1771,38 +1771,64 @@ function titlewithtags(note)
 function commandpalette()
 {
 	searchinlist(commands
-		.filter(c => !c.excludepalette)
-		.map(c => c.hint)
-		.concat(snippets.map(s => "Insert snippet: " + s.hint))
-		.concat(localdata.map(n => "Open note: " + titlewithtags(n)))
-		.concat(Object.keys(settings).map(s => "Edit setting: " + s)))
-	.then(hint =>
-	{
-		var command = commands.find(c => c.hint == hint);
-		if (command)
+		.filter(command => !command.excludepalette)
+		.map(command =>
 		{
-			executecommand(command);
+			return {
+				text: command.hint,
+				suffix: command.shortcut ? [command.shortcut] : null
+			};
+		})
+		.concat(snippets.map(s =>
+		{
+			return {
+				prefix: "snippet: ",
+				text: s.hint
+			};
+		}))
+		.concat(localdata.map(n =>
+		{
+			return {
+				prefix: "note: ",
+				text: n.title,
+				suffix: gettags(n).map(t => tagmark + t)
+			};
+		}))
+		.concat(Object.keys(settings).map(s =>
+		{
+			return {
+				prefix: "setting: ",
+				text: s,
+				suffix: s == "password" ? null : [settings[s]]
+			};
+		})))
+	.then(selected =>
+	{
+		if (selected.prefix == "snippet: ")
+		{
+			var snippet = snippets.find(s => s.hint == selected.text);
+			insert(snippet.insert, snippet.cursor);
+			md.focus();
+		}
+		else if (selected.prefix == "note: ")
+		{
+			loadnote(selected.text);
+		}
+		else if (selected.prefix == "setting: ")
+		{
+			editsetting(selected.text);
 		}
 		else
 		{
-			var snippet = snippets.find(s => "Insert snippet: " + s.hint == hint);
-			if (snippet)
+			var command = commands.find(c => c.hint == selected.text);
+			if (command)
 			{
-				insert(snippet.insert, snippet.cursor);
-				md.focus();
-			}
-			else if (hint.startsWith("Open note: "))
-			{
-				loadnote(hint.replace("Open note: ", "").replace(new RegExp(" \\" + tagmark + ".*"), ""));
-			}
-			else if (hint.startsWith("Edit setting: "))
-			{
-				editsetting(hint.replace("Edit setting: ", ""));
+				executecommand(command);
 			}
 			else
 			{
 				// if unknown command, create a new note
-				loadnote(hint);
+				loadnote(selected);
 			}
 		}
 	});
@@ -1833,11 +1859,39 @@ function searchinlist(list)
 		list.forEach(item =>
 		{
 			var elt = document.createElement("div");
-			elt.textContent = item;
+			elt.tag = item;
+
+			if (typeof item === "string")
+			{
+				elt.textContent = item;
+			}
+			else
+			{
+				var ts = document.createElement("span");
+				ts.setAttribute("style", "color:grey");
+				ts.innerHTML = item.prefix || "";
+				elt.appendChild(ts);
+
+				ts = document.createElement("span");
+				ts.innerHTML = item.text;
+				elt.appendChild(ts);
+
+				if (item.suffix)
+				{
+					item.suffix.forEach(t =>
+					{
+						ts = document.createElement("span");
+						ts.setAttribute("style", "color:grey");
+						ts.innerHTML = "&nbsp;" + t;
+						elt.appendChild(ts);
+					});
+				}
+			}
+
 			elt.onclick = function()
 			{
 				searchdialog.hidden = true;
-				selectitem(item);
+				selectitem(elt.tag);
 			}
 			filteredlist.appendChild(elt);
 		});
@@ -1852,7 +1906,7 @@ function searchinlist(list)
 				event.preventDefault();
 				searchdialog.hidden = true;
 				var selected = document.getElementsByClassName("selected")[0];
-				selectitem(selected ? selected.textContent : filter.value);
+				selectitem(selected ? selected.tag : filter.value);
 			}
 		}
 
@@ -2378,17 +2432,20 @@ function toggletitle()
 function selectnote()
 {
 	return searchinlist(
-		localdata
-		.map(n => titlewithtags(n))
-		.filter(text => !settings.tagfilter || text.includes(tagmark + settings.tagfilter)));
+		localdata.map(n =>
+		{
+			return {
+				text: n.title,
+				suffix: gettags(n).map(t => tagmark + t)
+			}
+		}));
 }
 
 function searchautocomplete()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(new RegExp(" \\" + tagmark + ".*"), "");
-		insertautocomplete(selected);
+		insertautocomplete(selected.text);
 	});
 }
 
@@ -2396,8 +2453,7 @@ function searchandloadnote()
 {
 	selectnote().then(selected =>
 	{
-		selected = selected.replace(new RegExp(" \\" + tagmark + ".*"), "");
-		loadnote(selected);
+		loadnote(selected.text);
 	});
 }
 

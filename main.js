@@ -1,7 +1,5 @@
 var defaultsettings =
 {
-	bgcolor: "white",
-	fontfamily: "system-ui",
 	fontsize: "16px",
 	fontcolor: "rgb(55, 53, 47)",
 	lineheight: "24px",
@@ -18,7 +16,6 @@ var defaultsettings =
 	sync: false,
 	tagsinlists: true,
 	tagfilter: "",
-	darkcode: true,
 	uselinkpopup: true
 };
 
@@ -674,7 +671,7 @@ function shownotelinks()
 			{
 				color:
 				{
-					background: settings.bgcolor,
+					background: "white",
 					border: settings.fontcolor,
 				},
 				font:
@@ -1317,8 +1314,6 @@ function loadstorage()
 
 function applystyle()
 {
-	document.body.style.background = settings.bgcolor;
-	document.body.style.fontFamily = settings.fontfamily;
 	document.body.style.fontSize = settings.fontsize;
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.color = settings.fontcolor;
@@ -2162,19 +2157,13 @@ function rawline2html(line, index, options)
 	{
 		options.code = true;
 		options.language = line.substring(3);
-		if (settings.darkcode)
-		{
-			line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
-		}
+		line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
 	}
 	else if (line == "```" && options.code)
 	{
 		options.code = false;
 		options.language = "";
-		if (settings.darkcode)
-		{
-			line = "<div class='color-code'>" + line + "</div>";
-		}
+		line = "<div class='color-code'>" + line + "</div>";
 	}
 	else if (options.code)
 	{
@@ -2184,10 +2173,7 @@ function rawline2html(line, index, options)
 			line = "<span style='color:grey'>" + line + "</span>";
 			comment = true;
 		}
-		if (settings.darkcode)
-		{
-			line = "<div class='color-code'>" + (line || emptyline) + "</div>";
-		}
+		line = "<div class='color-code'>" + (line || emptyline) + "</div>";
 		if (!comment && languagekeywords[options.language])
 		{
 			var keywords = languagekeywords[options.language];

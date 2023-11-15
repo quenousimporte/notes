@@ -3,6 +3,8 @@
 body {
 	margin-left: 7%;
 	margin-right: 7%;
+	background: white;
+	font-family: system-ui;
 }
 
 a {

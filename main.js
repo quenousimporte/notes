@@ -3,7 +3,6 @@ var defaultsettings =
 	fontsize: "16px",
 	fontcolor: "rgb(55, 53, 47)",
 	lineheight: "24px",
-	accentcolor: "#5AA7CE",
 	margins: "20%",
 	savedelay: 2000,
 	defaultpreviewinsplit: false,
@@ -1317,7 +1316,6 @@ function applystyle()
 	document.body.style.fontSize = settings.fontsize;
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.color = settings.fontcolor;
-	document.body.style.caretColor = settings.accentcolor;
 	document.body.style.marginLeft = settings.margins;
 	document.body.style.marginRight = settings.margins;
 }
@@ -2106,8 +2104,8 @@ function rawline2html(line, index, options)
 	// headings
 	if (line.startsWith("#"))
 	{
-		line = line.replace(/(#* )/, "<span style='color:" + settings.accentcolor + "'>$1</span>"); // to check!
-		line = "<span style='text-shadow: " + shadow + ";'>" + line + "</span>";
+		line = line.replace(/(#* )/, "<span class='color-accent'>$1</span>");
+		line = "<span style='text-shadow:var(--shadow);'>" + line + "</span>";
 	}
 
 	// bold and italics
@@ -2116,7 +2114,7 @@ function rawline2html(line, index, options)
 	{
 		temp = line.substring(2);
 	}
-	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='text-shadow: " + shadow + ";'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='text-shadow:var(--shadow);'>&#42;&#42;$1&#42;&#42;</span>");
 	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 	if (line.startsWith("* "))
@@ -2133,7 +2131,7 @@ function rawline2html(line, index, options)
 	{
 		if (line.startsWith(marker) && marker.trim())
 		{
-			line = line.replace(marker, "<span style='color:" + settings.accentcolor + "'>" + marker + "</span>");
+			line = line.replace(marker, "<span class='color-accent'>" + marker + "</span>");
 		}
 	});
 
@@ -2157,7 +2155,7 @@ function rawline2html(line, index, options)
 	{
 		options.code = true;
 		options.language = line.substring(3);
-		line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + ";'>$1</span>") + "</div>";
+		line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow:var(--shadow);color:var(--blue);'>$1</span>") + "</div>";
 	}
 	else if (line == "```" && options.code)
 	{
@@ -2179,7 +2177,7 @@ function rawline2html(line, index, options)
 			var keywords = languagekeywords[options.language];
 			keywords.forEach(keyword =>
 			{
-				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='text-shadow: " + shadow + ";color:" + settings.accentcolor + "'>$1</span>");
+				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='text-shadow:var(--shadow);color:var(--blue)'>$1</span>");
 			});
 		}
 	}
@@ -2250,8 +2248,8 @@ function rawline2html(line, index, options)
 		}
 		else
 		{
-			line = line.replace(/(\(\w\))/g, "<span style='text-shadow: " + shadow + "; color:" + settings.accentcolor + "'>$1</span>");
-			line = line.replace(/(@\w*)/g, "<span style='text-shadow: " + shadow + "; color:grey'>$1</span>");
+			line = line.replace(/(\(\w\))/g, "<span style='text-shadow:var(--shadow); color:var(--blue);'>$1</span>");
+			line = line.replace(/(@\w*)/g, "<span style='text-shadow:var(--shadow); color:grey'>$1</span>");
 			line = line.replace(/(\s\+\w*)/g, "<span style='color:grey'>$1</span>");
 		}
 	}

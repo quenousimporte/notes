@@ -1,10 +1,16 @@
 /* globals */
+:root {
+	--black: rgb(55, 53, 47);
+	--blue: #5AA7CE;
+	--shadow: 0.75px 0 0;
+}
 
 body {
 	margin-left: 7%;
 	margin-right: 7%;
 	background: white;
 	font-family: system-ui;
+	caret-color: var(--blue);
 }
 
 a {
@@ -144,7 +150,11 @@ body::-webkit-scrollbar-thumb {
 /* colors */
 .color-code {
 	color:lightgray;
-	background-color:rgb(55, 53, 47);
+	background-color:var(--black);
+}
+
+.color-accent {
+	color: var(--blue);
 }
 
 /* link dialog */
@@ -152,7 +162,7 @@ body::-webkit-scrollbar-thumb {
 	border-radius: 3px;
 	opacity:1;
 	color: white;
-	background-color:rgb(55, 53, 47);
+	background-color:var(--black);
 	position:absolute;
 }
 

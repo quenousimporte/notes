@@ -10,7 +10,6 @@ var defaultsettings =
 	savedelay: 2000,
 	defaultpreviewinsplit: false,
 	tagautocomplete: false,
-	titleinaccentcolor: false,
 	enablenetwork: true,
 	titlebydefault: false,
 	linksinnewtab: true,
@@ -1326,11 +1325,6 @@ function applystyle()
 	document.body.style.caretColor = settings.accentcolor;
 	document.body.style.marginLeft = settings.margins;
 	document.body.style.marginRight = settings.margins;
-
-	if (settings.titleinaccentcolor)
-	{
-		title.style.color = settings.accentcolor;
-	}
 }
 
 function loadsettings()

@@ -2299,6 +2299,12 @@ function timestamp()
 	return loc.toISOString().replace("T", " ").replace(/\..*/, "").replace(/:/g, ".");
 }
 
+function quicknewnote()
+{
+	loadnote(timestamp());
+	datachanged();
+}
+
 function startnewnote()
 {
 	var title = prompt("Note title: ", timestamp());

@@ -2944,7 +2944,6 @@ function defaultheaders(title, tags = "")
 {
 	return [
 		"---",
-		"title: " + title,
 		"date: " + timestamp().substr(0,10),
 		"tags: " + (tags || settings.tagfilter || ""),
 		"---",

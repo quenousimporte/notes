@@ -11,6 +11,7 @@ body {
 	background: white;
 	font-family: system-ui;
 	caret-color: var(--blue);
+	color: var(--black);
 }
 
 a {
@@ -155,6 +156,14 @@ body::-webkit-scrollbar-thumb {
 
 .color-accent {
 	color: var(--blue);
+}
+
+.color-bold {
+	text-shadow: var(--shadow);
+}
+
+.color-light {
+	color: lightgray;
 }
 
 /* link dialog */

@@ -1,7 +1,6 @@
 var defaultsettings =
 {
 	fontsize: "16px",
-	fontcolor: "rgb(55, 53, 47)",
 	lineheight: "24px",
 	margins: "20%",
 	savedelay: 2000,
@@ -664,6 +663,7 @@ function shownotelinks()
 			edges: edges
 		};
 
+		// todo: use theme colors
 		var options =
 		{
 			nodes:
@@ -671,11 +671,11 @@ function shownotelinks()
 				color:
 				{
 					background: "white",
-					border: settings.fontcolor,
+					border: "black",
 				},
 				font:
 				{
-					color: settings.fontcolor,
+					color: "black",
 					size: 16
 				}
 			}
@@ -1315,7 +1315,6 @@ function applystyle()
 {
 	document.body.style.fontSize = settings.fontsize;
 	document.body.style.lineHeight = settings.lineheight;
-	document.body.style.color = settings.fontcolor;
 	document.body.style.marginLeft = settings.margins;
 	document.body.style.marginRight = settings.margins;
 }
@@ -2098,14 +2097,13 @@ function rawline(index)
 var emptyline = "<br>";
 function rawline2html(line, index, options)
 {
-	var shadow = "0.75px 0 0";
 	line = escapeHtml(line);
 
 	// headings
 	if (line.startsWith("#"))
 	{
 		line = line.replace(/(#* )/, "<span class='color-accent'>$1</span>");
-		line = "<span style='text-shadow:var(--shadow);'>" + line + "</span>";
+		line = "<span class='color-bold'>" + line + "</span>";
 	}
 
 	// bold and italics
@@ -2114,7 +2112,7 @@ function rawline2html(line, index, options)
 	{
 		temp = line.substring(2);
 	}
-	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span style='text-shadow:var(--shadow);'>&#42;&#42;$1&#42;&#42;</span>");
+	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span class='color-bold'>&#42;&#42;$1&#42;&#42;</span>");
 	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
 
 	if (line.startsWith("* "))
@@ -2231,7 +2229,7 @@ function rawline2html(line, index, options)
 
 				if (matching.length)
 				{
-					line += "<span style='color:lightgrey'>";
+					line += "<span class='color-light'>";
 					line += matching.join().substr(pos - slashpos - 1);
 					line += "</span>";
 				}

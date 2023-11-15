@@ -2245,9 +2245,12 @@ function rawline2html(line, index, options)
 				.filter(s => s.command.startsWith(snippetpart))
 				.map(s => s.command.substring(1));
 
-				line += "<span style='color:lightgrey'>";
-				line += matching.join().substr(pos - slashpos - 1);
-				line += "</span>";
+				if (matching.length)
+				{
+					line += "<span style='color:lightgrey'>";
+					line += matching.join().substr(pos - slashpos - 1);
+					line += "</span>";
+				}
 			}
 		}
 	}
@@ -2266,6 +2269,13 @@ function rawline2html(line, index, options)
 			line = line.replace(/(\s\+\w*)/g, "<span style='color:grey'>$1</span>");
 		}
 	}
+
+	// inline code
+	line = line.replace(/`(.*)`/, "<span class='color-code'>`$1`</span>");
+
+	// links
+	line = line.replace(/(http[^\s]*)/, "<u>$1</u>");
+
 	return line;
 }
 

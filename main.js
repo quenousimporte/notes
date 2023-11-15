@@ -1819,7 +1819,7 @@ function insert(text, cursoroffset = 0, nbtodelete = 0)
 	setpos(pos - nbtodelete + text.length + cursoroffset);
 }
 
-function searchinlist(list, customevent, index)
+function searchinlist(list)
 {
 	return new Promise(selectitem =>
 	{
@@ -1839,16 +1839,10 @@ function searchinlist(list, customevent, index)
 				searchdialog.hidden = true;
 				selectitem(item);
 			}
-			elt.customevent = customevent;
 			filteredlist.appendChild(elt);
 		});
 
 		applyfilter();
-		if (index)
-		{
-			fileindex = index;
-			applyfileindex();
-		}
 
 		filter.onkeydown = function()
 		{

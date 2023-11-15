@@ -13,7 +13,6 @@ var defaultsettings =
 	password: "",
 	sync: false,
 	tagsinlists: true,
-	tagfilter: "",
 	uselinkpopup: true
 };
 
@@ -175,11 +174,6 @@ var commands = [
 	hint: "Show connected notes",
 	action: shownotelinks,
 	shortcut: "ctrl+l"
-},
-{
-	hint: "Add tag filter",
-	action: addtagfilter,
-	shortcut: "ctrl+shift+F",
 },
 {
 	hint: "Show stats",
@@ -508,7 +502,6 @@ function showinfo()
 			"word count: " + getwords(),
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",
 			(tags ? "tags: " + tags : ""),
-			"current filter: " + settings.tagfilter || "",
 			"current note start: " + stat.cur.t,
 			"current note queries: " + stat.cur.q,
 			"current note data sent: " + formatsize(stat.cur.d),
@@ -523,35 +516,6 @@ function showinfo()
 function savesettings()
 {
 	window.localStorage.setItem("settings", JSON.stringify(settings));
-}
-
-function removetaghint()
-{
-	return "Remove tag filter " + tagmark + settings.tagfilter;
-}
-
-function addtagfilter()
-{
-	var command = commands.find(c => c.action == addtagfilter);
-
-	if (!settings.tagfilter)
-	{
-		tagslist()
-		.then(t =>
-			{
-				settings.tagfilter = t;
-				savesettings();
-				command.hint = removetaghint();
-				setwindowtitle();
-			});
-	}
-	else
-	{
-		settings.tagfilter = "";
-		savesettings();
-		command.hint = "Add tag filter";
-		setwindowtitle();
-	}
 }
 
 function descendants(note)
@@ -1337,15 +1301,6 @@ function loadsettings()
 
 	applystyle();
 
-	if (settings.tagfilter)
-	{
-		var command = commands.find(c  => c.hint == "Add tag filter");
-		if (command)
-		{
-			command.hint = removetaghint();
-		}
-	}
-
 	if (settings.titlebydefault && title.hidden)
 	{
 		toggletitle();
@@ -1776,7 +1731,7 @@ function commandpalette()
 		.concat(localdata.map(n =>
 		{
 			return {
-				prefix: "note ",
+				prefix: "open ",
 				text: n.title,
 				suffix: gettags(n).map(t => tagmark + t)
 			};
@@ -1797,7 +1752,7 @@ function commandpalette()
 			insert(snippet.insert, snippet.cursor);
 			md.focus();
 		}
-		else if (selected.prefix == "note ")
+		else if (selected.prefix == "open ")
 		{
 			loadnote(selected.text);
 		}
@@ -2743,7 +2698,7 @@ function mainkeydownhandler()
 
 function setwindowtitle()
 {
-	document.title = (settings.tagfilter ? settings.tagfilter + " | " : "") + currentnote.title;
+	document.title = currentnote.title;
 }
 
 function ontitlechange()
@@ -2988,7 +2943,7 @@ function defaultheaders(title, tags = "")
 	return [
 		"---",
 		"date: " + timestamp().substr(0,10),
-		"tags: " + (tags || settings.tagfilter || ""),
+		"tags: " + (tags || ""),
 		"---",
 		"",""].join("\n");
 }

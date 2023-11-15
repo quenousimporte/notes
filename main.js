@@ -1768,7 +1768,7 @@ function commandpalette()
 		.concat(snippets.map(s =>
 		{
 			return {
-				prefix: "snippet: ",
+				prefix: "snippet ",
 				text: s.hint,
 				suffix: [s.command]
 			};
@@ -1776,7 +1776,7 @@ function commandpalette()
 		.concat(localdata.map(n =>
 		{
 			return {
-				prefix: "note: ",
+				prefix: "note ",
 				text: n.title,
 				suffix: gettags(n).map(t => tagmark + t)
 			};
@@ -1784,24 +1784,24 @@ function commandpalette()
 		.concat(Object.keys(settings).map(s =>
 		{
 			return {
-				prefix: "setting: ",
+				prefix: "setting ",
 				text: s,
 				suffix: s == "password" ? null : [settings[s]]
 			};
 		})))
 	.then(selected =>
 	{
-		if (selected.prefix == "snippet: ")
+		if (selected.prefix == "snippet ")
 		{
 			var snippet = snippets.find(s => s.hint == selected.text);
 			insert(snippet.insert, snippet.cursor);
 			md.focus();
 		}
-		else if (selected.prefix == "note: ")
+		else if (selected.prefix == "note ")
 		{
 			loadnote(selected.text);
 		}
-		else if (selected.prefix == "setting: ")
+		else if (selected.prefix == "setting ")
 		{
 			editsetting(selected.text);
 		}

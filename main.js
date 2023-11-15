@@ -1770,14 +1770,15 @@ function commandpalette()
 		{
 			return {
 				text: command.hint,
-				suffix: command.shortcut ? [command.shortcut] : null
+				suffix: command.shortcut ? [command.shortcut.toLowerCase()] : null
 			};
 		})
 		.concat(snippets.map(s =>
 		{
 			return {
 				prefix: "snippet: ",
-				text: s.hint
+				text: s.hint,
+				suffix: [s.command]
 			};
 		}))
 		.concat(localdata.map(n =>

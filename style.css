@@ -1,7 +1,8 @@
 /* globals */
+
 :root {
 	--black: rgb(55, 53, 47);
-	--blue: #5AA7CE;
+	--accent: #5AA7CE;
 	--shadow: 0.75px 0 0;
 }
 
@@ -10,7 +11,7 @@ body {
 	margin-right: 7%;
 	background: white;
 	font-family: system-ui;
-	caret-color: var(--blue);
+	caret-color: var(--accent);
 	color: var(--black);
 }
 
@@ -29,6 +30,7 @@ input {
 }
 
 /* scrollbars */
+
 :root
 {
 	scrollbar-width: thin;
@@ -149,25 +151,92 @@ body::-webkit-scrollbar-thumb {
 	margin: 2px 2px 2px 2px;
 }
 
+.searchlistprefix {
+	color: grey;
+}
+
+.searchlistsuffix {
+	color: grey;
+}
+
 /* colors */
+
 .color-code {
 	color:lightgray;
 	background-color:var(--black);
 }
 
-.color-accent {
-	color: var(--blue);
+.color-heading-mark {
+	color: var(--accent);
+}
+
+.color-heading {
+	text-shadow: var(--shadow);
 }
 
 .color-bold {
 	text-shadow: var(--shadow);
 }
 
-.color-light {
-	color: lightgray;
+.color-emphasis {
+	font-style: italic;
+}
+
+.color-list-marker {
+	color: var(--accent);
+}
+
+.color-header {
+	color: lightgrey;
+}
+
+.color-code-language {
+	color: var(--accent);
+	text-shadow: var(--shadow);
+}
+
+.color-code-comment {
+	color: grey;
+}
+
+.color-code-keyword {
+	color: var(--accent);
+	text-shadow: var(--shadow);
+}
+
+.color-comment {
+	color: lightgrey;
+}
+
+.color-autocomplete {
+	color: lightgrey;
+}
+
+.color-link {
+	text-decoration: underline;
+}
+
+.color-todo-priority {
+	color: var(--accent);
+	text-shadow: var(--shadow);
+}
+
+.color-todo-complete {
+	color: lightgrey;
+	text-decoration: line-through;
+}
+
+.color-todo-project {
+	text-shadow: var(--shadow);
+	color: grey;
+}
+
+.color-todo-context {
+	color: grey;
 }
 
 /* link dialog */
+
 #linkdialog {
 	border-radius: 3px;
 	opacity:1;

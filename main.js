@@ -1809,7 +1809,7 @@ function searchinlist(list)
 			else
 			{
 				var ts = document.createElement("span");
-				ts.setAttribute("style", "color:grey");
+				ts.setAttribute("class", "searchlistprefix");
 				ts.innerHTML = item.prefix || "";
 				elt.appendChild(ts);
 
@@ -1822,7 +1822,7 @@ function searchinlist(list)
 					item.suffix.forEach(t =>
 					{
 						ts = document.createElement("span");
-						ts.setAttribute("style", "color:grey");
+						ts.setAttribute("class", "searchlistsuffix");
 						ts.innerHTML = "&nbsp;" + t;
 						elt.appendChild(ts);
 					});
@@ -2056,8 +2056,8 @@ function rawline2html(line, index, options)
 	// headings
 	if (line.startsWith("#"))
 	{
-		line = line.replace(/(#* )/, "<span class='color-accent'>$1</span>");
-		line = "<span class='color-bold'>" + line + "</span>";
+		line = line.replace(/(#* )/, "<span class='color-heading-mark'>$1</span>");
+		line = "<span class='color-heading'>" + line + "</span>";
 	}
 
 	// bold and italics
@@ -2067,7 +2067,7 @@ function rawline2html(line, index, options)
 		temp = line.substring(2);
 	}
 	temp = temp.replace(/\*\*([^\*]*)\*\*/g, "<span class='color-bold'>&#42;&#42;$1&#42;&#42;</span>");
-	temp = temp.replace(/\*([^\*]*)\*/g, "<em>&#42;$1&#42;</em>");
+	temp = temp.replace(/\*([^\*]*)\*/g, "<span class='color-emphasis'>&#42;$1&#42;</span>");
 
 	if (line.startsWith("* "))
 	{
@@ -2083,7 +2083,7 @@ function rawline2html(line, index, options)
 	{
 		if (line.startsWith(marker) && marker.trim())
 		{
-			line = line.replace(marker, "<span class='color-accent'>" + marker + "</span>");
+			line = line.replace(marker, "<span class='color-list-marker'>" + marker + "</span>");
 		}
 	});
 
@@ -2099,7 +2099,7 @@ function rawline2html(line, index, options)
 			options.header = false;
 		}
 		line = line || emptyline;
-		line = "<span style='color:lightgrey'>" + line + "</span>";
+		line = "<span class='color-header'>" + line + "</span>";
 	}
 
 	// code blocks
@@ -2107,7 +2107,7 @@ function rawline2html(line, index, options)
 	{
 		options.code = true;
 		options.language = line.substring(3);
-		line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span style='text-shadow:var(--shadow);color:var(--blue);'>$1</span>") + "</div>";
+		line = "<div class='color-code'>" + line.replace(new RegExp("(" + options.language + ")"), "<span class='color-code-language'>$1</span>") + "</div>";
 	}
 	else if (line == "```" && options.code)
 	{
@@ -2120,7 +2120,7 @@ function rawline2html(line, index, options)
 		var comment = false;
 		if (line.match(/^\s*\/\//))
 		{
-			line = "<span style='color:grey'>" + line + "</span>";
+			line = "<span class='color-code-comment'>" + line + "</span>";
 			comment = true;
 		}
 		line = "<div class='color-code'>" + (line || emptyline) + "</div>";
@@ -2129,16 +2129,16 @@ function rawline2html(line, index, options)
 			var keywords = languagekeywords[options.language];
 			keywords.forEach(keyword =>
 			{
-				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span style='text-shadow:var(--shadow);color:var(--blue)'>$1</span>");
+				line = line.replace(new RegExp("\\b(" + keyword + ")\\b", "ig"), "<span class='color-code-keyword'>$1</span>");
 			});
 		}
 	}
 
 	// internal links
-	line = line.replace(/\[\[(.*)\]\]/g, "[[<u>$1</u>]]");
+	line = line.replace(/\[\[(.*)\]\]/g, "[[<span class='color-link'>$1</span>]]");
 
 	// comments
-	line = line.replace(/&lt;\!--(.*)/g, "<span style='color:lightgrey'>&lt;!--$1</span>");
+	line = line.replace(/&lt;\!--(.*)/g, "<span class='color-comment'>&lt;!--$1</span>");
 
 	if (line.includes("&lt;!--") && !line.includes("--&gt;"))
 	{
@@ -2147,7 +2147,7 @@ function rawline2html(line, index, options)
 	else if (options.comment)
 	{
 		line = line || emptyline;
-		line = "<span style='color:lightgrey'>" + line
+		line = "<span class='color-comment'>" + line
 		if (line.includes("--&gt;"))
 		{
 			options.comment = false;
@@ -2162,7 +2162,7 @@ function rawline2html(line, index, options)
 
 	if (line.startsWith("// "))
 	{
-		line = "<span style='color:lightgrey'>" + line + "</span>";
+		line = "<span class='color-comment'>" + line + "</span>";
 	}
 
 	// autocomplete snippets
@@ -2183,7 +2183,7 @@ function rawline2html(line, index, options)
 
 				if (matching.length)
 				{
-					line += "<span class='color-light'>";
+					line += "<span class='color-autocomplete'>";
 					line += matching.join().substr(pos - slashpos - 1);
 					line += "</span>";
 				}
@@ -2196,13 +2196,13 @@ function rawline2html(line, index, options)
 	{
 		if (line.startsWith("x "))
 		{
-			line = "<del style='color:lightgrey'>" + line + "</del>";
+			line = "<span class='color-todo-complete'>" + line + "</span>";
 		}
 		else
 		{
-			line = line.replace(/(\(\w\))/g, "<span style='text-shadow:var(--shadow); color:var(--blue);'>$1</span>");
-			line = line.replace(/(@\w*)/g, "<span style='text-shadow:var(--shadow); color:grey'>$1</span>");
-			line = line.replace(/(\s\+\w*)/g, "<span style='color:grey'>$1</span>");
+			line = line.replace(/(\(\w\))/g, "<span class='color-todo-priority'>$1</span>");
+			line = line.replace(/(@\w*)/g, "<span class='color-todo-project'>$1</span>");
+			line = line.replace(/(\s\+\w*)/g, "<span class='color-todo-context'>$1</span>");
 		}
 	}
 
@@ -2210,7 +2210,7 @@ function rawline2html(line, index, options)
 	line = line.replace(/`(.*)`/, "<span class='color-code'>`$1`</span>");
 
 	// links
-	line = line.replace(/(http[^\s]*)/, "<u>$1</u>");
+	line = line.replace(/(http[^\s]*)/, "<span class='color-link'>$1</span>");
 
 	return line;
 }

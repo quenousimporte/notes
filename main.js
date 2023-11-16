@@ -1275,14 +1275,6 @@ function loadstorage()
 	}
 }
 
-function applystyle()
-{
-	document.body.style.fontSize = settings.fontsize;
-	document.body.style.lineHeight = settings.lineheight;
-	document.body.style.marginLeft = settings.margins;
-	document.body.style.marginRight = settings.margins;
-}
-
 function loadsettings()
 {
 	settings = {...defaultsettings};
@@ -1299,7 +1291,10 @@ function loadsettings()
 		}
 	}
 
-	applystyle();
+	document.body.style.fontSize = settings.fontsize;
+	document.body.style.lineHeight = settings.lineheight;
+	document.body.style.marginLeft = settings.margins;
+	document.body.style.marginRight = settings.margins;
 
 	if (settings.titlebydefault && title.hidden)
 	{

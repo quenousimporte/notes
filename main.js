@@ -1169,9 +1169,9 @@ function inserttodo()
 	var text = prompt("Text:");
 	if (text)
 	{
-		var todo = getnote("todo");
+		var todo = getorcreate("todo", "");
 		var split = headerandtext(todo);
-		todo.content = split.header + "* " + text + "\n" + split.text;
+		todo.content = split.header + text + "\n" + split.text;
 		if (todo == currentnote)
 		{
 			seteditorcontent(todo.content, true);
@@ -1255,7 +1255,7 @@ function loadstorage()
 		currentnote = getnote(title);
 		if (!currentnote)
 		{
-			var newcontent = defaultheaders(title, tags);
+			var newcontent = defaultheaders(tags);
 			currentnote = {title: title, content: newcontent, pos: newcontent.length};
 			localdata.unshift(currentnote);
 		}
@@ -2394,7 +2394,7 @@ function searchandloadnote()
 {
 	selectnote().then(selected =>
 	{
-		loadnote(selected.text);
+		loadnote(selected.text || selected);
 	});
 }
 
@@ -2549,7 +2549,7 @@ function insertheader()
 {
 	if (preview.hidden && !md.value.startsWith("---\n"))
 	{
-		var headers = defaultheaders(currentnote.title);
+		var headers = defaultheaders();
 		seteditorcontent(headers + md.value);
 		setpos(27);
 	}
@@ -2937,7 +2937,7 @@ function bindfile(note)
 	setpos(note.pos || 0);
 }
 
-function defaultheaders(title, tags = "")
+function defaultheaders(tags = "")
 {
 	return [
 		"---",
@@ -2949,7 +2949,7 @@ function defaultheaders(title, tags = "")
 
 function loadnote(name)
 {
-	var note = getorcreate(name, defaultheaders(name), true);
+	var note = getorcreate(name, defaultheaders(), true);
 	bindfile(note);
 
 	stat.cur.q = 0;

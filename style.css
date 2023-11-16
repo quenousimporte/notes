@@ -50,6 +50,7 @@ body::-webkit-scrollbar-thumb {
 
 #notepage {
 	width: 100%;
+	display: table;
 }
 
 #md {

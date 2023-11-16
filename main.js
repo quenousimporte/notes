@@ -1514,7 +1514,6 @@ function queryremote(params)
 					}
 					else
 					{
-						notepage.style.display = "table";
 						apply(data);
 					}
 				})

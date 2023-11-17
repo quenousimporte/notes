@@ -2381,7 +2381,7 @@ function searchautocomplete()
 {
 	selectnote().then(selected =>
 	{
-		insertautocomplete(selected.text);
+		insertautocomplete(selected.text || selected);
 	});
 }
 

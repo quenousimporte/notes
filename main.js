@@ -1998,7 +1998,8 @@ function save()
 			}
 			else if (!saved)
 			{
-				console.log("save failed. Data unsaved on server, manual action required.");
+				console.log("save failed. Data unsaved on server. Will retry.");
+				datachanged();
 			}
 		});
 	}

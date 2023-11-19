@@ -495,9 +495,9 @@ function showinfo()
 	var tags = gettags(currentnote);
 	showtemporaryinfo(
 		[
+			"saved: " + saved + (lastsaved? " (" + lastsaved + ")": ""),
 			"sync: " + (settings.sync ? "en" : "dis") + "abled",
 			"title: " + currentnote.title,
-			"saved: " + saved + (lastsaved? " (" + lastsaved + ")": ""),
 			"line count: " + md.value.split("\n").length,
 			"word count: " + getwords(),
 			"cursor position: " + md.selectionStart + " (" + pospercent() + "%)",

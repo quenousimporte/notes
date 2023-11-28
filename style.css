@@ -10,7 +10,7 @@ body {
 	margin-left: 7%;
 	margin-right: 7%;
 	background: white;
-	font-family: system-ui;
+	font-family: helvetica, system-ui;
 	caret-color: var(--accent);
 	color: var(--black);
 }

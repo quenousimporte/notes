@@ -50,6 +50,13 @@ body::-webkit-scrollbar-thumb {
 
 /* note page and editor */
 
+#unsavedmark {
+	position: fixed;
+	top: 0;
+	left: 5px;
+	color: lightgrey;
+}
+
 #notepage {
 	width: 100%;
 	display: table;

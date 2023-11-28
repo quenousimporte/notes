@@ -13,7 +13,8 @@ var defaultsettings =
 	password: "",
 	sync: false,
 	tagsinlists: true,
-	uselinkpopup: true
+	uselinkpopup: true,
+	useunsavedmark: false
 };
 
 //builtin
@@ -1917,6 +1918,7 @@ function postpone()
 
 function setsaved()
 {
+	unsavedmark.hidden = true;
 	saved = true;
 	lastsaved = timestamp();
 }
@@ -2277,6 +2279,7 @@ function datachanged()
 	resize();
 
 	saved = false;
+	unsavedmark.hidden = !settings.useunsavedmark;
 
 	postpone()
 	.then(save);

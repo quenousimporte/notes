@@ -312,6 +312,11 @@ var snippets = [
 	hint: "Comment",
 	insert: "<!--\n\n-->",
 	cursor: -4
+},
+{
+	command: "/done",
+	hint: "Mark todo entry done",
+	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];
 
 function seteditorcontent(content, silent)

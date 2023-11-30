@@ -2167,12 +2167,6 @@ function rawline2html(line, index, options)
 		line = "<span class='color-comment'>" + line + "</span>";
 	}
 
-	// hl
-	if (line == "---")
-	{
-		line = "<hr>";
-	}
-
 	// autocomplete snippets
 	if (index == currentline())
 	{

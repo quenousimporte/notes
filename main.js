@@ -314,7 +314,7 @@ var snippets = [
 	cursor: -4
 },
 {
-	command: "/done",
+	command: "/x",
 	hint: "Mark todo entry done",
 	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];

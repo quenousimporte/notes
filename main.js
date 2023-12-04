@@ -2669,6 +2669,7 @@ function mainkeydownhandler()
 	else if (event.ctrlKey && event.key == "b" && md.selectionStart < md.selectionEnd)
 	{
 		boldify();
+		event.preventDefault();
 	}
 	else if (event.ctrlKey && event.shiftKey && (event.keyCode == "40" || event.keyCode == "38"))
 	{

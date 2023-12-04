@@ -403,6 +403,14 @@ function getrangecontent(range)
 	return md.value.substring(range.start, range.end);
 }
 
+function currentrange()
+{
+	return {
+		start: md.selectionStart,
+		end: md.selectionEnd
+	};
+}
+
 function createsubnote()
 {
 	var title = prompt("Subnote tite:");
@@ -2624,6 +2632,25 @@ function esc(event)
 	}
 }
 
+function boldify()
+{
+	var pos = currentrange();
+	var newcontent;
+	var offset = 2;
+	if (md.value.substr(pos.start - 2, 2) == "**" && md.value.substr(pos.end, 2) == "**")
+	{
+		newcontent = md.value.substr(0, pos.start - 2) + md.value.substr(pos.start, pos.end - pos.start) + md.value.substr(pos.end + 2);
+		offset = -2;
+	}
+	else
+	{
+		newcontent = md.value.substr(0, pos.start) + "**" + md.value.substr(pos.start, pos.end - pos.start) + "**" + md.value.substr(pos.end);
+	}
+
+	seteditorcontent(newcontent);
+	md.setSelectionRange(pos.start + offset, pos.end + offset);
+}
+
 function mainkeydownhandler()
 {
 	if (event.key == "Escape")
@@ -2642,6 +2669,10 @@ function mainkeydownhandler()
 	{
 		commandpalette();
 		event.preventDefault();
+	}
+	else if (event.ctrlKey && event.key == "b" && md.selectionStart < md.selectionEnd)
+	{
+		boldify();
 	}
 	else if (event.ctrlKey && event.shiftKey && (event.keyCode == "40" || event.keyCode == "38"))
 	{

@@ -428,11 +428,7 @@ function createsubnote()
 	}
 	else
 	{
-		var range =
-		{
-			start: md.selectionStart,
-			end: md.selectionEnd
-		}
+		var range = currentrange();
 		var content = getrangecontent(range);
 		var newnote =
 		{
@@ -2676,10 +2672,7 @@ function mainkeydownhandler()
 	}
 	else if (event.ctrlKey && event.shiftKey && (event.keyCode == "40" || event.keyCode == "38"))
 	{
-		var pos = {
-			start: md.selectionStart,
-			end: md.selectionEnd
-		};
+		var pos = currentrange();
 		var direction = event.keyCode == "40" ? 1 : -1;
 		var start = lineatpos(md.selectionStart);
 		var end = lineatpos(md.selectionEnd);
@@ -2809,10 +2802,7 @@ function editorkeydown()
 	else if (event.key === "Tab")
 	{
 		event.preventDefault();
-		var init = {
-			start: md.selectionStart,
-			end: md.selectionEnd
-		};
+		var init = currentrange();
 		var range = getlinesrange();
 		range.start--;
 		range.end--;

@@ -1691,7 +1691,7 @@ function showgrepresult(needle, grepresult)
 
 function showgrep()
 {
-	var text = prompt("Search:");
+	var text = prompt("Search:", md.selectionEnd > md.selectionStart ? md.value.substr(md.selectionStart, md.selectionEnd - md.selectionStart).trim() : "");
 	if (text)
 	{
 		showgrepresult(text, grep(text));

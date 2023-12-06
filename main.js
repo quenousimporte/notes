@@ -145,12 +145,12 @@ var commands = [
 {
 	hint: "Load previous note",
 	action: loadprevious,
-	shortcut: "ctrl+b"
+	shortcut: "alt+ArrowLeft"
 },
 {
 	hint: "Load next note",
 	action: loadnext,
-	shortcut: "ctrl+shift+B"
+	shortcut: "alt+ArrowRight"
 },
 {
 	hint: "Settings",
@@ -1442,7 +1442,7 @@ function ics2json(ics)
 	return events.sort( (a,b) => a.DTSTART - b.DTSTART);
 }
 
-function getorcreate(title, content, putontop)
+function getorcreate(title, content)
 {
 	var note = getnote(title);
 	if (!note)
@@ -1451,11 +1451,6 @@ function getorcreate(title, content, putontop)
 		localdata.push(note)
 	}
 
-	if (putontop)
-	{
-		localdata.splice(localdata.indexOf(note), 1);
-		localdata.unshift(note);
-	}
 	return note;
 }
 
@@ -1628,7 +1623,7 @@ function loadprevious()
 function loadnext()
 {
 	var index = localdata.indexOf(currentnote);
-	if (index > -1 && index > 1)
+	if (index > -1 && index > 0)
 	{
 		loadnote(localdata[index - 1].title);
 	}
@@ -2577,7 +2572,7 @@ function splitshortcut(s)
 function shortcutmatches(event, shortcut)
 {
 	var s = splitshortcut(shortcut);
-	return (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey))
+	return (event.key == s.key && !(s.ctrl && !event.ctrlKey && !event.altKey) && !(s.shift && !event.shiftKey) && !(s.alt && !event.altKey))
 }
 
 function executecommand(command)
@@ -2974,7 +2969,7 @@ function defaultheaders(tags = "")
 
 function loadnote(name)
 {
-	var note = getorcreate(name, defaultheaders(), true);
+	var note = getorcreate(name, defaultheaders());
 	bindfile(note);
 
 	stat.cur.q = 0;

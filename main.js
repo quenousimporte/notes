@@ -2642,6 +2642,23 @@ function boldify()
 	md.setSelectionRange(pos.start + offset, pos.end + offset);
 }
 
+function snippetautocomplete()
+{
+	var tocursor = md.value.substr(0, md.selectionStart)
+	var slashindex = tocursor.lastIndexOf("/");
+	if (slashindex > tocursor.lastIndexOf(" ") && slashindex > tocursor.lastIndexOf("\n"))
+	{
+		var commandbegin = tocursor.substr(slashindex);
+		var snippet = snippets.find(s => s.command.startsWith(commandbegin));
+		if (snippet)
+		{
+			insert(snippet.insert, snippet.cursor, commandbegin.length);
+			return true;
+		}
+	}
+	return false;
+}
+
 function mainkeydownhandler()
 {
 	if (event.key == "Escape")
@@ -2798,36 +2815,39 @@ function editorkeydown()
 	else if (event.key === "Tab")
 	{
 		event.preventDefault();
-		var init = currentrange();
-		var range = getlinesrange();
-		range.start--;
-		range.end--;
-		var selection = md.value.substring(range.start, range.end);
-		var newtext;
-		if (event.shiftKey)
+		if (!snippetautocomplete())
 		{
-			newtext = selection.replaceAll("\n    ", "\n");
-		}
-		else
-		{
-			newtext = selection.replaceAll("\n", "\n    ");
-		}
-		seteditorcontent(md.value.substring(0, range.start)
-			+ newtext
-			+ md.value.substring(range.end));
+			var init = currentrange();
+			var range = getlinesrange();
+			range.start--;
+			range.end--;
+			var selection = md.value.substring(range.start, range.end);
+			var newtext;
+			if (event.shiftKey)
+			{
+				newtext = selection.replaceAll("\n    ", "\n");
+			}
+			else
+			{
+				newtext = selection.replaceAll("\n", "\n    ");
+			}
+			seteditorcontent(md.value.substring(0, range.start)
+				+ newtext
+				+ md.value.substring(range.end));
 
-		var shift = 0;
-		if (newtext.length < selection.length)
-		{
-			shift = -4;
-		}
-		else if (newtext.length > selection.length)
-		{
-			shift = 4;
-		}
+			var shift = 0;
+			if (newtext.length < selection.length)
+			{
+				shift = -4;
+			}
+			else if (newtext.length > selection.length)
+			{
+				shift = 4;
+			}
 
-		md.selectionStart = init.start + shift;
-		md.selectionEnd = init.end + (newtext.length - selection.length);
+			md.selectionStart = init.start + shift;
+			md.selectionEnd = init.end + (newtext.length - selection.length);
+		}
 	}
 	else if (event.key === "[" && before(1) == "[")
 	{

@@ -2968,13 +2968,14 @@ function bindfile(note)
 	}
 	resize();
 
-	// to improve...
+	setpos(note.pos || 0);
+
 	if (!issplit() && searchdialog.hidden)
 	{
+		// force to scroll to cursor pos
+		md.blur();
 		md.focus();
 	}
-
-	setpos(note.pos || 0);
 }
 
 function defaultheaders(tags = "")

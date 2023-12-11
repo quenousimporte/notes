@@ -2991,6 +2991,18 @@ function defaultheaders(tags = "")
 function loadnote(name)
 {
 	var note = getorcreate(name, defaultheaders());
+
+	if (gettags(note).includes("journal"))
+	{
+		var hat = headerandtext(note);
+		var today = timestamp().substr(0,10);
+		if (!hat.text.startsWith("\n" + today))
+		{
+			note.content = hat.header + "\n" + today + "\n\n" + hat.text;
+			note.pos = hat.header.length + 12;
+		}
+	}
+
 	bindfile(note);
 
 	stat.cur.q = 0;

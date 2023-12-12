@@ -33,7 +33,6 @@ var lastsaved = "";
 var pending = false;
 var settings = null;
 var tags = null;
-var linkpopupid = null;
 var titlemap = {};
 
 var stat =
@@ -826,8 +825,6 @@ function showlinkdialog(link)
 
 	div.appendChild(a);
 
-	clearTimeout(linkpopupid);
-	linkpopupid = setTimeout(removelinkdialog, 3000);
 	notepage.appendChild(div);
 }
 

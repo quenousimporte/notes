@@ -13,7 +13,8 @@ var defaultsettings =
 	password: "",
 	sync: false,
 	tagsinlists: true,
-	uselinkpopup: true
+	uselinkpopup: true,
+	autosorttodo: true
 };
 
 //builtin
@@ -264,7 +265,7 @@ var commands = [
 },
 {
 	hint: "Sort todo.txt list",
-	action: sorttodotxt
+	action: sortcurrentastodo
 },
 {
 	hint: "Sort text",
@@ -2400,45 +2401,56 @@ function searchandloadnote()
 	});
 }
 
-function currentistodo()
+function istodo(note)
 {
-	return currentnote.title.includes("todo") || gettags(currentnote).includes("todo");
+	return note.title.includes("todo") || gettags(note).includes("todo");
 }
 
-function sorttodotxt()
+function currentistodo()
+{
+	return istodo(currentnote);
+}
+
+function sorttodotxt(note)
+{
+	var hat = headerandtext(note);
+	var olditems = hat.text.split("\n");
+	var prio = [];
+	var std = [];
+	var done = [];
+	olditems.forEach(item =>
+	{
+		if (item)
+		{
+			if (item.startsWith("("))
+			{
+				item = item.substring(4);
+				var priority = String.fromCharCode(65 + prio.length);
+				prio.push(`(${priority}) ${item}`);
+			}
+			else if (item.startsWith("x "))
+			{
+				done.push(item);
+			}
+			else
+			{
+				std.push(item);
+			}
+		}
+	});
+
+	prio = prio.sort((a,b) => a.localeCompare(b));
+	done = done.sort((a,b) => a.localeCompare(b));
+	var all = prio.concat(std).concat(done);
+	note.content = hat.header + all.join("\n");
+}
+
+function sortcurrentastodo()
 {
 	if (currentistodo())
 	{
-		var hat = headerandtext(currentnote);
-		var olditems = hat.text.split("\n");
-		var prio = [];
-		var std = [];
-		var done = [];
-		olditems.forEach(item =>
-		{
-			if (item)
-			{
-				if (item.startsWith("("))
-				{
-					item = item.substring(4);
-					var priority = String.fromCharCode(65 + prio.length);
-					prio.push(`(${priority}) ${item}`);
-				}
-				else if (item.startsWith("x "))
-				{
-					done.push(item);
-				}
-				else
-				{
-					std.push(item);
-				}
-			}
-		});
-
-		prio = prio.sort((a,b) => a.localeCompare(b));
-		done = done.sort((a,b) => a.localeCompare(b));
-		var all = prio.concat(std).concat(done);
-		seteditorcontent(hat.header + all.join("\n"));
+		sorttodotxt(currentnote);
+		seteditorcontent(currentnote.content);
 	}
 }
 
@@ -3001,6 +3013,11 @@ function loadnote(name)
 			note.content = hat.header + "\n" + today + "\n\n" + hat.text;
 			note.pos = hat.header.length + 12;
 		}
+	}
+
+	if (settings.autosorttodo && istodo(note))
+	{
+		sorttodotxt(note);
 	}
 
 	bindfile(note);

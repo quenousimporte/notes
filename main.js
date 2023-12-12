@@ -274,6 +274,11 @@ var commands = [
 {
 	hint: "Show backlinks",
 	action: backlinks
+},
+{
+	hint: "Remove completed tasks",
+	action: purgetodo,
+	allowunsaved: true
 }];
 
 var snippets = [
@@ -318,6 +323,14 @@ var snippets = [
 	hint: "Mark todo entry done",
 	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];
+
+function purgetodo()
+{
+	if (currentistodo() && confirm("Remove completed tasks?"))
+	{
+		seteditorcontent(currentnote.content.replace(/\nx .*/g, ""));
+	}
+}
 
 function seteditorcontent(content, silent)
 {

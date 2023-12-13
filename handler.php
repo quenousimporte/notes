@@ -35,19 +35,6 @@ else if (isset($_POST['action']))
 			}
 		break;
 
-		case 'cal':
-			if ($icsfile)
-			{
-				$result = array();
-				$result["ics"] = file_get_contents($icsfile);
-				echo json_encode($result);
-			}
-			else
-			{
-				echo '{"error": "cannot load ics file"}';
-			}
-		break;
-
 		case 'title':
 			$result = array();
 			$str = file_get_contents($_POST['data']);

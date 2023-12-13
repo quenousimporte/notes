@@ -238,12 +238,6 @@ var commands = [
 	action: decryptnote
 },
 {
-	hint: "Show upcoming events",
-	action: showupcomingevents,
-	remoteonly: true,
-	shortcut: "ctrl+e"
-},
-{
 	hint: "Restore deleted note",
 	action: restoredeleted
 },
@@ -924,67 +918,6 @@ function changesetting()
 	});
 }
 
-function showupcomingevents()
-{
-	queryremote({action: "cal"})
-	.then(data =>
-	{
-		if (!data.ics)
-		{
-			throw "could not retrieve events";
-		}
-
-		// keep future only
-		var events = ics2json(data.ics)
-		.filter(e => e.DTSTART >= new Date);
-
-		// sort by years and months
-		var sorted = {};
-		events.forEach(event =>
-		{
-			var date = new Date(event.DTSTART);
-			if (date >= new Date)
-			{
-				event.readabledate = date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-				var month = event.readabledate.split(" ")[2];
-				var year = event.readabledate.split(" ")[3];
-				sorted[year] = sorted[year] || {};
-				sorted[year][month] = sorted[year][month] || [];
-				sorted[year][month].push(event);
-			}
-		});
-
-		// build output
-		var content = "";
-		for (var year in sorted)
-		{
-			content += "# " + year + "\n";
-			for (var month in sorted[year])
-			{
-				content += "## " + month.charAt(0).toUpperCase() + month.slice(1) + "\n";
-				for (var i in sorted[year][month])
-				{
-					var event = sorted[year][month][i];
-					if (i > 0 && event.DTSTART.getDate() != sorted[year][month][i-1].DTSTART.getDate() && event.DTSTART.getDay() <= sorted[year][month][i-1].DTSTART.getDay())
-					{
-						content += "\n\n";
-					}
-					content += event.readabledate.split(" ")[0] + " " + event.readabledate.split(" ")[1] + ": " + event.SUMMARY + "\n";
-				}
-			}
-		}
-
-		bindfile(
-		{
-			title: "Upcoming events",
-			content
-		});
-		togglepreview();
-
-	})
-	.catch(remotecallfailed);
-}
-
 function decryptnote()
 {
 	decryptstring(md.value)
@@ -1387,51 +1320,6 @@ function init()
 			md.focus();
 		}
 	}
-}
-
-function cvdt(text)
-{
-	var day = text.substr(0,8);
-	var time = text.substr(9,6);
-	return new Date(
-		day.substr(0,4),
-		parseInt(day.substr(4,2)) - 1,
-		day.substr(6,2),
-		time.substr(0,2),
-		time.substr(2,2),
-		time.substr(4,2));
-}
-
-function ics2json(ics)
-{
-	var events = [];
-	ics.split("BEGIN:VEVENT").forEach(block =>
-	{
-		var evt = {};
-		block.split("\r\n").forEach(line =>
-		{
-			var tuple = line.split(":");
-			if (tuple.length > 1)
-			{
-				var field = tuple.shift().split(";")[0];
-				var value = tuple.join(":");
-				if (field == "DTSTART")
-				{
-					evt.DTSTART = cvdt(value);
-				}
-				else if (field == "UID" || field == "SUMMARY")
-				{
-					evt[field] = value;
-				}
-			}
-		});
-
-		if (evt.UID && evt.SUMMARY && evt.DTSTART)
-		{
-			events.push(evt);
-		}
-	});
-	return events.sort( (a,b) => a.DTSTART - b.DTSTART);
 }
 
 function getorcreate(title, content)

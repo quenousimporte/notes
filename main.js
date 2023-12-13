@@ -3016,9 +3016,13 @@ function loadnote(name)
 
 	if (gettags(note).includes("journal"))
 	{
+		// remove empty entries
+		note.content = note.content.replace(/\d{4}-\d{2}-\d{2}\n*(\d{4}-\d{2}-\d{2})/g, "$1");
+
+		// create new entry for today
 		var hat = headerandtext(note);
 		var today = timestamp().substr(0,10);
-		if (!hat.text.startsWith("\n" + today))
+		if (!hat.text.startsWith(today) && !hat.text.startsWith("\n" + today))
 		{
 			note.content = hat.header + "\n" + today + "\n\n" + hat.text;
 			note.pos = hat.header.length + 12;

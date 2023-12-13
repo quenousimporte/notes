@@ -2,5 +2,4 @@
 	$datafile = '../data/data.acs';
 	$icsfile = '';
 	$password = '';
-	$smsurl = '';
 ?>

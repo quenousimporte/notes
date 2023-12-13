@@ -230,12 +230,6 @@ var commands = [
 	action: inserttodo
 },
 {
-	hint: "Send an SMS",
-	action: sms,
-	remoteonly: true,
-	allowunsaved: true
-},
-{
 	hint: "Edit pgp keys",
 	action: editpgpkeys
 },
@@ -391,19 +385,6 @@ function decryptstring(str)
 		}
 		return chunks.join('');
 	})
-}
-
-function sms()
-{
-	var messsage = prompt("Type your message:");
-	if (messsage)
-	{
-		queryremote({action: "sms", data: messsage})
-		.then(data =>
-		{
-			showtemporaryinfo("SMS sent. Result: '" + data.result + "'");
-		});
-	}
 }
 
 function getnote(title)

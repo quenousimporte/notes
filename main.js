@@ -1291,10 +1291,16 @@ function init()
 			})
 			.catch(err =>
 				{
-					console.log(err);
-					settings.password = prompt("Password: ", settings.password);
-					savesettings();
-					init();
+					if (err == "Authent failed")
+					{
+						settings.password = prompt("Password: ", settings.password);
+						savesettings();
+						init();
+					}
+					else
+					{
+						showtemporaryinfo(err);
+					}
 				});
 		}
 		else
@@ -1387,10 +1393,6 @@ function queryremote(params)
 							failed("Remote handler returned an error: " + data.error);
 						}
 					}
-					else if (data.warning)
-					{
-						console.warn("Remote warning: " + data.warning);
-					}
 					else
 					{
 						apply(data);
@@ -1398,7 +1400,8 @@ function queryremote(params)
 				})
 				.catch( error =>
 				{
-					failed("Handler result is not valid. JS error: " + error);
+					failed("Could not decrypt or parse data file.");
+					console.error(error);
 				});
 			}
 		}

@@ -328,6 +328,7 @@ function seteditorcontent(content, silent)
 	{
 		datachanged();
 	}
+	resize();
 }
 
 function encryptstring(str)
@@ -2158,12 +2159,11 @@ function editorinput()
 	var multiline = md.value.substring(md.selectionStart, md.selectionEnd).includes("\n");
 	applycolors(!multiline && event.data && (event.inputType == "insertText" || event.inputType == "deleteContentBackward" || event.inputType == "deleteContentForward"));
 	datachanged();
+	resize();
 }
 
 function datachanged()
 {
-	resize();
-
 	saved = false;
 	unsavedmark.hidden = !settings.sync;
 

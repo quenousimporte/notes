@@ -333,7 +333,6 @@ function seteditorcontent(content, silent)
 
 function encryptstring(str)
 {
-	console.log("encrypting...");
 	var key = localStorage.getItem("pgpkeys").split("-----BEGIN PGP PRIVATE KEY BLOCK-----")[0];
 	var publicKey = null;
 	return openpgp.readKey({ armoredKey: key })
@@ -357,7 +356,7 @@ function decryptstring(str)
 		// console.log(str + ": string is not encrypted");
 		return Promise.resolve(str);
 	}
-	console.log("decrypting...");
+
 	var key = localStorage.getItem("pgpkeys").split("-----END PGP PUBLIC KEY BLOCK-----")[1];
 	var privateKey = null;
 	return openpgp.readKey({ armoredKey: key })
@@ -1407,7 +1406,9 @@ function queryremote(params)
 			}
 		}
 
-		xhr.send(paramlist.join("&"));
+		var paramstring = paramlist.join("&");
+		console.log("http request length: " + formatsize(paramstring.length));
+		xhr.send(paramstring);
 	});
 }
 
@@ -1859,7 +1860,6 @@ function save()
 	putontop();
 
 	window.localStorage.setItem("data", JSON.stringify(localdata));
-	console.log("data serialized in local storage")
 
 	if (settings.sync)
 	{

@@ -2202,7 +2202,7 @@ function showhelp()
 
 	commands
 	.filter(command => Boolean(command.shortcut))
-	.forEach(command => help.push(command.hint + ": " + command.shortcut));
+	.forEach(command => help.push(command.hint + ": " + command.shortcut.toLowerCase()));
 
 	help.push("## Snippets");
 	snippets.forEach(snippet =>

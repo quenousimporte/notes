@@ -34,6 +34,7 @@ var pending = false;
 var settings = null;
 var tags = null;
 var titlemap = {};
+var clip = "";
 
 var stat =
 {
@@ -1179,6 +1180,12 @@ function loadstorage()
 	var title = params.get("n");
 	var line = params.get("l");
 	var tags = params.get("t");
+	clip = params.get("c");
+
+	if (clip)
+	{
+		title = "bookmarks";
+	}
 
 	if (currentnote)
 	{
@@ -1193,6 +1200,12 @@ function loadstorage()
 			currentnote = {title: title, content: newcontent, pos: newcontent.length};
 			localdata.unshift(currentnote);
 		}
+		if (clip)
+		{
+			hat = headerandtext(currentnote);
+			var dt = timestamp().substr(0,10);
+			currentnote.content = hat.header + dt + " " + clip + "\n\n" + hat.text;
+		}
 	}
 
 	if (currentnote)
@@ -1201,6 +1214,16 @@ function loadstorage()
 		if (line)
 		{
 			gotoline(line);
+		}
+		if (clip)
+		{
+			colored.hidden = true;
+			var msg = document.createElement("div");
+			msg.innerText = "Clipping...";
+			msg.setAttribute("style", "width:100px;height:100px;top:0;left:0");
+			notepage.appendChild(msg);
+			saved = false;
+			save();
 		}
 	}
 	else
@@ -1809,6 +1832,10 @@ function setsaved()
 	unsavedmark.hidden = true;
 	saved = true;
 	lastsaved = timestamp();
+	if (clip)
+	{
+		close();
+	}
 }
 
 function save()

@@ -268,6 +268,10 @@ var commands = [
 	hint: "Remove completed tasks",
 	action: purgetodo,
 	allowunsaved: true
+},
+{
+	hint: "Browse bookmarks",
+	action: browsebookmarks
 }];
 
 var snippets = [
@@ -312,6 +316,21 @@ var snippets = [
 	hint: "Mark todo entry done",
 	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];
+
+
+function browsebookmarks()
+{
+	var bookmarks = JSON.parse(getnote("bookmarks").content);
+	searchinlist(bookmarks.map(b => b.title))
+	.then(title =>
+	{
+		var url = bookmarks
+		.find(b => b.title == title)
+		.url;
+
+		window.open(url, "_blank");
+	});
+}
 
 function purgetodo()
 {
@@ -1184,7 +1203,30 @@ function loadstorage()
 
 	if (clip)
 	{
-		title = "bookmarks";
+		var bmnote = getnote("bookmarks");
+		if (!bmnote)
+		{
+			bmnote = {title: "bookmarks", content: "[]"};
+			localdata.unshift(bmnote);
+		}
+
+		var bookmarks = JSON.parse(bmnote.content);
+		bookmarks.unshift(JSON.parse(clip));
+		bmnote.content = JSON.stringify(bookmarks, null, " ");
+
+		bindfile(bmnote);
+
+		colored.hidden = true;
+		md.hidden = true;
+		var msg = document.createElement("div");
+		msg.innerText = "Clipping...";
+		msg.setAttribute("style", "width:100px;height:100px;top:0;left:0");
+		notepage.appendChild(msg);
+
+		saved = false;
+		save();
+
+		return;
 	}
 
 	if (currentnote)
@@ -1200,12 +1242,6 @@ function loadstorage()
 			currentnote = {title: title, content: newcontent, pos: newcontent.length};
 			localdata.unshift(currentnote);
 		}
-		if (clip)
-		{
-			hat = headerandtext(currentnote);
-			var dt = timestamp().substr(0,10);
-			currentnote.content = hat.header + dt + " " + clip + "\n\n" + hat.text;
-		}
 	}
 
 	if (currentnote)
@@ -1214,16 +1250,6 @@ function loadstorage()
 		if (line)
 		{
 			gotoline(line);
-		}
-		if (clip)
-		{
-			colored.hidden = true;
-			var msg = document.createElement("div");
-			msg.innerText = "Clipping...";
-			msg.setAttribute("style", "width:100px;height:100px;top:0;left:0");
-			notepage.appendChild(msg);
-			saved = false;
-			save();
 		}
 	}
 	else

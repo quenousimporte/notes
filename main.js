@@ -1673,6 +1673,13 @@ function commandpalette()
 				text: s,
 				suffix: s == "password" ? null : [settings[s]]
 			};
+		}))
+		.concat(JSON.parse((getnote("bookmarks") || {content: "[]"}).content).map(b =>
+		{
+			return {
+				prefix: "open bookmark ",
+				text: b.title
+			};
 		})))
 	.then(selected =>
 	{
@@ -1689,6 +1696,10 @@ function commandpalette()
 		else if (selected.prefix == "setting ")
 		{
 			editsetting(selected.text);
+		}
+		else if (selected.prefix == "open bookmark ")
+		{
+			window.open(JSON.parse(getnote("bookmarks").content).find(b => b.title == selected.text).url, "_blank");
 		}
 		else
 		{

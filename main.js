@@ -1210,7 +1210,6 @@ function loadstorage()
 		md.hidden = true;
 		var msg = document.createElement("div");
 		msg.innerText = "Clipping...";
-		msg.setAttribute("style", "width:100px;height:100px;top:0;left:0");
 		notepage.appendChild(msg);
 
 		saved = false;

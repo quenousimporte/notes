@@ -321,14 +321,7 @@ function browsebookmarks()
 {
 	var bookmarks = JSON.parse(getnote("bookmarks").content);
 	searchinlist(bookmarks.map(b => b.title))
-	.then(title =>
-	{
-		var url = bookmarks
-		.find(b => b.title == title)
-		.url;
-
-		window.open(url, "_blank");
-	});
+	.then(openbookmark);
 }
 
 function purgetodo()
@@ -1639,6 +1632,11 @@ function titlewithtags(note)
 	return text;
 }
 
+function openbookmark(title)
+{
+	window.open(JSON.parse(getnote("bookmarks").content).find(b => b.title == title).url, "_blank");
+}
+
 function commandpalette()
 {
 	searchinlist(commands
@@ -1699,7 +1697,7 @@ function commandpalette()
 		}
 		else if (selected.prefix == "open bookmark ")
 		{
-			window.open(JSON.parse(getnote("bookmarks").content).find(b => b.title == selected.text).url, "_blank");
+			openbookmark(selected.text);
 		}
 		else
 		{

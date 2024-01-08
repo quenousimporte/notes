@@ -316,11 +316,15 @@ var snippets = [
 	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];
 
+function getbookmarks()
+{
+	var note = getnote("bookmarks") || {title: "bookmarks", content: "[]"};
+	return JSON.parse(note.content);
+}
 
 function browsebookmarks()
 {
-	var bookmarks = JSON.parse(getnote("bookmarks").content);
-	searchinlist(bookmarks.map(b => b.title))
+	searchinlist(getbookmarks().map(b => b.title))
 	.then(openbookmark);
 }
 
@@ -1195,14 +1199,8 @@ function loadstorage()
 
 	if (clip)
 	{
-		var bmnote = getnote("bookmarks");
-		if (!bmnote)
-		{
-			bmnote = {title: "bookmarks", content: "[]"};
-			localdata.unshift(bmnote);
-		}
-
-		var bookmarks = JSON.parse(bmnote.content);
+		var bmnote = getorcreate("bookmarks", "[]");
+		var bookmarks = getbookmarks();
 		bookmarks.unshift(JSON.parse(clip));
 		bmnote.content = JSON.stringify(bookmarks, null, " ");
 
@@ -1634,7 +1632,7 @@ function titlewithtags(note)
 
 function openbookmark(title)
 {
-	window.open(JSON.parse(getnote("bookmarks").content).find(b => b.title == title).url, "_blank");
+	window.open(getbookmarks().find(b => b.title == title).url, "_blank");
 }
 
 function commandpalette()
@@ -1672,7 +1670,7 @@ function commandpalette()
 				suffix: s == "password" ? null : [settings[s]]
 			};
 		}))
-		.concat(JSON.parse((getnote("bookmarks") || {content: "[]"}).content).map(b =>
+		.concat(getbookmarks().map(b =>
 		{
 			return {
 				prefix: "open bookmark ",

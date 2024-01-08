@@ -2910,7 +2910,7 @@ function bookmarkspreview()
 	var bookmarks = JSON.parse(md.value);
 	return "# Bookmarks" + bookmarks.reduce( (acc, cur) =>
 	{
-		return acc + "[" + cur.title + "](" + cur.url + ")\n";
+		return acc + "* [" + cur.title + "](" + cur.url + ")\n";
 	}, "\n");
 }
 

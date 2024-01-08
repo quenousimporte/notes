@@ -2831,9 +2831,18 @@ function insertautocomplete(selectednote)
 	insert(selectednote + "]] ");
 }
 
+function bookmarkspreview()
+{
+	var bookmarks = JSON.parse(md.value);
+	return "# Bookmarks" + bookmarks.reduce( (acc, cur) =>
+	{
+		return acc + "[" + cur.title + "](" + cur.url + ")\n";
+	}, "\n");
+}
+
 function togglepreview()
 {
-	preview.innerHTML = md2html(md.value);
+	preview.innerHTML = md2html(currentnote.title == "bookmarks" ? bookmarkspreview() : md.value);
 	toggleeditor(!md.hidden);
 	preview.hidden = !preview.hidden;
 
@@ -2965,7 +2974,7 @@ function loadnote(name)
 	stat.cur.d = 0;
 	stat.cur.t = timestamp();
 
-	if (!preview.hidden || (preview.hidden && gettags(note).indexOf("preview") !== -1))
+	if (!preview.hidden || (preview.hidden && (gettags(note).indexOf("preview") !== -1) || note.title == "bookmarks"))
 	{
 		togglepreview();
 	}

@@ -34,7 +34,6 @@ var pending = false;
 var settings = null;
 var tags = null;
 var titlemap = {};
-var clip = "";
 
 var stat =
 {
@@ -1199,7 +1198,7 @@ function loadstorage()
 	var title = params.get("n");
 	var line = params.get("l");
 	var tags = params.get("t");
-	clip = params.get("c");
+	var clip = params.get("c");
 
 	if (clip)
 	{
@@ -1224,9 +1223,8 @@ function loadstorage()
 		notepage.appendChild(msg);
 
 		saved = false;
-		save();
-
-		return;
+		return save()
+		.then(window.close);
 	}
 
 	if (currentnote)
@@ -1858,97 +1856,102 @@ function setsaved()
 	unsavedmark.hidden = true;
 	saved = true;
 	lastsaved = timestamp();
-	if (clip)
-	{
-		close();
-	}
 }
 
 function save()
 {
-	clearTimeout(workerid);
-
-	if (currentnote.title == "settings.json")
+	return new Promise(function(resolve, reject)
 	{
-		settings = JSON.parse(md.value);
-		savesettings();
-		loadsettings();
-		setsaved();
-		return;
-	}
-	else if (currentnote.title == "pgpkeys")
-	{
-		localStorage.setItem("pgpkeys", md.value);
-		setsaved();
-		return;
-	}
+		clearTimeout(workerid);
 
-	if (!localdata)
-	{
-		showtemporaryinfo("cannot push empty data");
-		return;
-	}
-
-	if (pending)
-	{
-		console.log("pending query: save cancelled");
-		return;
-	}
-
-	if (saved)
-	{
-		console.log("nothing to save");
-		return;
-	}
-
-	var content = md.value;
-	if ((content == "" && backup != "") || content == "null" || content == "undefined")
-	{
-		showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
-		return;
-	}
-
-	currentnote.pos = md.selectionStart;
-	currentnote.content = content;
-	putontop();
-
-	window.localStorage.setItem("data", JSON.stringify(localdata));
-
-	if (settings.sync)
-	{
-		var datatosend = JSON.stringify(localdata);
-		encryptstring(datatosend)
-		.then(encrypted =>
+		if (currentnote.title == "settings.json")
 		{
-			console.log("sending data to php server...");
-			pending = true;
-			return queryremote({action: "push", data: encrypted})
-		})
-		.then(() =>
-		{
-			console.log("...data saved on server");
+			settings = JSON.parse(md.value);
+			savesettings();
+			loadsettings();
 			setsaved();
-		})
-		.catch(remotecallfailed)
-		.finally(() =>
+			resolve();
+		}
+		else if (currentnote.title == "pgpkeys")
 		{
-			pending = false;
-			if (content != md.value)
+			localStorage.setItem("pgpkeys", md.value);
+			setsaved();
+			resolve();
+		}
+		else if (!localdata)
+		{
+			showtemporaryinfo("cannot push empty data");
+			reject();
+		}
+		else if (pending)
+		{
+			console.log("pending query: save cancelled");
+			reject();
+		}
+		else if (saved)
+		{
+			console.log("nothing to save");
+			reject();
+		}
+		else
+		{
+			var content = md.value;
+			if ((content == "" && backup != "") || content == "null" || content == "undefined")
 			{
-				console.log("but content changed: will save again");
-				datachanged();
+				showtemporaryinfo("Invalid content '" + content + "', file '" + currentnote.title + "' not saved");
+				reject();
 			}
-			else if (!saved)
+			else
 			{
-				console.log("save failed. Data unsaved on server. Will retry.");
-				datachanged();
+				currentnote.pos = md.selectionStart;
+				currentnote.content = content;
+				putontop();
+
+				window.localStorage.setItem("data", JSON.stringify(localdata));
+
+				if (settings.sync)
+				{
+					var datatosend = JSON.stringify(localdata);
+					return encryptstring(datatosend)
+					.then(encrypted =>
+					{
+						console.log("sending data to php server...");
+						pending = true;
+						return queryremote({action: "push", data: encrypted})
+					})
+					.then(() =>
+					{
+						console.log("...data saved on server");
+						setsaved();
+					})
+					.catch(remotecallfailed)
+					.finally(() =>
+					{
+						pending = false;
+						if (content != md.value)
+						{
+							console.log("but content changed: will save again");
+							return datachanged();
+						}
+						else if (!saved)
+						{
+							console.log("save failed. Data unsaved on server. Will retry.");
+							return datachanged();
+						}
+						else
+						{
+							resolve();
+						}
+					});
+				}
+				else
+				{
+					setsaved();
+					resolve();
+				}
 			}
-		});
-	}
-	else
-	{
-		setsaved();
-	}
+		}
+	});
 }
 
 function escapeHtml(unsafe) {
@@ -2220,7 +2223,7 @@ function datachanged()
 	saved = false;
 	unsavedmark.hidden = !settings.sync;
 
-	postpone()
+	return postpone()
 	.then(save);
 }
 

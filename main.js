@@ -271,6 +271,14 @@ var commands = [
 {
 	hint: "Browse bookmarks",
 	action: browsebookmarks
+},
+{
+	hint: "Show passwords list",
+	action: passwordslist
+},
+{
+	hint: "Add password",
+	action: addpassword
 }];
 
 var snippets = [
@@ -320,6 +328,51 @@ function getbookmarks()
 {
 	var note = getnote("bookmarks") || {title: "bookmarks", content: "[]"};
 	return JSON.parse(note.content);
+}
+
+function getpasswords()
+{
+	var note = getnote("passwords") || {title: "passwords", content: "[]"};
+	return JSON.parse(note.content);
+}
+
+function addpassword()
+{
+	var note = getnote("passwords");
+	if (!note)
+	{
+		note = {title: "passwords", content: "[]"};
+		localdata.unshift(note);
+	}
+
+	var newentry = {
+		name: prompt("Name:"),
+		user: prompt("User:"),
+		password: prompt("Password:")
+	};
+
+	var passwords = getpasswords();
+	passwords.unshift(newentry);
+
+	note.content = JSON.stringify(passwords, null, " ");
+	datachanged();
+}
+
+function passwordslist()
+{
+	var passwords = getpasswords();
+
+	searchinlist(passwords.map(p => ({text: p.name, suffix: [p.user]})))
+	.then( (item) =>
+	{
+		copypassword(item.text);
+	});
+}
+
+function copypassword(name)
+{
+	var passwords = getpasswords();
+	navigator.clipboard.writeText(passwords.find(p => p.name == name).password);
 }
 
 function browsebookmarks()
@@ -1675,6 +1728,14 @@ function commandpalette()
 				prefix: "open bookmark ",
 				text: b.title
 			};
+		}))
+		.concat(getpasswords().map(p =>
+		{
+			return {
+				prefix: "copy password ",
+				suffix: [p.user],
+				text: p.name
+			};
 		})))
 	.then(selected =>
 	{
@@ -1695,6 +1756,10 @@ function commandpalette()
 		else if (selected.prefix == "open bookmark ")
 		{
 			openbookmark(selected.text);
+		}
+		else if (selected.prefix == "copy password ")
+		{
+			copypassword(selected.text);
 		}
 		else
 		{

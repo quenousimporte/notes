@@ -10,7 +10,6 @@ body {
 	margin-left: 7%;
 	margin-right: 7%;
 	background: white;
-	font-family: helvetica, system-ui;
 	caret-color: var(--accent);
 	color: var(--black);
 }
@@ -23,7 +22,6 @@ input {
 	outline: none;
 	border: none;
 
-	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
 	color: inherit;
@@ -70,7 +68,6 @@ body::-webkit-scrollbar-thumb {
 
 	resize: none;
 
-	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
 	background-color: inherit;

@@ -3,6 +3,7 @@ var defaultsettings =
 	fontsize: "16px",
 	lineheight: "24px",
 	margins: "20%",
+	fontfamily: "helvetica,system-ui",
 	savedelay: 2000,
 	defaultpreviewinsplit: false,
 	tagautocomplete: false,
@@ -1319,6 +1320,7 @@ function loadsettings()
 	document.body.style.lineHeight = settings.lineheight;
 	document.body.style.marginLeft = settings.margins;
 	document.body.style.marginRight = settings.margins;
+	document.body.style.fontFamily = settings.fontfamily;
 
 	if (settings.titlebydefault && title.hidden)
 	{

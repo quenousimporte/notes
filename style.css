@@ -68,6 +68,7 @@ body::-webkit-scrollbar-thumb {
 
 	resize: none;
 
+	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;
 	background-color: inherit;

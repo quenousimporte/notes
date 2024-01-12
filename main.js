@@ -268,18 +268,6 @@ var commands = [
 	hint: "Remove completed tasks",
 	action: purgetodo,
 	allowunsaved: true
-},
-{
-	hint: "Browse bookmarks",
-	action: browsebookmarks
-},
-{
-	hint: "Show passwords list",
-	action: passwordslist
-},
-{
-	hint: "Add password",
-	action: addpassword
 }];
 
 var snippets = [
@@ -325,65 +313,7 @@ var snippets = [
 	insert: "x " + (new Date).toISOString().substring(0, 10) + " "
 }];
 
-function getbookmarks()
-{
-	var note = getnote("bookmarks") || {title: "bookmarks", content: "[]"};
-	return JSON.parse(note.content);
-}
-
-function getpasswords()
-{
-	var note = getnote("passwords") || {title: "passwords", content: "[]"};
-	return JSON.parse(note.content);
-}
-
-function addpassword()
-{
-	var note = getnote("passwords");
-	if (!note)
-	{
-		note = {title: "passwords", content: "[]"};
-		localdata.unshift(note);
-	}
-
-	var newentry = {
-		name: prompt("Name:"),
-		user: prompt("User:"),
-		password: prompt("Password:")
-	};
-
-	var passwords = getpasswords();
-	passwords.unshift(newentry);
-
-	note.content = JSON.stringify(passwords, null, " ");
-	datachanged();
-}
-
-function passwordslist()
-{
-	var passwords = getpasswords();
-
-	searchinlist(passwords.map(p => ({text: p.name, suffix: [p.user]})))
-	.then( (item) =>
-	{
-		copypassword(item.text);
-	});
-}
-
-function copypassword(name)
-{
-	var passwords = getpasswords();
-	navigator.clipboard.writeText(passwords.find(p => p.name == name).password);
-}
-
-function browsebookmarks()
-{
-	searchinlist(getbookmarks().map(b => b.title))
-	.then(openbookmark);
-}
-
-function purgetodo()
-{
+function purgetodo() {
 	if (currentistodo() && confirm("Remove completed tasks?"))
 	{
 		seteditorcontent(currentnote.content.replace(/\nx .*/g, ""));
@@ -894,11 +824,12 @@ function clickeditor()
 		return;
 	}
 
+	var word, link;
 	if (event.ctrlKey)
 	{
-		var link = linkatpos();
+		link = linkatpos();
 		var tag = tagatpos();
-		var word =  wordatpos();
+		word =  wordatpos();
 		if (link)
 		{
 			loadnote(link);
@@ -917,14 +848,14 @@ function clickeditor()
 	else if (settings.uselinkpopup)
 	{
 		removelinkdialog();
-		var link = linkatpos();
+		link = linkatpos();
 		if (link)
 		{
 			showlinkdialog(link);
 		}
 		else
 		{
-			var word =  wordatpos();
+			word =  wordatpos();
 			if (word.startsWith("http"))
 			{
 				showlinkdialog(word);
@@ -1253,10 +1184,17 @@ function loadstorage()
 
 	if (clip)
 	{
-		var bmnote = getorcreate("bookmarks", "[]");
-		var bookmarks = getbookmarks();
-		bookmarks.unshift(JSON.parse(clip));
-		bmnote.content = JSON.stringify(bookmarks, null, " ");
+		var bmnote = getorcreate("bookmarks");
+		var newbookmark = JSON.parse(clip);
+		var date = new Date(newbookmark.time).toDateString();
+		bmnote.content += "\n\n";
+		if (!bmnote.content.includes(date))
+		{
+			bmnote.content += date + "\n\n";
+		}
+		bmnote.content += newbookmark.title + "\n";
+		bmnote.content += newbookmark.url;
+		bmnote.pos = bmnote.content.length;
 
 		bindfile(bmnote);
 
@@ -1670,25 +1608,6 @@ function showgrep()
 	}
 }
 
-function titlewithtags(note)
-{
-	var text = note.title;
-	if (settings.tagsinlists)
-	{
-		var tags = gettags(note);
-		if (tags.length)
-		{
-			text += " " + tagmark + tags.join(" " + tagmark);
-		}
-	}
-	return text;
-}
-
-function openbookmark(title)
-{
-	window.open(getbookmarks().find(b => b.title == title).url, "_blank");
-}
-
 function commandpalette()
 {
 	searchinlist(commands
@@ -1696,6 +1615,7 @@ function commandpalette()
 		.map(command =>
 		{
 			return {
+				prefix: "command ",
 				text: command.hint,
 				suffix: command.shortcut ? [command.shortcut.toLowerCase()] : null
 			};
@@ -1711,7 +1631,7 @@ function commandpalette()
 		.concat(localdata.map(n =>
 		{
 			return {
-				prefix: "open ",
+				prefix: "note ",
 				text: n.title,
 				suffix: gettags(n).map(t => tagmark + t)
 			};
@@ -1723,21 +1643,6 @@ function commandpalette()
 				text: s,
 				suffix: s == "password" ? null : [settings[s]]
 			};
-		}))
-		.concat(getbookmarks().map(b =>
-		{
-			return {
-				prefix: "open bookmark ",
-				text: b.title
-			};
-		}))
-		.concat(getpasswords().map(p =>
-		{
-			return {
-				prefix: "copy password ",
-				suffix: [p.user],
-				text: p.name
-			};
 		})))
 	.then(selected =>
 	{
@@ -1747,21 +1652,13 @@ function commandpalette()
 			insert(snippet.insert, snippet.cursor);
 			md.focus();
 		}
-		else if (selected.prefix == "open ")
+		else if (selected.prefix == "note ")
 		{
 			loadnote(selected.text);
 		}
 		else if (selected.prefix == "setting ")
 		{
 			editsetting(selected.text);
-		}
-		else if (selected.prefix == "open bookmark ")
-		{
-			openbookmark(selected.text);
-		}
-		else if (selected.prefix == "copy password ")
-		{
-			copypassword(selected.text);
 		}
 		else
 		{
@@ -2907,18 +2804,9 @@ function insertautocomplete(selectednote)
 	insert(selectednote + "]] ");
 }
 
-function bookmarkspreview()
-{
-	var bookmarks = JSON.parse(md.value);
-	return "# Bookmarks" + bookmarks.reduce( (acc, cur) =>
-	{
-		return acc + "* [" + cur.title + "](" + cur.url + ")\n";
-	}, "\n");
-}
-
 function togglepreview()
 {
-	preview.innerHTML = md2html(currentnote.title == "bookmarks" ? bookmarkspreview() : md.value);
+	preview.innerHTML = md2html(md.value);
 	toggleeditor(!md.hidden);
 	preview.hidden = !preview.hidden;
 
@@ -3050,7 +2938,7 @@ function loadnote(name)
 	stat.cur.d = 0;
 	stat.cur.t = timestamp();
 
-	if (!preview.hidden || (preview.hidden && (gettags(note).indexOf("preview") !== -1) || note.title == "bookmarks"))
+	if (!preview.hidden || (preview.hidden && (gettags(note).indexOf("preview") !== -1)))
 	{
 		togglepreview();
 	}

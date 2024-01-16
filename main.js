@@ -19,7 +19,7 @@ var defaultsettings =
 };
 
 //builtin
-var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• ", "- [ ]"];
+var markerslist = ["* ", "- ", "    * ", "    - ", ">> ", "> ", "=> ", "— ", "[ ] ", "    ", "• ", "- [ ]", "[x] ", "- [x]"];
 var codelanguages = ["xml", "js", "sql"];
 var tagmark = "+";
 
@@ -816,17 +816,33 @@ function showlinkdialog(link)
 	notepage.appendChild(div);
 }
 
+function checkatpos(pos)
+{
+	if (pos > 0 && md.value[pos - 1] == "[" && md.value[pos + 1] == "]")
+	{
+		return {
+			pos: pos,
+			val: md.value[pos]
+		};
+	}
+	return null;
+}
+
+function clickedcheck()
+{
+	return checkatpos(md.selectionStart) || checkatpos(md.selectionStart + 1) || checkatpos(md.selectionStart - 1);
+}
+
 function clickeditor()
 {
-	if (!saved)
-	{
-		console.log("Not saved, ctrl+click ignored.");
-		return;
-	}
-
 	var word, link;
 	if (event.ctrlKey)
 	{
+		if (!saved)
+		{
+			console.log("Not saved, ctrl+click ignored.");
+			return;
+		}
 		link = linkatpos();
 		var tag = tagatpos();
 		word =  wordatpos();
@@ -844,6 +860,14 @@ function clickeditor()
 		{
 			window.open(word, '_blank');
 		}
+	}
+	else if (clickedcheck())
+	{
+		var res = clickedcheck();
+		seteditorcontent(md.value.substring(0, res.pos)
+			+ (res.val == " " ? "x" : " ")
+			+ md.value.substring(res.pos + 1));
+		setpos(res.pos);
 	}
 	else if (settings.uselinkpopup)
 	{

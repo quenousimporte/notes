@@ -228,7 +228,7 @@ var commands = [
 },
 {
 	hint: "Insert text in todo",
-	action: inserttodo
+	action: promptinserttodo
 },
 {
 	hint: "Edit pgp keys",
@@ -1123,19 +1123,24 @@ function headerandtext(note)
 	return result;
 }
 
-function inserttodo()
+function inserttodo(text)
+{
+	var todo = getorcreate("todo", "");
+	var split = headerandtext(todo);
+	todo.content = split.header + text + "\n" + split.text;
+	if (todo == currentnote)
+	{
+		seteditorcontent(todo.content, true);
+	}
+	return datachanged();
+}
+
+function promptinserttodo()
 {
 	var text = prompt("Text:");
 	if (text)
 	{
-		var todo = getorcreate("todo", "");
-		var split = headerandtext(todo);
-		todo.content = split.header + text + "\n" + split.text;
-		if (todo == currentnote)
-		{
-			seteditorcontent(todo.content, true);
-		}
-		datachanged();
+		inserttodo(text);
 	}
 }
 
@@ -1208,28 +1213,14 @@ function loadstorage()
 
 	if (clip)
 	{
-		var bmnote = getorcreate("bookmarks");
-		var newbookmark = JSON.parse(clip);
-		var date = new Date(newbookmark.time).toDateString();
-		bmnote.content += "\n\n";
-		if (!bmnote.content.includes(date))
-		{
-			bmnote.content += date + "\n\n";
-		}
-		bmnote.content += newbookmark.title + "\n";
-		bmnote.content += newbookmark.url;
-		bmnote.pos = bmnote.content.length;
-
-		bindfile(bmnote);
-
+		settings.savedelay = 0;
 		colored.hidden = true;
 		md.hidden = true;
 		var msg = document.createElement("div");
 		msg.innerText = "Clipping...";
 		notepage.appendChild(msg);
 
-		saved = false;
-		return save()
+		inserttodo(clip)
 		.then(window.close);
 	}
 

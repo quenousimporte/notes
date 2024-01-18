@@ -1220,7 +1220,7 @@ function loadstorage()
 		msg.innerText = "Clipping...";
 		notepage.appendChild(msg);
 
-		inserttodo(clip)
+		inserttodo("@clip " + clip)
 		.then(window.close);
 	}
 

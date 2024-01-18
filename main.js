@@ -2738,7 +2738,7 @@ function editorkeydown()
 			event.preventDefault();
 			if (line != marker)
 			{
-				insert("\n" + marker);
+				insert("\n" + marker.replace("[x]", "[ ]"));
 			}
 			else
 			{

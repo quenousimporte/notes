@@ -1206,7 +1206,7 @@ function loadstorage()
 	localdata = item ? JSON.parse(item) : [];
 
 	var params = new URLSearchParams(window.location.search);
-	var title = params.get("n");
+	var title = params.get("n") || params.get("name");
 	var line = params.get("l");
 	var tags = params.get("t");
 	var clip = params.get("c");
@@ -1220,8 +1220,7 @@ function loadstorage()
 		msg.innerText = "Clipping...";
 		notepage.appendChild(msg);
 
-		inserttodo("@clip " + clip)
-		.then(window.close);
+		inserttodo("@clip " + clip).then(window.close);
 	}
 
 	if (currentnote)
@@ -1233,7 +1232,7 @@ function loadstorage()
 		currentnote = getnote(title);
 		if (!currentnote)
 		{
-			var newcontent = defaultheaders(tags);
+			var newcontent = params.get("description") || defaultheaders(tags);
 			currentnote = {title: title, content: newcontent, pos: newcontent.length};
 			localdata.unshift(currentnote);
 		}

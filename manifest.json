@@ -1,7 +1,7 @@
 {
 	"share_target":
 	{
-		"action": "/index.html",
+		"action": "/",
 		"params":
 		{
 			"title": "name",

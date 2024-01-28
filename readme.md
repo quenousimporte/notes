@@ -1,5 +1,7 @@
 # notes
 
+**Moved to https://git.ouvaton.coop/quenousimporte/notes**
+
 ## Getting started
 
 Launch index.html from your web server or try https://notes.ouvaton.org.
